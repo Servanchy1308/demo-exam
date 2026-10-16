@@ -1,191 +1,269 @@
 <title>Генератор Модуля 1</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Layout: console workbench — settings column on the left, generated scripts on the right, stacks on phones */
+/* Layout: machine strip on top → script terminal on the left, plain-language settings on the right; one column on phones */
 :root{
-  --bg:#eaefed; --panel:#ffffff; --ink:#16201c; --muted:#5a6863; --line:#d0d9d5;
-  --accent:#0b7a58; --accent-ink:#ffffff; --code:#f4f7f6; --warn:#9a5a00; --warn-bg:#fff4e0; --err:#b3261e; --err-bg:#fdecea;
-  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --bg:#f3f5f9; --surface:#ffffff; --raise:#f7f9fc; --ink:#141a26; --muted:#5e6878; --line:#e1e6ee;
+  --accent:#2f5bea; --accent-soft:#e8eefe; --accent-ink:#ffffff;
+  --router:#0f8a6a; --server:#b4610f; --client:#7a4fd6;
+  --term:#0e1422; --term-ink:#dce4f2; --term-dim:#6f7d95; --term-line:#1f2a3e;
+  --warn:#8d5600; --warn-bg:#fff3dc; --err:#b42318; --err-bg:#fdecea; --ok:#0f8a6a;
+  --shadow:0 1px 2px rgba(20,26,38,.06),0 6px 20px rgba(20,26,38,.06);
+  --sans:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"JetBrains Mono",ui-monospace,Consolas,"Courier New",monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0f1412; --panel:#161d1a; --ink:#e2eae6; --muted:#90a09a; --line:#283430;
-  --accent:#43c193; --accent-ink:#06130e; --code:#0b0f0d; --warn:#f0b35a; --warn-bg:#2a2112; --err:#ff8a80; --err-bg:#2c1513; color-scheme:dark}}
+  --bg:#0c1018; --surface:#141a25; --raise:#19202d; --ink:#e6ebf3; --muted:#95a0b3; --line:#252e3d;
+  --accent:#7c9cff; --accent-soft:#1d2848; --accent-ink:#0b1020;
+  --router:#3fcf9f; --server:#f0a65a; --client:#b394ff;
+  --term:#080b12; --term-ink:#dce4f2; --term-dim:#6f7d95; --term-line:#1a2233;
+  --warn:#f3b65c; --warn-bg:#2a2111; --err:#ff8b80; --err-bg:#2e1614; --ok:#3fcf9f;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0f1412; --panel:#161d1a; --ink:#e2eae6; --muted:#90a09a; --line:#283430;
-  --accent:#43c193; --accent-ink:#06130e; --code:#0b0f0d; --warn:#f0b35a; --warn-bg:#2a2112; --err:#ff8a80; --err-bg:#2c1513; color-scheme:dark}
+  --bg:#0c1018; --surface:#141a25; --raise:#19202d; --ink:#e6ebf3; --muted:#95a0b3; --line:#252e3d;
+  --accent:#7c9cff; --accent-soft:#1d2848; --accent-ink:#0b1020;
+  --router:#3fcf9f; --server:#f0a65a; --client:#b394ff;
+  --term:#080b12; --term-ink:#dce4f2; --term-dim:#6f7d95; --term-line:#1a2233;
+  --warn:#f3b65c; --warn-bg:#2a2111; --err:#ff8b80; --err-bg:#2e1614; --ok:#3fcf9f;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
-.wrap{max-width:1380px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
-header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 20px}
-h1{font-size:1.5rem;margin:0;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
-h1 small{font-family:var(--mono);font-weight:400;font-size:.8rem;color:var(--muted);margin-left:8px;letter-spacing:0}
-.lead{color:var(--muted);margin:0;max-width:70ch}
-.grid{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:18px;align-items:start}
-@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;min-width:0}
-form{padding:6px 16px 16px;display:flex;flex-direction:column;gap:4px}
-fieldset{border:0;border-top:1px solid var(--line);margin:0;padding:12px 0 6px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px}
-fieldset:first-of-type{border-top:0}
-legend{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--muted);padding:0;margin-bottom:6px;grid-column:1/-1}
-.f{display:flex;flex-direction:column;gap:3px;min-width:0}
-.f.full{grid-column:1/-1}
-label{font-size:.78rem;color:var(--muted)}
-input,select{font:inherit;font-family:var(--mono);font-size:.82rem;color:var(--ink);background:var(--code);border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
-input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.lan{grid-column:1/-1;display:grid;grid-template-columns:1.4fr .6fr 1.2fr .6fr;gap:6px;align-items:end}
-.lan .name{grid-column:1/-1;font-size:.8rem;font-weight:600;margin-top:4px}
-.lan .calc{grid-column:1/-1;font-family:var(--mono);font-size:.74rem;color:var(--accent)}
-.out{display:flex;flex-direction:column}
-.summary{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:1400px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+.eyebrow{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font-size:clamp(1.6rem,3vw,2.1rem);margin:2px 0 4px;font-weight:800;letter-spacing:-.02em;text-wrap:balance}
+.lead{color:var(--muted);margin:0;max-width:66ch}
+.ghostbtn{font:inherit;font-size:.85rem;font-weight:600;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer}
+.ghostbtn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* machine strip */
+.strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+@media (max-width:1100px){.strip{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:520px){.strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.mc{font:inherit;text-align:left;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-width:0;transition:border-color .15s,transform .15s}
+.mc:hover{border-color:var(--muted)}
+.mc[aria-pressed="true"]{border-color:var(--accent);box-shadow:var(--shadow);background:var(--surface)}
+.mc .top{display:flex;align-items:center;gap:8px}
+.mc .ic{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex:none}
+.mc .ic svg{width:16px;height:16px}
+.mc.router .ic{background:color-mix(in srgb,var(--router) 14%,transparent);color:var(--router)}
+.mc.server .ic{background:color-mix(in srgb,var(--server) 14%,transparent);color:var(--server)}
+.mc.client .ic{background:color-mix(in srgb,var(--client) 14%,transparent);color:var(--client)}
+.mc .nm{font-weight:700;font-size:1rem}
+.mc .os{font-size:.75rem;color:var(--muted)}
+.mc .ip{font-family:var(--mono);font-size:.75rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc .steps{display:flex;gap:4px;flex-wrap:wrap}
+.chip{font-family:var(--mono);font-size:.68rem;font-weight:600;background:var(--raise);border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:1px 7px}
+.mc[aria-pressed="true"] .chip{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.extras{display:flex;gap:8px;flex-wrap:wrap}
+.xb{font:inherit;font-size:.85rem;font-weight:600;background:var(--surface);border:1.5px solid var(--line);color:var(--ink);border-radius:999px;padding:7px 14px;cursor:pointer}
+.xb[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);gap:20px;align-items:start}
+@media (max-width:980px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;min-width:0}
+
+/* viewer */
+.viewer{padding:18px;display:flex;flex-direction:column;gap:14px}
+.vh{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:10px 16px}
+.vh h2{margin:0;font-size:1.25rem;letter-spacing:-.01em}
+.vh p{margin:2px 0 0;color:var(--muted);font-size:.85rem}
+.seg{display:inline-flex;background:var(--raise);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px}
+.seg button{font:inherit;font-size:.82rem;font-weight:600;border:0;background:none;color:var(--muted);padding:6px 12px;border-radius:7px;cursor:pointer;display:flex;gap:6px;align-items:baseline}
+.seg button .n{font-family:var(--mono);font-size:.7rem}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.howto{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:700px){.howto{grid-template-columns:minmax(0,1fr)}}
+.hs{background:var(--raise);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.82rem;display:flex;flex-direction:column;gap:6px;min-width:0}
+.hs b{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.hs code{font-family:var(--mono);font-size:.74rem;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 6px;display:block;word-break:break-all;user-select:all}
+.term{background:var(--term);border:1px solid var(--term-line);border-radius:14px;overflow:hidden;min-width:0}
+.tbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px 8px 14px;border-bottom:1px solid var(--term-line)}
+.tbar .fn{font-family:var(--mono);font-size:.76rem;color:var(--term-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tbar .acts{display:flex;gap:6px}
+.tb{font:inherit;font-size:.78rem;font-weight:600;border-radius:8px;padding:6px 12px;white-space:nowrap;cursor:pointer;border:1px solid var(--term-line);background:transparent;color:var(--term-ink)}
+.tb.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+pre{margin:0;padding:14px 16px;overflow:auto;max-height:64vh;font-family:var(--mono);font-size:.8rem;line-height:1.6;color:var(--term-ink);tab-size:2}
+pre.wrap{white-space:pre-wrap}
+pre .cm{color:var(--term-dim)}
 .tbl{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:.8rem}
-th,td{text-align:left;padding:5px 10px 5px 0;border-bottom:1px solid var(--line);white-space:nowrap}
-th{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
-td{font-family:var(--mono);font-variant-numeric:tabular-nums}
-td:first-child{font-family:var(--sans);font-weight:600}
+table{border-collapse:collapse;width:100%;font-size:.85rem}
+th,td{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+td{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.8rem}
+td:first-child{font-family:var(--sans);font-weight:700;font-size:.85rem}
 .msgs{display:flex;flex-direction:column;gap:6px}
-.msg{font-size:.8rem;padding:6px 10px;border-radius:6px}
+.msg{font-size:.84rem;padding:8px 12px;border-radius:10px}
 .msg.warn{background:var(--warn-bg);color:var(--warn)}
 .msg.err{background:var(--err-bg);color:var(--err)}
-.tabs{display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;border-bottom:1px solid var(--line)}
-.tab{font:inherit;font-size:.8rem;border:1px solid transparent;background:none;color:var(--ink);border-radius:6px;padding:5px 9px;cursor:pointer;display:flex;gap:6px;align-items:baseline}
-.tab .n{font-family:var(--mono);font-size:.7rem;color:var(--muted)}
-.tab:hover{border-color:var(--line)}
-.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
-.tab[aria-selected="true"] .n{color:var(--accent-ink)}
-.view{padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
-.vhead{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
-.vhead h2{margin:0;font-size:1rem}
-.vhead p{margin:2px 0 0;color:var(--muted);font-size:.8rem}
-.btns{display:flex;gap:6px;flex-wrap:wrap}
-button.b{font:inherit;font-size:.8rem;font-weight:600;border-radius:6px;padding:6px 12px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink)}
-button.b.ghost{background:none;color:var(--accent)}
-pre.wrap{white-space:pre-wrap}
-pre{margin:0;background:var(--code);border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;max-height:70vh;font-family:var(--mono);font-size:.78rem;line-height:1.55;color:var(--ink);tab-size:2}
-.cmd{font-family:var(--mono);font-size:.76rem;background:var(--code);border:1px dashed var(--line);border-radius:6px;padding:8px 10px;overflow-x:auto;white-space:nowrap}
-.toast{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:6px;font-size:.82rem;opacity:0;transition:opacity .2s;pointer-events:none}
+
+/* settings */
+.settings{padding:6px 6px 10px}
+.sh{padding:12px 12px 6px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sh h3{margin:0;font-size:1.05rem}
+details{border-top:1px solid var(--line)}
+details:first-of-type{border-top:0}
+summary{list-style:none;cursor:pointer;padding:12px;display:flex;gap:12px;align-items:flex-start;border-radius:10px}
+summary::-webkit-details-marker{display:none}
+summary:hover{background:var(--raise)}
+summary .num{flex:none;width:24px;height:24px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:.78rem;display:grid;place-items:center;margin-top:1px}
+summary .st{display:flex;flex-direction:column;flex:1;min-width:0}
+summary .st b{font-size:.95rem}
+summary .st span{font-size:.8rem;color:var(--muted)}
+summary .chev{flex:none;color:var(--muted);transition:transform .15s;margin-top:4px}
+details[open] summary .chev{transform:rotate(180deg)}
+.body{padding:2px 12px 16px 48px;display:flex;flex-direction:column;gap:12px}
+@media (max-width:520px){.body{padding-left:12px}}
+.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f.full{grid-column:1/-1}
+label{font-size:.8rem;font-weight:600}
+.hint{font-size:.75rem;color:var(--muted)}
+input,select{font:inherit;font-size:.86rem;color:var(--ink);background:var(--raise);border:1px solid var(--line);border-radius:10px;padding:8px 10px;width:100%;min-width:0}
+input.mono{font-family:var(--mono);font-size:.82rem}
+input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lan{background:var(--raise);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.lan .lt{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.lan .lt b{font-size:.88rem}
+.lan .sentence{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:.84rem}
+.lan .sentence input,.lan .sentence select{width:auto;background:var(--surface);padding:6px 8px}
+.lan .sentence .w-ip{width:9.5em}.lan .sentence .w-n{width:4.5em}.lan .sentence .w-v{width:5em}
+.calc{font-family:var(--mono);font-size:.75rem;color:var(--ok)}
+.toast{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:.85rem;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.on{opacity:1}
-.reset{font:inherit;font-size:.78rem;background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0}
-@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
 <div class="wrap">
   <header>
     <div>
-      <h1>Генератор Модуля 1 <small>09.02.06 · Astra + ALT</small></h1>
-      <p class="lead">Задайте сети и имена интерфейсов из своего варианта. Маски, адреса, диапазон DHCP и DNS-записи посчитаются сами, а скрипты для каждой машины обновятся сразу.</p>
+      <div class="eyebrow">ДЭ 09.02.06 · Модуль 1</div>
+      <h1>Генератор Модуля 1</h1>
+      <p class="lead">Выберите машину, скопируйте её скрипт и отправьте в виртуалку. Адреса, маски, DHCP и DNS считаются из настроек варианта.</p>
     </div>
-    <button class="reset" id="resetBtn" type="button">Сбросить к варианту 2</button>
+    <button class="ghostbtn" id="resetBtn" type="button">Вернуть вариант 2</button>
   </header>
 
+  <nav class="strip" id="strip" aria-label="Машины"></nav>
+  <div class="extras" id="extras"></div>
+
   <div class="grid">
-    <div class="panel">
+    <section class="card viewer" id="viewer" aria-live="polite"></section>
+
+    <aside class="card settings">
+      <div class="sh"><h3>Настройки варианта</h3><span class="hint">сохраняются в браузере</span></div>
       <form id="cfg" autocomplete="off">
-        <fieldset>
-          <legend>Общее</legend>
-          <div class="f"><label for="dom">Домен</label><input id="dom" value="au-team.irpo"></div>
-          <div class="f"><label for="tz">Часовой пояс</label>
-            <select id="tz">
-              <option>Europe/Kaliningrad</option><option selected>Europe/Moscow</option><option>Europe/Samara</option>
-              <option>Asia/Yekaterinburg</option><option>Asia/Omsk</option><option>Asia/Novosibirsk</option>
-              <option>Asia/Krasnoyarsk</option><option>Asia/Irkutsk</option><option>Asia/Yakutsk</option>
-              <option>Asia/Vladivostok</option><option>Asia/Magadan</option><option>Asia/Kamchatka</option>
-            </select></div>
-          <div class="f"><label for="pass">Пароль пользователей</label><input id="pass" value="P@ssw0rd"></div>
-          <div class="f"><label for="ospfPass">Пароль OSPF (MD5)</label><input id="ospfPass" value="P@ssw0rd"></div>
-          <div class="f"><label for="adm">Пользователь роутеров</label><input id="adm" value="net_admin"></div>
-          <div class="f"><label for="su">Пользователь серверов</label><input id="su" value="sshuser"></div>
-          <div class="f"><label for="uid">UID пользователя серверов</label><input id="uid" value="2012" inputmode="numeric"></div>
-          <div class="f"><label for="sshPort">Порт SSH</label><input id="sshPort" value="2012" inputmode="numeric"></div>
-          <div class="f"><label for="maxTries">Попыток входа SSH</label><input id="maxTries" value="2" inputmode="numeric"></div>
-          <div class="f"><label for="tun">Тип туннеля</label><select id="tun"><option value="gre" selected>GRE</option><option value="ipip">IP in IP</option></select></div>
-          <div class="f full"><label for="banner">Баннер SSH</label><input id="banner" value="Authorized access only"></div>
-          <div class="f"><label for="fwd1">DNS пересылки 1</label><input id="fwd1" value="77.88.8.8"></div>
-          <div class="f"><label for="fwd2">DNS пересылки 2</label><input id="fwd2" value="77.88.8.3"></div>
-          <div class="f full"><label for="dockerTo">docker.* указывает на интерфейс ISP в сторону</label>
-            <select id="dockerTo"><option value="hq" selected>HQ-RTR (web.* тогда в сторону BR-RTR)</option><option value="br">BR-RTR (web.* тогда в сторону HQ-RTR)</option></select></div>
-        </fieldset>
 
-        <fieldset>
-          <legend>Сети между роутерами</legend>
-          <div class="f"><label for="netIspHq">ISP — HQ-RTR</label><input id="netIspHq" value="172.16.30.0/28"></div>
-          <div class="f"><label for="netIspBr">ISP — BR-RTR</label><input id="netIspBr" value="172.16.40.0/28"></div>
-          <div class="f"><label for="netTun">Туннель</label><input id="netTun" value="10.10.10.0/30"></div>
-        </fieldset>
+        <details open>
+          <summary><span class="num">1</span><span class="st"><b>Локальные сети</b><span>Перепишите условия из пункта 1 задания</span></span><svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></summary>
+          <div class="body">
+            <div class="lan">
+              <div class="lt"><b>Сеть HQ-SRV</b><span class="calc" id="srvCalc"></span></div>
+              <div class="sentence">Адрес <input class="mono w-ip" id="srvBase" aria-label="Адрес сети HQ-SRV" value="192.168.100.0">, вмещать
+                <select id="srvRule" aria-label="Правило HQ-SRV"><option value="le" selected>не более</option><option value="ge">не менее</option></select>
+                <input class="mono w-n" id="srvN" aria-label="Число адресов HQ-SRV" value="32" inputmode="numeric"> адресов, VLAN <input class="mono w-v" id="srvVid" aria-label="VLAN HQ-SRV" value="112" inputmode="numeric"></div>
+            </div>
+            <div class="lan">
+              <div class="lt"><b>Сеть HQ-CLI</b><span class="calc" id="cliCalc"></span></div>
+              <div class="sentence">Адрес <input class="mono w-ip" id="cliBase" aria-label="Адрес сети HQ-CLI" value="192.168.200.0">, вмещать
+                <select id="cliRule" aria-label="Правило HQ-CLI"><option value="le">не более</option><option value="ge" selected>не менее</option></select>
+                <input class="mono w-n" id="cliN" aria-label="Число адресов HQ-CLI" value="16" inputmode="numeric"> адресов, VLAN <input class="mono w-v" id="cliVid" aria-label="VLAN HQ-CLI" value="212" inputmode="numeric"></div>
+            </div>
+            <div class="lan">
+              <div class="lt"><b>Сеть управления</b><span class="calc" id="mgmtCalc"></span></div>
+              <div class="sentence">Адрес <input class="mono w-ip" id="mgmtBase" aria-label="Адрес сети управления" value="192.168.99.0">, вмещать
+                <select id="mgmtRule" aria-label="Правило управления"><option value="le" selected>не более</option><option value="ge">не менее</option></select>
+                <input class="mono w-n" id="mgmtN" aria-label="Число адресов управления" value="8" inputmode="numeric"> адресов, VLAN <input class="mono w-v" id="mgmtVid" aria-label="VLAN управления" value="812" inputmode="numeric"></div>
+            </div>
+            <div class="lan">
+              <div class="lt"><b>Сеть BR-SRV</b><span class="calc" id="brCalc"></span></div>
+              <div class="sentence">Адрес <input class="mono w-ip" id="brBase" aria-label="Адрес сети BR-SRV" value="192.168.0.0">, вмещать
+                <select id="brRule" aria-label="Правило BR-SRV"><option value="le" selected>не более</option><option value="ge">не менее</option></select>
+                <input class="mono w-n" id="brN" aria-label="Число адресов BR-SRV" value="16" inputmode="numeric"> адресов</div>
+            </div>
+            <p class="hint">Адрес сети можно выбрать любой частный (192.168.x.0, 10.x.x.0). Роутер получит первый адрес сети, сервер или клиент второй.</p>
+          </div>
+        </details>
 
-        <fieldset>
-          <legend>Локальные сети (адрес · сколько адресов · правило · VLAN)</legend>
-          <div class="lan" data-lan="srv">
-            <div class="name">HQ-SRV</div>
-            <input id="srvBase" aria-label="HQ-SRV адрес сети" value="192.168.100.0">
-            <input id="srvN" aria-label="HQ-SRV число адресов" value="32" inputmode="numeric">
-            <select id="srvRule" aria-label="HQ-SRV правило"><option value="le" selected>≤ не более</option><option value="ge">≥ не менее</option></select>
-            <input id="srvVid" aria-label="VLAN HQ-SRV" value="112" inputmode="numeric">
-            <div class="calc" id="srvCalc"></div>
-          </div>
-          <div class="lan" data-lan="cli">
-            <div class="name">HQ-CLI</div>
-            <input id="cliBase" aria-label="HQ-CLI адрес сети" value="192.168.200.0">
-            <input id="cliN" aria-label="HQ-CLI число адресов" value="16" inputmode="numeric">
-            <select id="cliRule" aria-label="HQ-CLI правило"><option value="le">≤ не более</option><option value="ge" selected>≥ не менее</option></select>
-            <input id="cliVid" aria-label="VLAN HQ-CLI" value="212" inputmode="numeric">
-            <div class="calc" id="cliCalc"></div>
-          </div>
-          <div class="lan" data-lan="mgmt">
-            <div class="name">Управление</div>
-            <input id="mgmtBase" aria-label="Управление адрес сети" value="192.168.99.0">
-            <input id="mgmtN" aria-label="Управление число адресов" value="8" inputmode="numeric">
-            <select id="mgmtRule" aria-label="Управление правило"><option value="le" selected>≤ не более</option><option value="ge">≥ не менее</option></select>
-            <input id="mgmtVid" aria-label="VLAN управления" value="812" inputmode="numeric">
-            <div class="calc" id="mgmtCalc"></div>
-          </div>
-          <div class="lan" data-lan="br">
-            <div class="name">BR-SRV</div>
-            <input id="brBase" aria-label="BR-SRV адрес сети" value="192.168.0.0">
-            <input id="brN" aria-label="BR-SRV число адресов" value="16" inputmode="numeric">
-            <select id="brRule" aria-label="BR-SRV правило"><option value="le" selected>≤ не более</option><option value="ge">≥ не менее</option></select>
-            <span></span>
-            <div class="calc" id="brCalc"></div>
-          </div>
-        </fieldset>
+        <details>
+          <summary><span class="num">2</span><span class="st"><b>Провайдер и туннель</b><span>Сети из пункта 2 и адреса GRE</span></span><svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></summary>
+          <div class="body"><div class="row">
+            <div class="f"><label for="netIspHq">ISP ↔ HQ-RTR</label><input class="mono" id="netIspHq" value="172.16.30.0/28"></div>
+            <div class="f"><label for="netIspBr">ISP ↔ BR-RTR</label><input class="mono" id="netIspBr" value="172.16.40.0/28"></div>
+            <div class="f"><label for="netTun">Сеть туннеля</label><input class="mono" id="netTun" value="10.10.10.0/30"></div>
+            <div class="f"><label for="tun">Технология туннеля</label><select id="tun"><option value="gre" selected>GRE</option><option value="ipip">IP in IP</option></select></div>
+            <div class="f full"><label for="ospfPass">Пароль защиты OSPF</label><input class="mono" id="ospfPass" value="P@ssw0rd"><span class="hint">Должен совпадать на обоих роутерах, скрипты делают это сами.</span></div>
+          </div></div>
+        </details>
 
-        <fieldset>
-          <legend>Имена интерфейсов (смотрите ip -br a)</legend>
-          <div class="f"><label for="ifIspWan">ISP → интернет</label><input id="ifIspWan" value="eth0"></div>
-          <div class="f"><label for="ifIspHq">ISP → HQ</label><input id="ifIspHq" value="eth1"></div>
-          <div class="f"><label for="ifIspBr">ISP → BR</label><input id="ifIspBr" value="eth2"></div>
-          <div class="f"><label for="ifHqWan">HQ-RTR → ISP</label><input id="ifHqWan" value="eth0"></div>
-          <div class="f"><label for="ifHqLan">HQ-RTR → HQ-Net</label><input id="ifHqLan" value="eth1"></div>
-          <div class="f"><label for="ifBrWan">BR-RTR → ISP</label><input id="ifBrWan" value="eth0"></div>
-          <div class="f"><label for="ifBrLan">BR-RTR → BR-Net</label><input id="ifBrLan" value="eth1"></div>
-          <div class="f"><label for="ifSrv">HQ-SRV / BR-SRV</label><input id="ifSrv" value="enp0s3"></div>
-          <div class="f"><label for="ifCli">HQ-CLI</label><input id="ifCli" value="enp0s3"></div>
-        </fieldset>
+        <details>
+          <summary><span class="num">3</span><span class="st"><b>Пользователи и SSH</b><span>Пункты 3 и 5 задания</span></span><svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></summary>
+          <div class="body"><div class="row">
+            <div class="f"><label for="adm">Логин на роутерах</label><input class="mono" id="adm" value="net_admin"></div>
+            <div class="f"><label for="su">Логин на серверах</label><input class="mono" id="su" value="sshuser"></div>
+            <div class="f"><label for="uid">UID на серверах</label><input class="mono" id="uid" value="2012" inputmode="numeric"></div>
+            <div class="f"><label for="pass">Пароль для обоих</label><input class="mono" id="pass" value="P@ssw0rd"></div>
+            <div class="f"><label for="sshPort">Порт SSH</label><input class="mono" id="sshPort" value="2012" inputmode="numeric"></div>
+            <div class="f"><label for="maxTries">Попыток входа</label><input class="mono" id="maxTries" value="2" inputmode="numeric"></div>
+            <div class="f full"><label for="banner">Текст баннера</label><input class="mono" id="banner" value="Authorized access only"><span class="hint">Только латиницей: VirtualBox не умеет печатать русские буквы.</span></div>
+          </div></div>
+        </details>
 
-        <fieldset>
-          <legend>Имена ВМ в VirtualBox</legend>
-          <div class="f"><label for="vmIsp">ISP</label><input id="vmIsp" value="ISP"></div>
-          <div class="f"><label for="vmHqRtr">HQ-RTR</label><input id="vmHqRtr" value="HQ-RTR"></div>
-          <div class="f"><label for="vmBrRtr">BR-RTR</label><input id="vmBrRtr" value="BR-RTR"></div>
-          <div class="f"><label for="vmHqSrv">HQ-SRV</label><input id="vmHqSrv" value="HQ-SRV"></div>
-          <div class="f"><label for="vmBrSrv">BR-SRV</label><input id="vmBrSrv" value="BR-SRV"></div>
-          <div class="f"><label for="vmHqCli">HQ-CLI</label><input id="vmHqCli" value="HQ-CLI"></div>
-        </fieldset>
+        <details>
+          <summary><span class="num">4</span><span class="st"><b>Домен, время и DNS</b><span>Пункты 9, 10 и 11</span></span><svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></summary>
+          <div class="body"><div class="row">
+            <div class="f"><label for="dom">Домен</label><input class="mono" id="dom" value="au-team.irpo"></div>
+            <div class="f"><label for="tz">Часовой пояс</label>
+              <select id="tz">
+                <option>Europe/Kaliningrad</option><option selected>Europe/Moscow</option><option>Europe/Samara</option>
+                <option>Asia/Yekaterinburg</option><option>Asia/Omsk</option><option>Asia/Novosibirsk</option>
+                <option>Asia/Krasnoyarsk</option><option>Asia/Irkutsk</option><option>Asia/Yakutsk</option>
+                <option>Asia/Vladivostok</option><option>Asia/Magadan</option><option>Asia/Kamchatka</option>
+              </select></div>
+            <div class="f"><label for="fwd1">Внешний DNS 1</label><input class="mono" id="fwd1" value="77.88.8.8"></div>
+            <div class="f"><label for="fwd2">Внешний DNS 2</label><input class="mono" id="fwd2" value="77.88.8.3"></div>
+            <div class="f full"><label for="dockerTo">Куда указывает docker.<span id="domHint">au-team.irpo</span></label>
+              <select id="dockerTo"><option value="hq" selected>На ISP в сторону HQ-RTR, а web на сторону BR-RTR</option><option value="br">На ISP в сторону BR-RTR, а web на сторону HQ-RTR</option></select>
+              <span class="hint">Сверьтесь с Таблицей 3 своего варианта.</span></div>
+          </div></div>
+        </details>
+
+        <details>
+          <summary><span class="num">5</span><span class="st"><b>Имена интерфейсов и ВМ</b><span>Посмотрите на машинах командой ip -br a</span></span><svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></summary>
+          <div class="body">
+            <div class="row">
+              <div class="f"><label for="ifIspWan">ISP → интернет</label><input class="mono" id="ifIspWan" value="eth0"></div>
+              <div class="f"><label for="ifIspHq">ISP → HQ</label><input class="mono" id="ifIspHq" value="eth1"></div>
+              <div class="f"><label for="ifIspBr">ISP → BR</label><input class="mono" id="ifIspBr" value="eth2"></div>
+              <div class="f"><label for="ifHqWan">HQ-RTR → ISP</label><input class="mono" id="ifHqWan" value="eth0"></div>
+              <div class="f"><label for="ifHqLan">HQ-RTR → офис</label><input class="mono" id="ifHqLan" value="eth1"></div>
+              <div class="f"><label for="ifBrWan">BR-RTR → ISP</label><input class="mono" id="ifBrWan" value="eth0"></div>
+              <div class="f"><label for="ifBrLan">BR-RTR → офис</label><input class="mono" id="ifBrLan" value="eth1"></div>
+              <div class="f"><label for="ifSrv">HQ-SRV и BR-SRV</label><input class="mono" id="ifSrv" value="enp0s3"></div>
+              <div class="f"><label for="ifCli">HQ-CLI</label><input class="mono" id="ifCli" value="enp0s3"></div>
+            </div>
+            <p class="hint">Имена ВМ нужны для команды VBoxManage. Пишите их так же, как в левом списке VirtualBox.</p>
+            <div class="row">
+              <div class="f"><label for="vmIsp">ВМ ISP</label><input class="mono" id="vmIsp" value="ISP"></div>
+              <div class="f"><label for="vmHqRtr">ВМ HQ-RTR</label><input class="mono" id="vmHqRtr" value="HQ-RTR"></div>
+              <div class="f"><label for="vmBrRtr">ВМ BR-RTR</label><input class="mono" id="vmBrRtr" value="BR-RTR"></div>
+              <div class="f"><label for="vmHqSrv">ВМ HQ-SRV</label><input class="mono" id="vmHqSrv" value="HQ-SRV"></div>
+              <div class="f"><label for="vmBrSrv">ВМ BR-SRV</label><input class="mono" id="vmBrSrv" value="BR-SRV"></div>
+              <div class="f"><label for="vmHqCli">ВМ HQ-CLI</label><input class="mono" id="vmHqCli" value="HQ-CLI"></div>
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary><span class="num">6</span><span class="st"><b>Поведение скриптов</b><span>Перезагрузка после базовой настройки</span></span><svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></summary>
+          <div class="body"><div class="f"><label for="autoReboot">После шага «База»</label>
+            <select id="autoReboot"><option value="no" selected>Не перезагружать, я наберу reboot сам</option><option value="yes">Сразу перезагрузить машину</option></select></div></div>
+        </details>
       </form>
-    </div>
-
-    <div class="panel out">
-      <div class="summary">
-        <div class="msgs" id="msgs"></div>
-        <div class="tbl"><table id="addrTable"></table></div>
-      </div>
-      <div class="tabs" role="tablist" id="tabs"></div>
-      <div class="view" id="view"></div>
-    </div>
+    </aside>
   </div>
 </div>
 <div class="toast" id="toast" role="status"></div>
@@ -207,14 +285,6 @@ function parseCidr(s){ const [a,b]=String(s).split('/'); const n=ip2n(a||''); co
   if(n===null||!Number.isInteger(p)||p<8||p>30) return null; return mkNet(n,p) }
 function prefixFor(n,rule){ n=+n; if(!(n>=4)) return null;
   let k = rule==='le' ? Math.floor(Math.log2(n)) : Math.ceil(Math.log2(n)); if(k<2) k=2; if(k>24) return null; return 32-k }
-
-// ---------- form ----------
-const form = $('#cfg');
-const ids = [...form.querySelectorAll('input,select')].map(e=>e.id);
-const defaults = {}; ids.forEach(id=>defaults[id]=document.getElementById(id).value);
-function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY)||'{}'); for(const k in s){ const el=document.getElementById(k); if(el) el.value=s[k] } }catch(e){} }
-function save(c){ try{ localStorage.setItem(KEY, JSON.stringify(c)) }catch(e){} }
-function read(){ const c={}; ids.forEach(id=>c[id]=document.getElementById(id).value.trim()); return c }
 
 // ---------- compute ----------
 function compute(c){
@@ -585,6 +655,15 @@ nslookup ${A.hqSrv} 127.0.0.1
 nslookup ya.ru 127.0.0.1
 echo DONE
 `});
+  const names={isp:'isp',hqrtr:'hq-rtr',brrtr:'br-rtr',hqsrv:'hq-srv',brsrv:'br-srv',hqrtr2:'hq-rtr-2',brrtr2:'br-rtr-2',hqcli:'hq-cli',hqsrv2:'hq-srv-2'};
+  const autoReboot = document.getElementById('autoReboot').value==='yes';
+  out.forEach(x=>{
+    const f=names[x.id]+'.sh';
+    const body=x.text.replace(/\necho DONE - now type: reboot\n$/, '\necho DONE\n');
+    const rb = autoReboot && /now type: reboot/.test(x.text);
+    x.sh=f;
+    x.text='set +H\ncat > /root/'+f+" << 'EOF_FINAL'\n"+body+'EOF_FINAL\nbash /root/'+f+(rb?' && reboot':'')+'\n';
+  });
   return {out,A,dockerIp,webIp};
 }
 
@@ -596,9 +675,10 @@ function orderText(list){
 Как отправить файл в ВМ
 1. Сохраните скрипт в C:\\1.txt
 2. Откройте C:\\Program Files\\Oracle\\VirtualBox, в адресной строке наберите cmd
-3. В ВМ под root, английская раскладка:   cat > s.sh
+3. В ВМ залогиньтесь под root, раскладка английская, курсор в приглашении #
 4. В cmd:   VBoxManage controlvm ИМЯ_ВМ keyboardputfile C:\\1.txt
-5. В ВМ нажмите Ctrl+D, проверьте cat s.sh, запустите bash s.sh
+5. Ничего нажимать не нужно: файл /root/<имя>.sh создастся и сразу запустится.
+   Перезапустить его вручную можно командой  bash /root/<имя>.sh
 `;
 }
 function reportText(c,r,g){
@@ -640,68 +720,133 @@ web.${c.dom} A ${g.webIp}
 `;
 }
 
-// ---------- render ----------
-let current='isp', lastList=[], lastExtra={};
-function esc(s){ return s.replace(/[&<>]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[ch])) }
+
+
+// ---------- UI ----------
+const ICONS={
+  router:'<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 8h6M8 5v6" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>',
+  server:'<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="10" height="5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="9" width="10" height="5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="5.5" cy="4.5" r=".9" fill="currentColor"/><circle cx="5.5" cy="11.5" r=".9" fill="currentColor"/></svg>',
+  client:'<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="8" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 14h6M8 11v3" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>'
+};
+const MACH=[
+  {key:'isp',name:'ISP',os:'Astra Linux',role:'router',steps:['isp']},
+  {key:'hqrtr',name:'HQ-RTR',os:'Astra Linux',role:'router',steps:['hqrtr','hqrtr2']},
+  {key:'brrtr',name:'BR-RTR',os:'Astra Linux',role:'router',steps:['brrtr','brrtr2']},
+  {key:'hqsrv',name:'HQ-SRV',os:'ALT Server',role:'server',steps:['hqsrv','hqsrv2']},
+  {key:'brsrv',name:'BR-SRV',os:'ALT Server',role:'server',steps:['brsrv']},
+  {key:'hqcli',name:'HQ-CLI',os:'ALT Рабочая станция',role:'client',steps:['hqcli']}
+];
+const STEPNAME={isp:'База',hqrtr:'База',hqrtr2:'OSPF и DHCP',brrtr:'База',brrtr2:'OSPF',hqsrv:'База',hqsrv2:'DNS',brsrv:'База',hqcli:'Сеть и имя'};
+const EXTRAS=[{key:'addr',name:'Таблица адресов'},{key:'order',name:'Порядок запуска'},{key:'report',name:'Текст для отчёта'}];
+
+let state={sel:'isp',step:0}, G=null, R=null, C=null, extraTexts={};
+try{ const s=JSON.parse(localStorage.getItem(KEY+'.ui')||'null'); if(s&&s.sel) state=s }catch(e){}
+function saveUi(){ try{ localStorage.setItem(KEY+'.ui',JSON.stringify(state)) }catch(e){} }
+
+function esc(s){ return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch])) }
+function hl(t){ return esc(t).split('\n').map(l=>/^\s*#/.test(l)?'<span class="cm">'+l+'</span>':l).join('\n') }
+
+const form=$('#cfg');
+const ids=[...form.querySelectorAll('input,select')].map(e=>e.id);
+const defaults={}; ids.forEach(id=>defaults[id]=document.getElementById(id).value);
+function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY)||'{}'); for(const k in s){ const el=document.getElementById(k); if(el) el.value=s[k] } }catch(e){} }
+function save(c){ try{ localStorage.setItem(KEY,JSON.stringify(c)) }catch(e){} }
+function read(){ const c={}; ids.forEach(id=>c[id]=document.getElementById(id).value.trim()); return c }
+
+function mainIp(key){
+  if(!G) return '—'; const A=G.A, L=R.lans;
+  return {isp:A.ispHq+' · '+A.ispBr, hqrtr:A.hqWan+' · '+A.hqSrvGw, brrtr:A.brWan+' · '+A.brGw,
+    hqsrv:A.hqSrv+'/'+L.srv.p, brsrv:A.brSrv+'/'+L.br.p, hqcli:A.hqCli+' (DHCP)'}[key];
+}
+function orderOf(id){ return G ? G.out.findIndex(x=>x.id===id)+1 : 0 }
+
+function renderStrip(){
+  const st=$('#strip'); st.innerHTML='';
+  MACH.forEach(m=>{
+    const b=document.createElement('button'); b.type='button'; b.className='mc '+m.role; b.setAttribute('aria-pressed',state.sel===m.key?'true':'false');
+    b.innerHTML='<div class="top"><span class="ic">'+ICONS[m.role]+'</span><div><div class="nm">'+m.name+'</div><div class="os">'+m.os+'</div></div></div>'+
+      '<div class="ip">'+esc(mainIp(m.key))+'</div><div class="steps">'+m.steps.map(s=>'<span class="chip">шаг '+orderOf(s)+'</span>').join('')+'</div>';
+    b.addEventListener('click',()=>{ state={sel:m.key,step:0}; saveUi(); renderStrip(); renderViewer() });
+    st.appendChild(b);
+  });
+  const ex=$('#extras'); ex.innerHTML='';
+  EXTRAS.forEach(x=>{ const b=document.createElement('button'); b.type='button'; b.className='xb'; b.textContent=x.name;
+    b.setAttribute('aria-pressed',state.sel===x.key?'true':'false');
+    b.addEventListener('click',()=>{ state={sel:x.key,step:0}; saveUi(); renderStrip(); renderViewer() }); ex.appendChild(b) });
+  if(!framed){ const z=document.createElement('button'); z.type='button'; z.className='xb'; z.textContent='Скачать всё (.zip)'; z.addEventListener('click',downloadZip); ex.appendChild(z) }
+}
+
+function msgsHtml(){
+  if(!R) return ''; let h='';
+  R.E.forEach(t=>h+='<div class="msg err">'+esc(t)+'</div>');
+  R.W.forEach(t=>h+='<div class="msg warn">'+esc(t)+'</div>');
+  if(G && G.out.some(x=>/[^\x00-\x7F]/.test(x.text))) h+='<div class="msg warn">В скриптах есть русские буквы (баннер, пароли или логины). VirtualBox печатает только латиницу.</div>';
+  return h?'<div class="msgs">'+h+'</div>':'';
+}
+
+function termHtml(fn,text,wrap){
+  return '<div class="term"><div class="tbar"><span class="fn">'+esc(fn)+'</span><div class="acts"><button type="button" class="tb primary" id="copyBtn">Копировать</button>'+
+    (framed?'':'<button type="button" class="tb" id="dlBtn">Скачать .txt</button>')+'</div></div><pre id="code"'+(wrap?' class="wrap"':'')+'>'+hl(text)+'</pre></div>';
+}
+
+function renderViewer(){
+  const v=$('#viewer');
+  if(!G){ v.innerHTML=msgsHtml()+'<p class="lead">Исправьте ошибки в настройках, и скрипты появятся здесь.</p>'; return }
+  const m=MACH.find(x=>x.key===state.sel);
+  if(m){
+    const sid=m.steps[Math.min(state.step,m.steps.length-1)], x=G.out.find(o=>o.id===sid);
+    const seg = m.steps.length>1 ? '<div class="seg" role="group" aria-label="Шаги">'+m.steps.map((s,i)=>'<button type="button" data-i="'+i+'" aria-pressed="'+(s===sid)+'"><span class="n">'+orderOf(s)+'</span>'+STEPNAME[s]+'</button>').join('')+'</div>' : '';
+    v.innerHTML=msgsHtml()+
+      '<div class="vh"><div><h2>'+esc(x.title)+'</h2><p>Шаг '+orderOf(sid)+' из '+G.out.length+' · '+esc(x.when)+'</p></div>'+seg+'</div>'+
+      '<div class="howto">'+
+        '<div class="hs"><b>1 · В виртуалке</b>Войдите под root, раскладка английская</div>'+
+        '<div class="hs"><b>2 · На Windows</b>Сохраните текст в C:\\1.txt и выполните в cmd из папки VirtualBox<code id="vbCmd">VBoxManage controlvm "'+esc(x.vm)+'" keyboardputfile C:\\1.txt</code></div>'+
+        '<div class="hs"><b>3 · Готово</b>Скрипт сам запишется в /root/'+esc(x.sh)+' и выполнится</div>'+
+      '</div>'+
+      termHtml('/root/'+x.sh+' · '+x.text.split('\n').length+' строк', x.text, false);
+    v.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{ state.step=+b.dataset.i; saveUi(); renderViewer() }));
+    wireTerm(x.text, String(orderOf(sid)).padStart(2,'0')+'_'+x.sh.replace('.sh','')+'.txt');
+    return;
+  }
+  if(state.sel==='addr'){ v.innerHTML=msgsHtml()+'<div class="vh"><div><h2>Таблица адресов</h2><p>Эти же данные идут в Таблицу 2 отчёта</p></div></div><div class="tbl">'+addrTable()+'</div>'; return }
+  const t=extraTexts[state.sel]; const title=state.sel==='order'?'Порядок запуска':'Текст для отчёта';
+  v.innerHTML=msgsHtml()+'<div class="vh"><div><h2>'+title+'</h2><p>'+(state.sel==='report'?'Скопируйте в Word и добавьте скриншоты проверок':'Запускайте строго по номерам шагов')+'</p></div></div>'+termHtml(state.sel+'.txt',t,true);
+  wireTerm(t, state.sel+'.txt');
+}
+function wireTerm(text,file){
+  $('#copyBtn').addEventListener('click',()=>copy(text));
+  const dl=$('#dlBtn'); if(dl) dl.addEventListener('click',()=>download(file,text));
+}
+function addrTable(){
+  const A=G.A, L=R.lans, c=C;
+  const rows=[
+    ['ISP',esc(c.ifIspWan),'DHCP от VirtualBox','DHCP'],['',esc(c.ifIspHq),A.ispHq+'/'+R.ispHq.p,''],['',esc(c.ifIspBr),A.ispBr+'/'+R.ispBr.p,''],
+    ['HQ-RTR',esc(c.ifHqWan),A.hqWan+'/'+R.ispHq.p,A.ispHq],['','vlan'+esc(c.srvVid),A.hqSrvGw+'/'+L.srv.p,''],['','vlan'+esc(c.cliVid),A.hqCliGw+'/'+L.cli.p,''],['','vlan'+esc(c.mgmtVid),A.hqMg+'/'+L.mgmt.p,''],['','gre1',A.tHq+'/'+R.tun.p,''],
+    ['BR-RTR',esc(c.ifBrWan),A.brWan+'/'+R.ispBr.p,A.ispBr],['',esc(c.ifBrLan),A.brGw+'/'+L.br.p,''],['','gre1',A.tBr+'/'+R.tun.p,''],
+    ['HQ-SRV','vlan'+esc(c.srvVid),A.hqSrv+'/'+L.srv.p,A.hqSrvGw],['HQ-CLI','vlan'+esc(c.cliVid),A.hqCli+'/'+L.cli.p+' (DHCP)',A.hqCliGw],['BR-SRV',esc(c.ifSrv),A.brSrv+'/'+L.br.p,A.brGw]];
+  return '<table><thead><tr><th>Устройство</th><th>Интерфейс</th><th>IP-адрес</th><th>Шлюз</th></tr></thead><tbody>'+rows.map(r=>'<tr><td>'+r.join('</td><td>')+'</td></tr>').join('')+'</tbody></table>';
+}
+
 function render(){
-  const c=read(); save(c);
-  const r=compute(c);
-  const msgs=$('#msgs'); msgs.innerHTML='';
-  r.E.forEach(t=>{ const d=document.createElement('div'); d.className='msg err'; d.textContent=t; msgs.appendChild(d) });
-  r.W.forEach(t=>{ const d=document.createElement('div'); d.className='msg warn'; d.textContent=t; msgs.appendChild(d) });
-  const ok = r.ispHq&&r.ispBr&&r.tun&&r.lans.srv&&r.lans.cli&&r.lans.mgmt&&r.lans.br;
-  if(!ok){ $('#addrTable').innerHTML=''; $('#tabs').innerHTML=''; $('#view').innerHTML='<p class="lead">Исправьте ошибки выше, и скрипты появятся здесь.</p>'; return }
-  const g=gen(c,r), A=g.A, L=r.lans;
-  const nonAscii = g.out.some(x=>/[^\x00-\x7F]/.test(x.text));
-  if(nonAscii){ const d=document.createElement('div'); d.className='msg warn'; d.textContent='В скриптах есть русские буквы (проверьте баннер и пароли). keyboardputfile печатает только латиницу.'; msgs.appendChild(d) }
-  $('#addrTable').innerHTML = `<thead><tr><th>Устройство</th><th>Интерфейс</th><th>IP-адрес</th><th>Шлюз</th></tr></thead><tbody>
-<tr><td>ISP</td><td>${esc(c.ifIspWan)} / ${esc(c.ifIspHq)} / ${esc(c.ifIspBr)}</td><td>DHCP / ${A.ispHq}/${r.ispHq.p} / ${A.ispBr}/${r.ispBr.p}</td><td>DHCP</td></tr>
-<tr><td>HQ-RTR</td><td>${esc(c.ifHqWan)}</td><td>${A.hqWan}/${r.ispHq.p}</td><td>${A.ispHq}</td></tr>
-<tr><td></td><td>vlan${esc(c.srvVid)} / vlan${esc(c.cliVid)} / vlan${esc(c.mgmtVid)}</td><td>${A.hqSrvGw}/${L.srv.p} / ${A.hqCliGw}/${L.cli.p} / ${A.hqMg}/${L.mgmt.p}</td><td></td></tr>
-<tr><td></td><td>gre1</td><td>${A.tHq}/${r.tun.p}</td><td></td></tr>
-<tr><td>BR-RTR</td><td>${esc(c.ifBrWan)} / ${esc(c.ifBrLan)} / gre1</td><td>${A.brWan}/${r.ispBr.p} / ${A.brGw}/${L.br.p} / ${A.tBr}/${r.tun.p}</td><td>${A.ispBr}</td></tr>
-<tr><td>HQ-SRV</td><td>vlan${esc(c.srvVid)}</td><td>${A.hqSrv}/${L.srv.p}</td><td>${A.hqSrvGw}</td></tr>
-<tr><td>HQ-CLI</td><td>vlan${esc(c.cliVid)} (DHCP)</td><td>${A.hqCli}/${L.cli.p}</td><td>${A.hqCliGw}</td></tr>
-<tr><td>BR-SRV</td><td>${esc(c.ifSrv)}</td><td>${A.brSrv}/${L.br.p}</td><td>${A.brGw}</td></tr></tbody>`;
-  // order: isp, hqrtr, brrtr, hqsrv, brsrv, hqrtr2, brrtr2, hqcli, hqsrv2
-  lastList=g.out;
-  lastExtra={ order:{id:'order',title:'Порядок и отправка',text:orderText(g.out)}, report:{id:'report',title:'Текст для отчёта',text:reportText(c,r,g)} };
-  const tabs=$('#tabs'); tabs.innerHTML='';
-  g.out.forEach((x,i)=>tabs.appendChild(tabBtn(x.id,String(i+1).padStart(2,'0'),x.machine+(g.out.findIndex(y=>y.machine===x.machine)<i?' · 2':''))));
-  tabs.appendChild(tabBtn('order','','Порядок'));
-  tabs.appendChild(tabBtn('report','','Отчёт'));
-  if(!framed) tabs.appendChild(zipBtn());
-  showTab(current);
+  C=read(); save(C); $('#domHint').textContent=C.dom||'домен';
+  R=compute(C);
+  const ok=R.ispHq&&R.ispBr&&R.tun&&R.lans.srv&&R.lans.cli&&R.lans.mgmt&&R.lans.br&&R.E.length===0;
+  G = ok ? gen(C,R) : null;
+  if(G){ extraTexts={order:orderText(G.out), report:reportText(C,R,G)} }
+  renderStrip(); renderViewer();
 }
-function tabBtn(id,n,label){ const bt=document.createElement('button'); bt.type='button'; bt.className='tab'; bt.setAttribute('role','tab'); bt.dataset.id=id;
-  bt.innerHTML=(n?'<span class="n">'+n+'</span>':'')+'<span>'+esc(label)+'</span>'; bt.addEventListener('click',()=>showTab(id)); return bt }
-function zipBtn(){ const bt=document.createElement('button'); bt.type='button'; bt.className='tab'; bt.textContent='Скачать всё (.zip)';
-  bt.addEventListener('click',downloadZip); return bt }
-function find(id){ return lastList.find(x=>x.id===id) || lastExtra[id] }
-function showTab(id){
-  let x=find(id); if(!x){ id='isp'; x=find(id) } current=id;
-  try{ localStorage.setItem(KEY+'.tab',id) }catch(e){}
-  document.querySelectorAll('.tab[data-id]').forEach(b=>b.setAttribute('aria-selected', b.dataset.id===id?'true':'false'));
-  const idx=lastList.indexOf(x), file = idx>=0 ? String(idx+1).padStart(2,'0')+'_'+x.machine+(x.id.endsWith('2')?'_step2':'')+'.txt' : x.id+'.txt';
-  const v=$('#view');
-  v.innerHTML=`<div class="vhead"><div><h2>${esc(x.title)}</h2>${x.when?'<p>'+esc(x.when)+' · '+x.text.split('\n').length+' строк</p>':''}</div>
-  <div class="btns"><button type="button" class="b" id="copyBtn">Копировать</button>${framed?'':'<button type="button" class="b ghost" id="dlBtn">Скачать .txt</button>'}</div></div>
-  ${x.vm?'<div class="cmd" id="cmdLine">VBoxManage controlvm "'+esc(x.vm)+'" keyboardputfile C:\\1.txt</div>':''}
-  <pre id="code"${x.id==='report'||x.id==='order'?' class="wrap"':''}>${esc(x.text)}</pre>`;
-  $('#copyBtn').addEventListener('click',()=>copy(x.text));
-  const dl=$('#dlBtn'); if(dl) dl.addEventListener('click',()=>download(file,x.text));
-}
+
 function copy(text){
-  const done=()=>toast('Скопировано');
   const fallback=()=>{ const sel=window.getSelection(), rg=document.createRange(); rg.selectNodeContents($('#code')); sel.removeAllRanges(); sel.addRange(rg); toast('Текст выделен, нажмите Ctrl+C') };
-  try{ navigator.clipboard.writeText(text).then(done,fallback) }catch(e){ fallback() }
+  try{ navigator.clipboard.writeText(text).then(()=>toast('Скопировано'),fallback) }catch(e){ fallback() }
 }
 function download(name,text){ const bl=new Blob([text],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(bl); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000) }
 function downloadZip(){
+  if(!G){ toast('Сначала исправьте ошибки в настройках'); return }
   if(!window.JSZip){ toast('Архиватор не загрузился, скачайте файлы по одному'); return }
   const z=new JSZip();
-  lastList.forEach((x,i)=>z.file(String(i+1).padStart(2,'0')+'_'+x.machine+(x.id.endsWith('2')?'_step2':'')+'.txt',x.text));
-  z.file('00_order.txt',lastExtra.order.text); z.file('report.txt',lastExtra.report.text);
+  G.out.forEach((x,i)=>z.file(String(i+1).padStart(2,'0')+'_'+x.sh.replace('.sh','')+'.txt',x.text));
+  z.file('00_order.txt',extraTexts.order); z.file('report.txt',extraTexts.report);
   z.generateAsync({type:'blob'}).then(bl=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(bl); a.download='module1_scripts.zip'; document.body.appendChild(a); a.click(); a.remove() });
 }
 let tt; function toast(t){ const e=$('#toast'); e.textContent=t; e.classList.add('on'); clearTimeout(tt); tt=setTimeout(()=>e.classList.remove('on'),1800) }
@@ -709,8 +854,7 @@ let tt; function toast(t){ const e=$('#toast'); e.textContent=t; e.classList.add
 $('#resetBtn').addEventListener('click',()=>{ ids.forEach(id=>document.getElementById(id).value=defaults[id]); render(); toast('Значения варианта 2 восстановлены') });
 form.addEventListener('input',render); form.addEventListener('change',render);
 form.addEventListener('submit',e=>e.preventDefault());
-load(); try{ current=localStorage.getItem(KEY+'.tab')||'isp' }catch(e){}
-render();
+load(); render();
 })();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
