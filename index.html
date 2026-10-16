@@ -1,0 +1,716 @@
+<title>Генератор Модуля 1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: console workbench — settings column on the left, generated scripts on the right, stacks on phones */
+:root{
+  --bg:#eaefed; --panel:#ffffff; --ink:#16201c; --muted:#5a6863; --line:#d0d9d5;
+  --accent:#0b7a58; --accent-ink:#ffffff; --code:#f4f7f6; --warn:#9a5a00; --warn-bg:#fff4e0; --err:#b3261e; --err-bg:#fdecea;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,"Courier New",monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1412; --panel:#161d1a; --ink:#e2eae6; --muted:#90a09a; --line:#283430;
+  --accent:#43c193; --accent-ink:#06130e; --code:#0b0f0d; --warn:#f0b35a; --warn-bg:#2a2112; --err:#ff8a80; --err-bg:#2c1513; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1412; --panel:#161d1a; --ink:#e2eae6; --muted:#90a09a; --line:#283430;
+  --accent:#43c193; --accent-ink:#06130e; --code:#0b0f0d; --warn:#f0b35a; --warn-bg:#2a2112; --err:#ff8a80; --err-bg:#2c1513; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:1380px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 20px}
+h1{font-size:1.5rem;margin:0;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+h1 small{font-family:var(--mono);font-weight:400;font-size:.8rem;color:var(--muted);margin-left:8px;letter-spacing:0}
+.lead{color:var(--muted);margin:0;max-width:70ch}
+.grid{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;min-width:0}
+form{padding:6px 16px 16px;display:flex;flex-direction:column;gap:4px}
+fieldset{border:0;border-top:1px solid var(--line);margin:0;padding:12px 0 6px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px}
+fieldset:first-of-type{border-top:0}
+legend{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--muted);padding:0;margin-bottom:6px;grid-column:1/-1}
+.f{display:flex;flex-direction:column;gap:3px;min-width:0}
+.f.full{grid-column:1/-1}
+label{font-size:.78rem;color:var(--muted)}
+input,select{font:inherit;font-family:var(--mono);font-size:.82rem;color:var(--ink);background:var(--code);border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.lan{grid-column:1/-1;display:grid;grid-template-columns:1.4fr .6fr 1.2fr .6fr;gap:6px;align-items:end}
+.lan .name{grid-column:1/-1;font-size:.8rem;font-weight:600;margin-top:4px}
+.lan .calc{grid-column:1/-1;font-family:var(--mono);font-size:.74rem;color:var(--accent)}
+.out{display:flex;flex-direction:column}
+.summary{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.8rem}
+th,td{text-align:left;padding:5px 10px 5px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+td{font-family:var(--mono);font-variant-numeric:tabular-nums}
+td:first-child{font-family:var(--sans);font-weight:600}
+.msgs{display:flex;flex-direction:column;gap:6px}
+.msg{font-size:.8rem;padding:6px 10px;border-radius:6px}
+.msg.warn{background:var(--warn-bg);color:var(--warn)}
+.msg.err{background:var(--err-bg);color:var(--err)}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.tab{font:inherit;font-size:.8rem;border:1px solid transparent;background:none;color:var(--ink);border-radius:6px;padding:5px 9px;cursor:pointer;display:flex;gap:6px;align-items:baseline}
+.tab .n{font-family:var(--mono);font-size:.7rem;color:var(--muted)}
+.tab:hover{border-color:var(--line)}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.tab[aria-selected="true"] .n{color:var(--accent-ink)}
+.view{padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.vhead{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.vhead h2{margin:0;font-size:1rem}
+.vhead p{margin:2px 0 0;color:var(--muted);font-size:.8rem}
+.btns{display:flex;gap:6px;flex-wrap:wrap}
+button.b{font:inherit;font-size:.8rem;font-weight:600;border-radius:6px;padding:6px 12px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink)}
+button.b.ghost{background:none;color:var(--accent)}
+pre.wrap{white-space:pre-wrap}
+pre{margin:0;background:var(--code);border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;max-height:70vh;font-family:var(--mono);font-size:.78rem;line-height:1.55;color:var(--ink);tab-size:2}
+.cmd{font-family:var(--mono);font-size:.76rem;background:var(--code);border:1px dashed var(--line);border-radius:6px;padding:8px 10px;overflow-x:auto;white-space:nowrap}
+.toast{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:6px;font-size:.82rem;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.reset{font:inherit;font-size:.78rem;background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Генератор Модуля 1 <small>09.02.06 · Astra + ALT</small></h1>
+      <p class="lead">Задайте сети и имена интерфейсов из своего варианта. Маски, адреса, диапазон DHCP и DNS-записи посчитаются сами, а скрипты для каждой машины обновятся сразу.</p>
+    </div>
+    <button class="reset" id="resetBtn" type="button">Сбросить к варианту 2</button>
+  </header>
+
+  <div class="grid">
+    <div class="panel">
+      <form id="cfg" autocomplete="off">
+        <fieldset>
+          <legend>Общее</legend>
+          <div class="f"><label for="dom">Домен</label><input id="dom" value="au-team.irpo"></div>
+          <div class="f"><label for="tz">Часовой пояс</label>
+            <select id="tz">
+              <option>Europe/Kaliningrad</option><option selected>Europe/Moscow</option><option>Europe/Samara</option>
+              <option>Asia/Yekaterinburg</option><option>Asia/Omsk</option><option>Asia/Novosibirsk</option>
+              <option>Asia/Krasnoyarsk</option><option>Asia/Irkutsk</option><option>Asia/Yakutsk</option>
+              <option>Asia/Vladivostok</option><option>Asia/Magadan</option><option>Asia/Kamchatka</option>
+            </select></div>
+          <div class="f"><label for="pass">Пароль пользователей</label><input id="pass" value="P@ssw0rd"></div>
+          <div class="f"><label for="ospfPass">Пароль OSPF (MD5)</label><input id="ospfPass" value="P@ssw0rd"></div>
+          <div class="f"><label for="adm">Пользователь роутеров</label><input id="adm" value="net_admin"></div>
+          <div class="f"><label for="su">Пользователь серверов</label><input id="su" value="sshuser"></div>
+          <div class="f"><label for="uid">UID пользователя серверов</label><input id="uid" value="2012" inputmode="numeric"></div>
+          <div class="f"><label for="sshPort">Порт SSH</label><input id="sshPort" value="2012" inputmode="numeric"></div>
+          <div class="f"><label for="maxTries">Попыток входа SSH</label><input id="maxTries" value="2" inputmode="numeric"></div>
+          <div class="f"><label for="tun">Тип туннеля</label><select id="tun"><option value="gre" selected>GRE</option><option value="ipip">IP in IP</option></select></div>
+          <div class="f full"><label for="banner">Баннер SSH</label><input id="banner" value="Authorized access only"></div>
+          <div class="f"><label for="fwd1">DNS пересылки 1</label><input id="fwd1" value="77.88.8.8"></div>
+          <div class="f"><label for="fwd2">DNS пересылки 2</label><input id="fwd2" value="77.88.8.3"></div>
+          <div class="f full"><label for="dockerTo">docker.* указывает на интерфейс ISP в сторону</label>
+            <select id="dockerTo"><option value="hq" selected>HQ-RTR (web.* тогда в сторону BR-RTR)</option><option value="br">BR-RTR (web.* тогда в сторону HQ-RTR)</option></select></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Сети между роутерами</legend>
+          <div class="f"><label for="netIspHq">ISP — HQ-RTR</label><input id="netIspHq" value="172.16.30.0/28"></div>
+          <div class="f"><label for="netIspBr">ISP — BR-RTR</label><input id="netIspBr" value="172.16.40.0/28"></div>
+          <div class="f"><label for="netTun">Туннель</label><input id="netTun" value="10.10.10.0/30"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Локальные сети (адрес · сколько адресов · правило · VLAN)</legend>
+          <div class="lan" data-lan="srv">
+            <div class="name">HQ-SRV</div>
+            <input id="srvBase" aria-label="HQ-SRV адрес сети" value="192.168.100.0">
+            <input id="srvN" aria-label="HQ-SRV число адресов" value="32" inputmode="numeric">
+            <select id="srvRule" aria-label="HQ-SRV правило"><option value="le" selected>≤ не более</option><option value="ge">≥ не менее</option></select>
+            <input id="srvVid" aria-label="VLAN HQ-SRV" value="112" inputmode="numeric">
+            <div class="calc" id="srvCalc"></div>
+          </div>
+          <div class="lan" data-lan="cli">
+            <div class="name">HQ-CLI</div>
+            <input id="cliBase" aria-label="HQ-CLI адрес сети" value="192.168.200.0">
+            <input id="cliN" aria-label="HQ-CLI число адресов" value="16" inputmode="numeric">
+            <select id="cliRule" aria-label="HQ-CLI правило"><option value="le">≤ не более</option><option value="ge" selected>≥ не менее</option></select>
+            <input id="cliVid" aria-label="VLAN HQ-CLI" value="212" inputmode="numeric">
+            <div class="calc" id="cliCalc"></div>
+          </div>
+          <div class="lan" data-lan="mgmt">
+            <div class="name">Управление</div>
+            <input id="mgmtBase" aria-label="Управление адрес сети" value="192.168.99.0">
+            <input id="mgmtN" aria-label="Управление число адресов" value="8" inputmode="numeric">
+            <select id="mgmtRule" aria-label="Управление правило"><option value="le" selected>≤ не более</option><option value="ge">≥ не менее</option></select>
+            <input id="mgmtVid" aria-label="VLAN управления" value="812" inputmode="numeric">
+            <div class="calc" id="mgmtCalc"></div>
+          </div>
+          <div class="lan" data-lan="br">
+            <div class="name">BR-SRV</div>
+            <input id="brBase" aria-label="BR-SRV адрес сети" value="192.168.0.0">
+            <input id="brN" aria-label="BR-SRV число адресов" value="16" inputmode="numeric">
+            <select id="brRule" aria-label="BR-SRV правило"><option value="le" selected>≤ не более</option><option value="ge">≥ не менее</option></select>
+            <span></span>
+            <div class="calc" id="brCalc"></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Имена интерфейсов (смотрите ip -br a)</legend>
+          <div class="f"><label for="ifIspWan">ISP → интернет</label><input id="ifIspWan" value="eth0"></div>
+          <div class="f"><label for="ifIspHq">ISP → HQ</label><input id="ifIspHq" value="eth1"></div>
+          <div class="f"><label for="ifIspBr">ISP → BR</label><input id="ifIspBr" value="eth2"></div>
+          <div class="f"><label for="ifHqWan">HQ-RTR → ISP</label><input id="ifHqWan" value="eth0"></div>
+          <div class="f"><label for="ifHqLan">HQ-RTR → HQ-Net</label><input id="ifHqLan" value="eth1"></div>
+          <div class="f"><label for="ifBrWan">BR-RTR → ISP</label><input id="ifBrWan" value="eth0"></div>
+          <div class="f"><label for="ifBrLan">BR-RTR → BR-Net</label><input id="ifBrLan" value="eth1"></div>
+          <div class="f"><label for="ifSrv">HQ-SRV / BR-SRV</label><input id="ifSrv" value="enp0s3"></div>
+          <div class="f"><label for="ifCli">HQ-CLI</label><input id="ifCli" value="enp0s3"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Имена ВМ в VirtualBox</legend>
+          <div class="f"><label for="vmIsp">ISP</label><input id="vmIsp" value="ISP"></div>
+          <div class="f"><label for="vmHqRtr">HQ-RTR</label><input id="vmHqRtr" value="HQ-RTR"></div>
+          <div class="f"><label for="vmBrRtr">BR-RTR</label><input id="vmBrRtr" value="BR-RTR"></div>
+          <div class="f"><label for="vmHqSrv">HQ-SRV</label><input id="vmHqSrv" value="HQ-SRV"></div>
+          <div class="f"><label for="vmBrSrv">BR-SRV</label><input id="vmBrSrv" value="BR-SRV"></div>
+          <div class="f"><label for="vmHqCli">HQ-CLI</label><input id="vmHqCli" value="HQ-CLI"></div>
+        </fieldset>
+      </form>
+    </div>
+
+    <div class="panel out">
+      <div class="summary">
+        <div class="msgs" id="msgs"></div>
+        <div class="tbl"><table id="addrTable"></table></div>
+      </div>
+      <div class="tabs" role="tablist" id="tabs"></div>
+      <div class="view" id="view"></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const framed = (function(){ try { return window.self !== window.top } catch(e){ return true } })();
+const KEY = 'm1gen.v1';
+
+// ---------- IP math ----------
+function ip2n(s){ const p=String(s).trim().split('.'); if(p.length!==4) return null; let n=0;
+  for(const x of p){ if(!/^\d{1,3}$/.test(x)||+x>255) return null; n=n*256+(+x) } return n }
+function n2ip(n){ return [n>>>24,(n>>>16)&255,(n>>>8)&255,n&255].join('.') }
+function maskN(p){ return p===0?0:((0xFFFFFFFF<<(32-p))>>>0) }
+function mkNet(ipn,p){ const m=maskN(p); const net=(ipn&m)>>>0; const size=Math.pow(2,32-p);
+  return {net, p, size, bc:net+size-1, mask:n2ip(m), aligned:net===ipn, h:i=>n2ip(net+i), cidr:n2ip(net)+'/'+p} }
+function parseCidr(s){ const [a,b]=String(s).split('/'); const n=ip2n(a||''); const p=+b;
+  if(n===null||!Number.isInteger(p)||p<8||p>30) return null; return mkNet(n,p) }
+function prefixFor(n,rule){ n=+n; if(!(n>=4)) return null;
+  let k = rule==='le' ? Math.floor(Math.log2(n)) : Math.ceil(Math.log2(n)); if(k<2) k=2; if(k>24) return null; return 32-k }
+
+// ---------- form ----------
+const form = $('#cfg');
+const ids = [...form.querySelectorAll('input,select')].map(e=>e.id);
+const defaults = {}; ids.forEach(id=>defaults[id]=document.getElementById(id).value);
+function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY)||'{}'); for(const k in s){ const el=document.getElementById(k); if(el) el.value=s[k] } }catch(e){} }
+function save(c){ try{ localStorage.setItem(KEY, JSON.stringify(c)) }catch(e){} }
+function read(){ const c={}; ids.forEach(id=>c[id]=document.getElementById(id).value.trim()); return c }
+
+// ---------- compute ----------
+function compute(c){
+  const W=[], E=[];
+  const ispHq=parseCidr(c.netIspHq), ispBr=parseCidr(c.netIspBr), tun=parseCidr(c.netTun);
+  if(!ispHq) E.push('Сеть ISP — HQ-RTR задана неверно. Формат: 172.16.30.0/28');
+  if(!ispBr) E.push('Сеть ISP — BR-RTR задана неверно. Формат: 172.16.40.0/28');
+  if(!tun) E.push('Сеть туннеля задана неверно. Формат: 10.10.10.0/30');
+  [['ISP — HQ-RTR',ispHq],['ISP — BR-RTR',ispBr],['туннеля',tun]].forEach(([n,x])=>{ if(x&&!x.aligned) W.push('Адрес сети '+n+' не на границе /'+x.p+', используется '+x.cidr) });
+  const lans={};
+  [['srv','HQ-SRV'],['cli','HQ-CLI'],['mgmt','Управление'],['br','BR-SRV']].forEach(([k,name])=>{
+    const base=ip2n(c[k+'Base']); const p=prefixFor(c[k+'N'],c[k+'Rule']); const calc=document.getElementById(k+'Calc');
+    if(base===null){ E.push(name+': адрес сети задан неверно'); calc.textContent='—'; return }
+    if(p===null){ E.push(name+': число адресов должно быть от 4'); calc.textContent='—'; return }
+    const net=mkNet(base,p); lans[k]=net;
+    if(!net.aligned) W.push(name+': адрес выровнен до границы /'+p+' → '+net.cidr);
+    const first=isPrivate(net.net);
+    if(!first) W.push(name+': сеть '+net.cidr+' не из частного диапазона RFC1918');
+    calc.textContent=net.cidr+' · маска '+net.mask+' · '+net.size+' адр., '+(net.size-2)+' хостов';
+  });
+  if(lans.cli && lans.cli.size<8) W.push('HQ-CLI: сеть слишком мала для диапазона DHCP');
+  const all=[['ISP — HQ-RTR',ispHq],['ISP — BR-RTR',ispBr],['туннель',tun],['HQ-SRV',lans.srv],['HQ-CLI',lans.cli],['Управление',lans.mgmt],['BR-SRV',lans.br]].filter(x=>x[1]);
+  for(let i=0;i<all.length;i++) for(let j=i+1;j<all.length;j++){ const a=all[i][1],b=all[j][1];
+    if(a.net<=b.bc && b.net<=a.bc) E.push('Сети «'+all[i][0]+'» и «'+all[j][0]+'» пересекаются') }
+  const vids=[c.srvVid,c.cliVid,c.mgmtVid];
+  vids.forEach(v=>{ if(!(+v>=1&&+v<=4094)) E.push('VLAN '+v+': номер должен быть от 1 до 4094') });
+  if(new Set(vids).size<3) E.push('Номера VLAN должны различаться');
+  return {W,E,ispHq,ispBr,tun,lans};
+}
+function isPrivate(n){ return (n>>>24)===10 || ((n>>>24)===172 && ((n>>>16)&255)>=16 && ((n>>>16)&255)<=31) || ((n>>>24)===192 && ((n>>>16)&255)===168) }
+
+// ---------- scripts ----------
+function users(user, uid, pass, alt){
+  return (uid?`useradd -m -u ${uid} ${user}`:`useradd -m -s /bin/bash ${user}`)+`
+echo '${user}:${pass}' | chpasswd
+`+(alt?`usermod -aG wheel ${user}
+control sudo public
+`:'')+`echo '${user} ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers.d/${user}
+chmod 440 /etc/sudoers.d/${user}`;
+}
+function sshBlock(c){
+  return `echo ${c.banner} > /etc/openssh/banner
+sed -i -E '/^#?(Port|AllowUsers|MaxAuthTries|Banner) /d' /etc/openssh/sshd_config
+cat >> /etc/openssh/sshd_config <<EOF
+Port ${c.sshPort}
+AllowUsers ${c.su}
+MaxAuthTries ${c.maxTries}
+Banner /etc/openssh/banner
+EOF
+systemctl restart sshd`;
+}
+function astraHead(name,short,c){
+  return `hostnamectl set-hostname ${short}.${c.dom}
+sed -i 's/^127.0.1.1.*/127.0.1.1 ${short}.${c.dom} ${short}/' /etc/hosts
+timedatectl set-timezone ${c.tz}
+systemctl disable --now NetworkManager network-manager 2>/dev/null`;
+}
+function ospfBlock(short, rid, nets, c){
+  return `grep -q orel /etc/apt/sources.list || echo 'deb http://dl.astralinux.ru/astra/stable/orel/repository orel main contrib non-free' >> /etc/apt/sources.list
+apt update
+apt install -y frr || apt install -y quagga
+
+OSPF='hostname ${short}
+!
+interface gre1
+ ip ospf network point-to-point
+ ip ospf authentication message-digest
+ ip ospf message-digest-key 1 md5 ${c.ospfPass}
+!
+router ospf
+ ospf router-id ${rid}
+ passive-interface default
+ no passive-interface gre1
+${nets.map(n=>' network '+n+' area 0').join('\n')}
+ area 0 authentication message-digest
+!'
+
+if [ -d /etc/frr ]; then
+ sed -i 's/^ospfd=no/ospfd=yes/' /etc/frr/daemons
+ echo "$OSPF" > /etc/frr/frr.conf
+ systemctl enable frr
+ systemctl restart frr
+else
+ echo 'hostname ${short}' > /etc/quagga/zebra.conf
+ echo "$OSPF" > /etc/quagga/ospfd.conf
+ sed -i 's/^zebra=no/zebra=yes/; s/^ospfd=no/ospfd=yes/' /etc/quagga/daemons 2>/dev/null
+ chown quagga:quagga /etc/quagga/*.conf
+ systemctl enable zebra ospfd 2>/dev/null
+ systemctl restart zebra ospfd 2>/dev/null || systemctl restart quagga
+fi`;
+}
+
+function gen(c,r){
+  const {ispHq,ispBr,tun,lans}=r; const s=lans.srv, cl=lans.cli, m=lans.mgmt, b=lans.br;
+  const A={ ispHq:ispHq.h(1), hqWan:ispHq.h(2), ispBr:ispBr.h(1), brWan:ispBr.h(2), tHq:tun.h(1), tBr:tun.h(2),
+    hqSrvGw:s.h(1), hqSrv:s.h(2), hqCliGw:cl.h(1), hqCli:cl.h(2), hqMg:m.h(1), brGw:b.h(1), brSrv:b.h(2) };
+  const D=c.dom, out=[];
+  const tunIf = c.tun;
+
+  out.push({id:'isp',vm:c.vmIsp,machine:'ISP',title:'Базовая настройка ISP',when:'Первым, затем reboot',text:
+`#!/bin/bash
+# ISP (Astra Linux CE). Check names: ip -br a
+WAN=${c.ifIspWan}
+HQ=${c.ifIspHq}
+BR=${c.ifIspBr}
+
+${astraHead('ISP','isp',c)}
+
+cat > /etc/network/interfaces <<EOF
+auto lo
+iface lo inet loopback
+
+auto $WAN
+iface $WAN inet dhcp
+ post-up iptables -t nat -A POSTROUTING -o $WAN -j MASQUERADE
+
+auto $HQ
+iface $HQ inet static
+ address ${A.ispHq}/${ispHq.p}
+
+auto $BR
+iface $BR inet static
+ address ${A.ispBr}/${ispBr.p}
+EOF
+
+echo net.ipv4.ip_forward=1 >> /etc/sysctl.conf
+sysctl -p
+
+echo DONE - now type: reboot
+`});
+
+  out.push({id:'hqrtr',vm:c.vmHqRtr,machine:'HQ-RTR',title:'Базовая настройка HQ-RTR',when:'После ISP, затем reboot',text:
+`#!/bin/bash
+# HQ-RTR (Astra Linux CE). Check names: ip -br a
+WAN=${c.ifHqWan}
+LAN=${c.ifHqLan}
+
+${astraHead('HQ-RTR','hq-rtr',c)}
+
+cat > /etc/network/interfaces <<EOF
+auto lo
+iface lo inet loopback
+
+auto $WAN
+iface $WAN inet static
+ address ${A.hqWan}/${ispHq.p}
+ gateway ${A.ispHq}
+ post-up iptables -t nat -A POSTROUTING -o $WAN -j MASQUERADE
+
+auto $LAN
+iface $LAN inet manual
+ up ip link set $LAN up
+
+auto vlan${c.srvVid}
+iface vlan${c.srvVid} inet static
+ pre-up ip link add link $LAN name vlan${c.srvVid} type vlan id ${c.srvVid} || true
+ address ${A.hqSrvGw}/${s.p}
+
+auto vlan${c.cliVid}
+iface vlan${c.cliVid} inet static
+ pre-up ip link add link $LAN name vlan${c.cliVid} type vlan id ${c.cliVid} || true
+ address ${A.hqCliGw}/${cl.p}
+
+auto vlan${c.mgmtVid}
+iface vlan${c.mgmtVid} inet static
+ pre-up ip link add link $LAN name vlan${c.mgmtVid} type vlan id ${c.mgmtVid} || true
+ address ${A.hqMg}/${m.p}
+
+auto gre1
+iface gre1 inet tunnel
+ mode ${tunIf}
+ address ${A.tHq}
+ netmask ${tun.mask}
+ local ${A.hqWan}
+ endpoint ${A.brWan}
+ ttl 64
+EOF
+
+echo net.ipv4.ip_forward=1 >> /etc/sysctl.conf
+sysctl -p
+echo nameserver ${c.fwd1} > /etc/resolv.conf
+
+${users(c.adm,'',c.pass,false)}
+
+echo DONE - now type: reboot
+`});
+
+  out.push({id:'brrtr',vm:c.vmBrRtr,machine:'BR-RTR',title:'Базовая настройка BR-RTR',when:'После HQ-RTR, затем reboot',text:
+`#!/bin/bash
+# BR-RTR (Astra Linux CE). Check names: ip -br a
+WAN=${c.ifBrWan}
+LAN=${c.ifBrLan}
+
+${astraHead('BR-RTR','br-rtr',c)}
+
+cat > /etc/network/interfaces <<EOF
+auto lo
+iface lo inet loopback
+
+auto $WAN
+iface $WAN inet static
+ address ${A.brWan}/${ispBr.p}
+ gateway ${A.ispBr}
+ post-up iptables -t nat -A POSTROUTING -o $WAN -j MASQUERADE
+
+auto $LAN
+iface $LAN inet static
+ address ${A.brGw}/${b.p}
+
+auto gre1
+iface gre1 inet tunnel
+ mode ${tunIf}
+ address ${A.tBr}
+ netmask ${tun.mask}
+ local ${A.brWan}
+ endpoint ${A.hqWan}
+ ttl 64
+EOF
+
+echo net.ipv4.ip_forward=1 >> /etc/sysctl.conf
+sysctl -p
+echo nameserver ${c.fwd1} > /etc/resolv.conf
+
+${users(c.adm,'',c.pass,false)}
+
+echo DONE - now type: reboot
+`});
+
+  const altOpts = (extra)=>`cat > OPTFILE <<EOF
+${extra}BOOTPROTO=static
+DISABLED=no
+NM_CONTROLLED=no
+CONFIG_IPV4=yes
+EOF`;
+
+  out.push({id:'hqsrv',vm:c.vmHqSrv,machine:'HQ-SRV',title:'Базовая настройка HQ-SRV',when:'После роутеров, затем reboot',text:
+`#!/bin/bash
+# HQ-SRV (ALT Server). Check name: ip -br a
+IF=${c.ifSrv}
+
+hostnamectl set-hostname hq-srv.${D}
+timedatectl set-timezone ${c.tz}
+
+mkdir -p /etc/net/ifaces/$IF
+rm -f /etc/net/ifaces/$IF/ipv4address /etc/net/ifaces/$IF/ipv4route
+${altOpts('TYPE=eth\n').replace('OPTFILE','/etc/net/ifaces/$IF/options')}
+
+mkdir -p /etc/net/ifaces/vlan${c.srvVid}
+${altOpts('TYPE=vlan\nHOST=$IF\nVID='+c.srvVid+'\n').replace('OPTFILE','/etc/net/ifaces/vlan'+c.srvVid+'/options')}
+echo ${A.hqSrv}/${s.p} > /etc/net/ifaces/vlan${c.srvVid}/ipv4address
+echo default via ${A.hqSrvGw} > /etc/net/ifaces/vlan${c.srvVid}/ipv4route
+echo nameserver ${c.fwd1} > /etc/net/ifaces/vlan${c.srvVid}/resolv.conf
+systemctl restart network
+
+${users(c.su,c.uid,c.pass,true)}
+
+${sshBlock(c)}
+
+echo DONE - now type: reboot
+`});
+
+  out.push({id:'brsrv',vm:c.vmBrSrv,machine:'BR-SRV',title:'Базовая настройка BR-SRV',when:'После роутеров, затем reboot',text:
+`#!/bin/bash
+# BR-SRV (ALT Server). Check name: ip -br a
+IF=${c.ifSrv}
+
+hostnamectl set-hostname br-srv.${D}
+timedatectl set-timezone ${c.tz}
+
+mkdir -p /etc/net/ifaces/$IF
+${altOpts('TYPE=eth\n').replace('OPTFILE','/etc/net/ifaces/$IF/options')}
+echo ${A.brSrv}/${b.p} > /etc/net/ifaces/$IF/ipv4address
+echo default via ${A.brGw} > /etc/net/ifaces/$IF/ipv4route
+echo nameserver ${A.hqSrv} > /etc/net/ifaces/$IF/resolv.conf
+echo nameserver ${c.fwd1} >> /etc/net/ifaces/$IF/resolv.conf
+echo search ${D} >> /etc/net/ifaces/$IF/resolv.conf
+systemctl restart network
+
+${users(c.su,c.uid,c.pass,true)}
+
+${sshBlock(c)}
+
+echo DONE - now type: reboot
+`});
+
+  out.push({id:'hqrtr2',vm:c.vmHqRtr,machine:'HQ-RTR',title:'OSPF и DHCP на HQ-RTR',when:'Когда ping '+c.fwd1+' проходит',text:
+`#!/bin/bash
+# HQ-RTR step 2: OSPF + DHCP. Needs internet (ping ${c.fwd1})
+
+${ospfBlock('hq-rtr',A.tHq,[tun.cidr,s.cidr,cl.cidr,m.cidr],c)}
+
+apt install -y dnsmasq
+cat > /etc/dnsmasq.conf <<EOF
+port=0
+interface=vlan${c.cliVid}
+dhcp-range=${cl.h(3)},${n2ip(cl.bc-1)},${cl.mask},12h
+dhcp-host=hq-cli,${A.hqCli}
+dhcp-option=3,${A.hqCliGw}
+dhcp-option=6,${A.hqSrv}
+domain=${D}
+dhcp-option=15,${D}
+EOF
+systemctl enable dnsmasq
+systemctl restart dnsmasq
+
+echo DONE - check: vtysh -c "show ip ospf neighbor"
+`});
+
+  out.push({id:'brrtr2',vm:c.vmBrRtr,machine:'BR-RTR',title:'OSPF на BR-RTR',when:'Когда ping '+c.fwd1+' проходит',text:
+`#!/bin/bash
+# BR-RTR step 2: OSPF. Needs internet (ping ${c.fwd1})
+
+${ospfBlock('br-rtr',A.tBr,[tun.cidr,b.cidr],c)}
+
+echo DONE - check: vtysh -c "show ip ospf neighbor"
+`});
+
+  out.push({id:'hqcli',vm:c.vmHqCli,machine:'HQ-CLI',title:'Настройка HQ-CLI',when:'После DHCP на HQ-RTR. В терминале su -',text:
+`#!/bin/bash
+# HQ-CLI (ALT Workstation, NetworkManager). Run as root
+IF=${c.ifCli}
+
+hostnamectl set-hostname hq-cli.${D}
+timedatectl set-timezone ${c.tz}
+
+nmcli -g UUID,TYPE con show | grep ethernet | cut -d: -f1 | xargs -r -n1 nmcli con delete
+nmcli con add type ethernet con-name lan ifname $IF ipv4.method disabled ipv6.method ignore
+nmcli con add type vlan con-name vlan${c.cliVid} ifname vlan${c.cliVid} dev $IF id ${c.cliVid} ipv4.method auto
+nmcli con mod vlan${c.cliVid} ipv4.dhcp-hostname hq-cli
+nmcli con up lan
+nmcli con up vlan${c.cliVid}
+
+ip -br a
+cat /etc/resolv.conf
+echo DONE
+`});
+
+  const dockerIp = c.dockerTo==='br'?A.ispBr:A.ispHq, webIp = c.dockerTo==='br'?A.ispHq:A.ispBr;
+  out.push({id:'hqsrv2',vm:c.vmHqSrv,machine:'HQ-SRV',title:'DNS на HQ-SRV',when:'Последним',text:
+`#!/bin/bash
+# HQ-SRV step 2: DNS (dnsmasq). Needs internet (ping ${c.fwd1})
+
+apt-get update
+apt-get install -y dnsmasq
+
+cat > /etc/dnsmasq.conf <<EOF
+no-resolv
+server=${c.fwd1}
+server=${c.fwd2}
+domain=${D}
+host-record=hq-rtr.${D},${A.hqSrvGw}
+host-record=hq-srv.${D},${A.hqSrv}
+host-record=hq-cli.${D},${A.hqCli}
+address=/br-rtr.${D}/${A.brGw}
+address=/br-srv.${D}/${A.brSrv}
+address=/docker.${D}/${dockerIp}
+address=/web.${D}/${webIp}
+EOF
+systemctl enable dnsmasq
+systemctl restart dnsmasq
+
+echo nameserver 127.0.0.1 > /etc/net/ifaces/vlan${c.srvVid}/resolv.conf
+echo search ${D} >> /etc/net/ifaces/vlan${c.srvVid}/resolv.conf
+systemctl restart network
+
+nslookup hq-cli.${D} 127.0.0.1
+nslookup ${A.hqSrv} 127.0.0.1
+nslookup ya.ru 127.0.0.1
+echo DONE
+`});
+  return {out,A,dockerIp,webIp};
+}
+
+// ---------- report & order ----------
+function orderText(list){
+  return 'Порядок запуска\n\n'+list.map((x,i)=>String(i+1).padStart(2,'0')+'  '+x.machine.padEnd(7)+'  '+x.title+'  ('+x.when+')').join('\n')+
+`
+
+Как отправить файл в ВМ
+1. Сохраните скрипт в C:\\1.txt
+2. Откройте C:\\Program Files\\Oracle\\VirtualBox, в адресной строке наберите cmd
+3. В ВМ под root, английская раскладка:   cat > s.sh
+4. В cmd:   VBoxManage controlvm ИМЯ_ВМ keyboardputfile C:\\1.txt
+5. В ВМ нажмите Ctrl+D, проверьте cat s.sh, запустите bash s.sh
+`;
+}
+function reportText(c,r,g){
+  const {lans,tun}=r, A=g.A;
+  return `Таблица 2. IP-адресация
+Устройство | IP-адрес | Шлюз по умолчанию
+HQ-RTR | ${A.hqWan}/${r.ispHq.p}; vlan${c.srvVid} ${A.hqSrvGw}/${lans.srv.p}; vlan${c.cliVid} ${A.hqCliGw}/${lans.cli.p}; vlan${c.mgmtVid} ${A.hqMg}/${lans.mgmt.p}; gre1 ${A.tHq}/${tun.p} | ${A.ispHq}
+BR-RTR | ${A.brWan}/${r.ispBr.p}; ${A.brGw}/${lans.br.p}; gre1 ${A.tBr}/${tun.p} | ${A.ispBr}
+HQ-SRV | ${A.hqSrv}/${lans.srv.p} | ${A.hqSrvGw}
+HQ-CLI | ${A.hqCli}/${lans.cli.p} (DHCP) | ${A.hqCliGw}
+BR-SRV | ${A.brSrv}/${lans.br.p} | ${A.brGw}
+
+Коммутация (п.4)
+Роль коммутатора HQ-SW выполняет внутренняя сеть VirtualBox HQ-Net. На HQ-RTR один адаптер (${c.ifHqLan}) работает как транк, на нём подынтерфейсы vlan${c.srvVid} (HQ-SRV), vlan${c.cliVid} (HQ-CLI), vlan${c.mgmtVid} (управление). HQ-SRV и HQ-CLI тегируют свой трафик сами (vlan${c.srvVid} и vlan${c.cliVid}).
+
+Туннель (п.6)
+Технология: ${c.tun==='gre'?'GRE':'IP in IP'}. Интерфейс gre1. HQ-RTR ${A.tHq}/${tun.p} (local ${A.hqWan}, remote ${A.brWan}), BR-RTR ${A.tBr}/${tun.p} (local ${A.brWan}, remote ${A.hqWan}).
+
+Динамическая маршрутизация (п.7)
+Протокол OSPF (link state), area 0, ПО FRR/Quagga. Все интерфейсы пассивные (passive-interface default), активен только gre1, поэтому соседство строится только между HQ-RTR и BR-RTR. Защита: аутентификация message-digest (MD5), ключ 1. Объявляемые сети HQ: ${tun.cidr}, ${lans.srv.cidr}, ${lans.cli.cidr}, ${lans.mgmt.cidr}. BR: ${tun.cidr}, ${lans.br.cidr}.
+
+NAT (п.2, п.8)
+На ISP, HQ-RTR и BR-RTR правило iptables MASQUERADE на внешнем интерфейсе, включена пересылка net.ipv4.ip_forward=1.
+
+DHCP (п.9)
+Сервер dnsmasq на HQ-RTR, интерфейс vlan${c.cliVid}. Подсеть ${lans.cli.cidr}, диапазон ${lans.cli.h(3)}–${n2ip(lans.cli.bc-1)}, для HQ-CLI закреплён ${A.hqCli}. Адрес роутера ${A.hqCliGw} исключён из выдачи. Шлюз ${A.hqCliGw}, DNS ${A.hqSrv}, DNS-суффикс ${c.dom}.
+
+DNS (п.10)
+Сервер dnsmasq на HQ-SRV, пересылка на ${c.fwd1} и ${c.fwd2}.
+hq-rtr.${c.dom} A,PTR ${A.hqSrvGw}
+br-rtr.${c.dom} A ${A.brGw}
+hq-srv.${c.dom} A,PTR ${A.hqSrv}
+hq-cli.${c.dom} A,PTR ${A.hqCli}
+br-srv.${c.dom} A ${A.brSrv}
+docker.${c.dom} A ${g.dockerIp}
+web.${c.dom} A ${g.webIp}
+
+Часовой пояс (п.11): ${c.tz} на всех машинах.
+`;
+}
+
+// ---------- render ----------
+let current='isp', lastList=[], lastExtra={};
+function esc(s){ return s.replace(/[&<>]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[ch])) }
+function render(){
+  const c=read(); save(c);
+  const r=compute(c);
+  const msgs=$('#msgs'); msgs.innerHTML='';
+  r.E.forEach(t=>{ const d=document.createElement('div'); d.className='msg err'; d.textContent=t; msgs.appendChild(d) });
+  r.W.forEach(t=>{ const d=document.createElement('div'); d.className='msg warn'; d.textContent=t; msgs.appendChild(d) });
+  const ok = r.ispHq&&r.ispBr&&r.tun&&r.lans.srv&&r.lans.cli&&r.lans.mgmt&&r.lans.br;
+  if(!ok){ $('#addrTable').innerHTML=''; $('#tabs').innerHTML=''; $('#view').innerHTML='<p class="lead">Исправьте ошибки выше, и скрипты появятся здесь.</p>'; return }
+  const g=gen(c,r), A=g.A, L=r.lans;
+  const nonAscii = g.out.some(x=>/[^\x00-\x7F]/.test(x.text));
+  if(nonAscii){ const d=document.createElement('div'); d.className='msg warn'; d.textContent='В скриптах есть русские буквы (проверьте баннер и пароли). keyboardputfile печатает только латиницу.'; msgs.appendChild(d) }
+  $('#addrTable').innerHTML = `<thead><tr><th>Устройство</th><th>Интерфейс</th><th>IP-адрес</th><th>Шлюз</th></tr></thead><tbody>
+<tr><td>ISP</td><td>${esc(c.ifIspWan)} / ${esc(c.ifIspHq)} / ${esc(c.ifIspBr)}</td><td>DHCP / ${A.ispHq}/${r.ispHq.p} / ${A.ispBr}/${r.ispBr.p}</td><td>DHCP</td></tr>
+<tr><td>HQ-RTR</td><td>${esc(c.ifHqWan)}</td><td>${A.hqWan}/${r.ispHq.p}</td><td>${A.ispHq}</td></tr>
+<tr><td></td><td>vlan${esc(c.srvVid)} / vlan${esc(c.cliVid)} / vlan${esc(c.mgmtVid)}</td><td>${A.hqSrvGw}/${L.srv.p} / ${A.hqCliGw}/${L.cli.p} / ${A.hqMg}/${L.mgmt.p}</td><td></td></tr>
+<tr><td></td><td>gre1</td><td>${A.tHq}/${r.tun.p}</td><td></td></tr>
+<tr><td>BR-RTR</td><td>${esc(c.ifBrWan)} / ${esc(c.ifBrLan)} / gre1</td><td>${A.brWan}/${r.ispBr.p} / ${A.brGw}/${L.br.p} / ${A.tBr}/${r.tun.p}</td><td>${A.ispBr}</td></tr>
+<tr><td>HQ-SRV</td><td>vlan${esc(c.srvVid)}</td><td>${A.hqSrv}/${L.srv.p}</td><td>${A.hqSrvGw}</td></tr>
+<tr><td>HQ-CLI</td><td>vlan${esc(c.cliVid)} (DHCP)</td><td>${A.hqCli}/${L.cli.p}</td><td>${A.hqCliGw}</td></tr>
+<tr><td>BR-SRV</td><td>${esc(c.ifSrv)}</td><td>${A.brSrv}/${L.br.p}</td><td>${A.brGw}</td></tr></tbody>`;
+  // order: isp, hqrtr, brrtr, hqsrv, brsrv, hqrtr2, brrtr2, hqcli, hqsrv2
+  lastList=g.out;
+  lastExtra={ order:{id:'order',title:'Порядок и отправка',text:orderText(g.out)}, report:{id:'report',title:'Текст для отчёта',text:reportText(c,r,g)} };
+  const tabs=$('#tabs'); tabs.innerHTML='';
+  g.out.forEach((x,i)=>tabs.appendChild(tabBtn(x.id,String(i+1).padStart(2,'0'),x.machine+(g.out.findIndex(y=>y.machine===x.machine)<i?' · 2':''))));
+  tabs.appendChild(tabBtn('order','','Порядок'));
+  tabs.appendChild(tabBtn('report','','Отчёт'));
+  if(!framed) tabs.appendChild(zipBtn());
+  showTab(current);
+}
+function tabBtn(id,n,label){ const bt=document.createElement('button'); bt.type='button'; bt.className='tab'; bt.setAttribute('role','tab'); bt.dataset.id=id;
+  bt.innerHTML=(n?'<span class="n">'+n+'</span>':'')+'<span>'+esc(label)+'</span>'; bt.addEventListener('click',()=>showTab(id)); return bt }
+function zipBtn(){ const bt=document.createElement('button'); bt.type='button'; bt.className='tab'; bt.textContent='Скачать всё (.zip)';
+  bt.addEventListener('click',downloadZip); return bt }
+function find(id){ return lastList.find(x=>x.id===id) || lastExtra[id] }
+function showTab(id){
+  let x=find(id); if(!x){ id='isp'; x=find(id) } current=id;
+  try{ localStorage.setItem(KEY+'.tab',id) }catch(e){}
+  document.querySelectorAll('.tab[data-id]').forEach(b=>b.setAttribute('aria-selected', b.dataset.id===id?'true':'false'));
+  const idx=lastList.indexOf(x), file = idx>=0 ? String(idx+1).padStart(2,'0')+'_'+x.machine+(x.id.endsWith('2')?'_step2':'')+'.txt' : x.id+'.txt';
+  const v=$('#view');
+  v.innerHTML=`<div class="vhead"><div><h2>${esc(x.title)}</h2>${x.when?'<p>'+esc(x.when)+' · '+x.text.split('\n').length+' строк</p>':''}</div>
+  <div class="btns"><button type="button" class="b" id="copyBtn">Копировать</button>${framed?'':'<button type="button" class="b ghost" id="dlBtn">Скачать .txt</button>'}</div></div>
+  ${x.vm?'<div class="cmd" id="cmdLine">VBoxManage controlvm "'+esc(x.vm)+'" keyboardputfile C:\\1.txt</div>':''}
+  <pre id="code"${x.id==='report'||x.id==='order'?' class="wrap"':''}>${esc(x.text)}</pre>`;
+  $('#copyBtn').addEventListener('click',()=>copy(x.text));
+  const dl=$('#dlBtn'); if(dl) dl.addEventListener('click',()=>download(file,x.text));
+}
+function copy(text){
+  const done=()=>toast('Скопировано');
+  const fallback=()=>{ const sel=window.getSelection(), rg=document.createRange(); rg.selectNodeContents($('#code')); sel.removeAllRanges(); sel.addRange(rg); toast('Текст выделен, нажмите Ctrl+C') };
+  try{ navigator.clipboard.writeText(text).then(done,fallback) }catch(e){ fallback() }
+}
+function download(name,text){ const bl=new Blob([text],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(bl); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000) }
+function downloadZip(){
+  if(!window.JSZip){ toast('Архиватор не загрузился, скачайте файлы по одному'); return }
+  const z=new JSZip();
+  lastList.forEach((x,i)=>z.file(String(i+1).padStart(2,'0')+'_'+x.machine+(x.id.endsWith('2')?'_step2':'')+'.txt',x.text));
+  z.file('00_order.txt',lastExtra.order.text); z.file('report.txt',lastExtra.report.text);
+  z.generateAsync({type:'blob'}).then(bl=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(bl); a.download='module1_scripts.zip'; document.body.appendChild(a); a.click(); a.remove() });
+}
+let tt; function toast(t){ const e=$('#toast'); e.textContent=t; e.classList.add('on'); clearTimeout(tt); tt=setTimeout(()=>e.classList.remove('on'),1800) }
+
+$('#resetBtn').addEventListener('click',()=>{ ids.forEach(id=>document.getElementById(id).value=defaults[id]); render(); toast('Значения варианта 2 восстановлены') });
+form.addEventListener('input',render); form.addEventListener('change',render);
+form.addEventListener('submit',e=>e.preventDefault());
+load(); try{ current=localStorage.getItem(KEY+'.tab')||'isp' }catch(e){}
+render();
+})();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
