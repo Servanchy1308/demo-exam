@@ -19,8 +19,8 @@ const B_=(id,icon,label,cls,title)=>'<button type="button" class="btn'+(cls?' '+
 // ---------- toolbar ----------
 function renderToolbar(){
   const t=$('#toolbar'), dd = C.lv==='H' && !S.customOn ? trapsDD(S.mask,m=>load('H',S.num,m)) : null;
-  t.innerHTML='<div class="codef lv-'+C.lv+'"><button type="button" id="prevBtn" aria-label="Предыдущий вариант">‹</button>'+
-    '<input id="codeIn" value="'+esc(codeOf(C))+'" spellcheck="false" autocomplete="off" aria-label="Код варианта" title="Впишите код и нажмите Enter"><button type="button" id="nextBtn" aria-label="Следующий вариант">›</button></div>'+
+  t.innerHTML='<div class="plate lv-'+C.lv+'"><span class="pl"><small>Вариант</small><b><span class="led"></span>'+LEVELS[C.lv].name+'</b></span><div class="codef lv-'+C.lv+'"><button type="button" id="prevBtn" aria-label="Предыдущий вариант">‹</button>'+
+    '<input id="codeIn" value="'+esc(codeOf(C))+'" spellcheck="false" autocomplete="off" aria-label="Код варианта" title="Впишите код и нажмите Enter"><button type="button" id="nextBtn" aria-label="Следующий вариант">›</button></div></div>'+
     '<div class="seg lvseg" role="group" aria-label="Сложность">'+Object.entries(LEVELS).map(([k,v])=>'<button type="button" class="lv-'+k+'" data-lv="'+k+'" aria-pressed="'+(C.lv===k)+'" title="'+esc(v.desc)+'"><span class="dot"></span>'+v.name+'</button>').join('')+'</div>'+
     (dd?dd.html:'')+'<span class="grow"></span>'+
     (S.customOn?'<button type="button" class="pill warn" id="unedit" title="Вернуть параметры, которые даёт код">Изменён вручную · вернуть</button>':'')+
@@ -44,8 +44,9 @@ function load(lv,num,mask){
 
 // ---------- nav ----------
 function renderNav(){
-  const items=[['variant','Вариант'],['solve','Решение'],['group','Группа',J.rows.length||'']];
-  $('#nav').innerHTML=items.map(([k,n,c])=>'<button type="button" data-v="'+k+'"'+(S.view===k?' aria-current="page"':'')+'>'+n+(c!==''&&c!=null?'<span class="cnt">'+c+'</span>':'')+'</button>').join('');
+  const n=J.rows.length;
+  const items=[['variant','doc','Вариант','Задание для студента и ключ с баллами'],['solve','term','Решение','Скрипты настройки и проверки стенда'],['group','people','Группа',n?'Студентов в журнале: '+n:'Ссылка для группы и журнал']];
+  $('#nav').innerHTML=items.map(([k,ic,title,hint])=>'<button type="button" data-v="'+k+'"'+(S.view===k?' aria-current="page"':'')+'><span class="ni">'+ICON[ic]+'</span><span class="nt"><b>'+title+'</b><span>'+hint+'</span></span></button>').join('');
   $('#nav').querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.v)));
   const g=$('#gearBtn'); g.setAttribute('aria-pressed',S.view==='settings');
 }
@@ -74,9 +75,14 @@ function renderVariant(m){
   const acts = S.sub==='task'
     ? B_('cpTask','copy','Скопировать для Word')+(canSave()?B_('dxTask','down','.docx','primary','Скачать задание в Word'):'')+(framed?'':B_('prTask','print','Печать'))
     : B_('cpKey','copy','Скопировать ключ')+(canSave()?B_('dlKey','down','.txt','','Скачать ключ и текст отчёта'):'');
-  m.innerHTML=(stu&&S.sub==='key'?'<div class="who"><span>Проверяете: <b>'+esc(stu.name)+'</b> · вариант '+esc(stu.code)+'. Отметки сохраняются в журнал.</span><button type="button" class="btn ghost" id="noStu">Проверять без студента</button></div>':'')+
+  const guide = store.get(KEY+'.guide',false) ? '' : '<section class="guide" aria-label="Как пользоваться"><div class="gh"><b>Как это работает</b><button type="button" class="lnk" id="guideOk">Понятно, скрыть</button></div><ol>'+
+    '<li><div><b>Выберите вариант</b><span>Сложность и номер на панели сверху. Каждый код, например '+esc(codeOf(C))+', всегда даёт один и тот же вариант.</span></div></li>'+
+    '<li><div><b>Раздайте группе</b><span>В разделе «Группа» создайте ссылку: студент введёт ФИ и получит свой вариант.</span></div></li>'+
+    '<li><div><b>Проверьте</b><span>Запустите скрипты проверки из раздела «Решение» и отметьте пункты в ключе.</span></div></li></ol></section>';
+  m.innerHTML=guide+(stu&&S.sub==='key'?'<div class="who"><span>Проверяете: <b>'+esc(stu.name)+'</b> · вариант '+esc(stu.code)+'. Отметки сохраняются в журнал.</span><button type="button" class="btn ghost" id="noStu">Проверять без студента</button></div>':'')+
     '<div class="bar"><div class="l">'+subSeg+'<button type="button" class="btn ghost" id="editBtn">'+ICON.edit+'<span class="lbl">Изменить вариант</span></button></div><div class="acts">'+(R.ok?acts:'')+'</div></div><div id="vbody" class="panel"></div>';
   m.querySelectorAll('[data-s]').forEach(b=>b.addEventListener('click',()=>{ S.sub=b.dataset.s; save(); renderVariant(m) }));
+  const gk=$('#guideOk'); if(gk) gk.addEventListener('click',()=>{ store.set(KEY+'.guide',true); renderVariant(m) });
   $('#editBtn').addEventListener('click',()=>{ S.editing=true; save(); renderVariant(m) });
   const ns=$('#noStu'); if(ns) ns.addEventListener('click',()=>{ S.student=null; save(); renderVariant(m) });
   const body=$('#vbody');
