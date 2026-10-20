@@ -336,4 +336,46 @@ function copyRich(html,text,el){
   plain();
 }
 function printSheets(parts){ const p=$('#printArea'); if(!p) return; p.innerHTML=parts.map(x=>'<article class="sheet">'+x+'</article>').join(''); window.print() }
+// ---------- theme & icons ----------
+const ICON={
+  sun:'<svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  moon:'<svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.2 10.2A5.6 5.6 0 0 1 5.8 2.8a5.6 5.6 0 1 0 7.4 7.4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  auto:'<svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2.2a5.8 5.8 0 0 1 0 11.6z" fill="currentColor"/></svg>',
+  gear:'<svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h6.5M12.5 4H14M2 8h1.5M7.5 8H14M2 12h8.5M14 12h0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/><circle cx="10.5" cy="4" r="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="5.5" cy="8" r="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12.5" cy="12" r="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>',
+  dice:'<svg class="i" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="5.5" cy="5.5" r="1.1" fill="currentColor"/><circle cx="10.5" cy="10.5" r="1.1" fill="currentColor"/><circle cx="8" cy="8" r="1.1" fill="currentColor"/></svg>',
+  chev:'<svg class="i chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  copy:'<svg class="i" viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 3.2V3a1.5 1.5 0 0 0-1.5-1.5h-6A1.5 1.5 0 0 0 2 3v6A1.5 1.5 0 0 0 3.5 10.5h.3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>',
+  down:'<svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8.5M4.5 7.2 8 10.7l3.5-3.5M2.5 13.5h11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  print:'<svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 6V2h7v4M4.5 11.5h-2V6h11v5.5h-2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><rect x="4.5" y="9.5" width="7" height="4.5" rx="1" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>',
+  edit:'<svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.8 2.7l2.5 2.5L6 12.5l-3.2.7.7-3.2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  back:'<svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  router:'<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 8h6M8 5v6" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>',
+  server:'<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="10" height="5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="9" width="10" height="5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="5.5" cy="4.5" r=".9" fill="currentColor"/><circle cx="5.5" cy="11.5" r=".9" fill="currentColor"/></svg>',
+  client:'<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="8" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 14h6M8 11v3" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>'
+};
+const HOST_THEME=document.documentElement.getAttribute('data-theme');
+let THEME=store.get('degen.theme','auto');
+function applyTheme(){ const r=document.documentElement;
+  if(THEME==='light'||THEME==='dark') r.setAttribute('data-theme',THEME); else if(HOST_THEME) r.setAttribute('data-theme',HOST_THEME); else r.removeAttribute('data-theme') }
+applyTheme();
+function mountTheme(el){
+  const draw=()=>{ el.innerHTML=[['light','sun','Светлая тема'],['dark','moon','Тёмная тема'],['auto','auto','Как в системе']].map(([k,ic,t])=>'<button type="button" data-th="'+k+'" aria-pressed="'+(THEME===k)+'" aria-label="'+t+'" title="'+t+'">'+ICON[ic]+'</button>').join('');
+    el.querySelectorAll('[data-th]').forEach(b=>b.addEventListener('click',()=>{ THEME=b.dataset.th; store.set('degen.theme',THEME); applyTheme(); draw() })) };
+  draw();
+}
+// popover helper: one open dropdown at a time, closes on outside click and Escape
+let ddOpen=false;
+document.addEventListener('click',e=>{ if(ddOpen&&!e.target.closest('.dd')){ ddOpen=false; const p=document.querySelector('.ddp'); if(p) p.hidden=true; const b=document.querySelector('.dd>button'); if(b) b.setAttribute('aria-expanded','false') } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&ddOpen){ ddOpen=false; const p=document.querySelector('.ddp'); if(p) p.hidden=true; const b=document.querySelector('.dd>button'); if(b){ b.setAttribute('aria-expanded','false'); b.focus() } } });
+function trapsDD(mask,onChange){
+  const n=TRAPS.filter((t,i)=>mask&(1<<i)).length;
+  const html='<div class="dd"><button type="button" class="btn" id="ddBtn" aria-expanded="'+ddOpen+'" aria-controls="ddPanel">Подвохи: '+n+' из '+TRAPS.length+ICON.chev+'</button>'+
+    '<div class="ddp" id="ddPanel" role="group" aria-label="Какие подвохи включить"'+(ddOpen?'':' hidden')+'>'+TRAPS.map((t,i)=>'<label class="ddi"><input type="checkbox" data-b="'+i+'"'+(mask&(1<<i)?' checked':'')+'>'+t[1]+'</label>').join('')+
+    '<div class="ddf"><button type="button" class="lnk" data-all="1">Включить все</button><button type="button" class="lnk" data-all="0">Выключить все</button></div></div></div>';
+  const wire=root=>{ const b=root.querySelector('#ddBtn'); if(!b) return;
+    b.addEventListener('click',()=>{ ddOpen=!ddOpen; root.querySelector('#ddPanel').hidden=!ddOpen; b.setAttribute('aria-expanded',ddOpen) });
+    root.querySelectorAll('#ddPanel [data-b]').forEach(x=>x.addEventListener('change',()=>onChange(mask^(1<<+x.dataset.b))));
+    root.querySelectorAll('#ddPanel [data-all]').forEach(x=>x.addEventListener('click',()=>onChange(x.dataset.all==='1'?ALLTRAPS:0))) };
+  return {html,wire};
+}
 // ===== end shared =====

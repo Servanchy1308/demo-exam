@@ -16,6 +16,6 @@ def page(title, body, js):
     if not pages: return head+tail
     return '<!doctype html>\n<html lang="ru">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'+head+'</head>\n<body>\n'+tail+'</body>\n</html>\n'
 out_t, out_s = ('../teacher.html','../index.html') if pages else ('../de-generator.html','../de-student.html')
-open(out_t,'w',encoding='utf-8').write(page('Генератор вариантов ДЭ', r('teacher.body.html'), r('teacher.js').replace('__STUDENT_URL__',student_url)))
+open(out_t,'w',encoding='utf-8').write(page('Генератор вариантов ДЭ', r('teacher.body.html'), (r('teacher.logic.js')+r('teacher.ui.js')).replace('__STUDENT_URL__',student_url)))
 open(out_s,'w',encoding='utf-8').write(page('Задание Модуля 1', r('student.body.html'), r('student.js')))
 print('built')
