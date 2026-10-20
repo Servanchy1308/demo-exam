@@ -2,7 +2,7 @@
 const STAND_DEF={ifIspWan:'eth0',ifIspHq:'eth1',ifIspBr:'eth2',ifHqWan:'eth0',ifHqLan:'eth1',ifBrWan:'eth0',ifBrLan:'eth1',ifSrv:'enp0s3',ifCli:'enp0s3',
   vmIsp:'ISP',vmHqRtr:'HQ-RTR',vmBrRtr:'BR-RTR',vmHqSrv:'HQ-SRV',vmBrSrv:'BR-SRV',vmHqCli:'HQ-CLI',autoReboot:'no',rtrOs:'astra',weights:WEIGHTS_DEF.slice()};
 const VIEWS=['variant','solve','group','settings'];
-let S = Object.assign({lv:'X',num:1,mask:ALLTRAPS,custom:null,view:'variant',sub:'task',editing:false,sel:'isp',step:0,mode:'auto',group:'students',student:null,prevView:'variant'}, store.get(KEY,{}));
+let S = Object.assign({lv:'X',num:1,mask:ALLTRAPS,custom:null,view:'variant',sub:'task',editing:false,sel:'isp',step:0,mode:'auto',group:'students',student:null,prevView:'variant',glink:null}, store.get(KEY,{}));
 if(!VIEWS.includes(S.view)) S.view='variant';
 let ST = Object.assign({},STAND_DEF,store.get(KEY+'.stand',{}));
 if(!Array.isArray(ST.weights)||ST.weights.length!==11) ST.weights=WEIGHTS_DEF.slice();
@@ -236,47 +236,89 @@ let jConfirm=false, B=Object.assign({lv:'X',count:15,start:1},store.get(KEY+'.ba
 function renderGroup(m){
   const prevNames=$('#jNames')?$('#jNames').value:'';
   m.innerHTML='<div class="bar"><div class="l"><div class="seg" role="group" aria-label="Раздел группы"><button type="button" data-g="students" aria-pressed="'+(S.group==='students')+'">Студенты</button><button type="button" data-g="batch" aria-pressed="'+(S.group==='batch')+'">Пакет вариантов</button></div></div><div class="acts" id="gActs"></div></div>'+
-    (STUDENT_URL.startsWith('http')?'<div class="linkbox"><span>Страница для студентов, без ключа и скриптов:</span><code id="stuUrl">'+esc(STUDENT_URL)+'</code><button type="button" class="lnk" id="jLink">Скопировать</button></div>':'')+
+
     '<div id="gBody" class="panel"></div>';
   m.querySelectorAll('[data-g]').forEach(b=>b.addEventListener('click',()=>{ S.group=b.dataset.g; save(); renderGroup(m) }));
-  const lk=$('#jLink'); if(lk) lk.addEventListener('click',()=>copyText(STUDENT_URL,$('#stuUrl')));
   if(S.group==='batch') return renderBatch($('#gBody'));
   renderStudents($('#gBody'),prevNames);
 }
+const glinkUrl = g => STUDENT_URL.replace(/#.*$/,'')+'#'+groupToken(g);
+function linkCard(){
+  const g=S.glink;
+  if(!g) return '<section class="card"><h3>Ссылка для группы <small>студент сам вводит ФИ</small></h3>'+
+    '<p class="sub">Студент открывает ссылку, вводит фамилию и имя и получает личный вариант. Вариант считается из ФИ, поэтому здесь он получится таким же: добавьте студента в журнал с тем же ФИ.</p>'+
+    '<div class="inline"><div class="f"><label for="gLv">Сложность</label><select id="gLv">'+Object.entries(LEVELS).map(([k,v])=>'<option value="'+k+'"'+(S.lv===k?' selected':'')+'>'+v.name+'</option>').join('')+'</select></div>'+
+    '<button type="button" class="btn primary" id="gMake">Создать ссылку</button></div>'+
+    '<div class="inline"><div class="f" style="flex:1;min-width:240px"><label for="gPaste">Или вставьте ссылку, созданную раньше</label><input id="gPaste" class="mono" placeholder="…#g.X.abc123" spellcheck="false" style="width:100%"></div><button type="button" class="btn" id="gUse">Использовать</button></div>'+
+    '<p class="hint">Для «С подвохами» берутся подвохи, выбранные сейчас на панели вверху.</p></section>';
+  const url=glinkUrl(g);
+  return '<section class="card"><h3>Ссылка для группы <small><span class="lvtag lv-'+g.lv+'"><span class="dot"></span>'+esc(LEVELS[g.lv].name)+(g.lv==='H'?' · подвохов '+TRAPS.filter((t,i)=>g.mask&(1<<i)).length+' из '+TRAPS.length:'')+'</span></small></h3>'+
+    '<div class="send" style="background:var(--surface)"><code id="gUrl" style="flex:1">'+esc(url)+'</code><button type="button" class="btn primary" id="gCopy">'+ICON.copy+'Скопировать</button></div>'+
+    '<p class="sub" style="margin:0">Отправьте ссылку группе. Студент вводит ФИ, видит свой код варианта и задание. Новая ссылка выдаст всем другие варианты, поэтому меняйте её только для новой группы.</p>'+
+    '<div class="inline"><div class="f" style="flex:1;min-width:220px"><label for="gFind">Узнать вариант студента по ФИ</label><input id="gFind" placeholder="Иванов Иван" spellcheck="false" style="width:100%"></div><div id="gRes" class="ef" style="min-height:38px"></div></div>'+
+    (gConfirm?'<span class="confirm">Создать новую ссылку? У студентов по старой ссылке варианты не совпадут с журналом.<button type="button" class="btn" id="gNewYes">Да, новая ссылка</button><button type="button" class="btn" id="gNewNo">Отмена</button></span>':'<div><button type="button" class="lnk" id="gNew">Создать другую ссылку</button></div>')+'</section>';
+}
+let gConfirm=false;
+function wireLinkCard(body){
+  const mk=$('#gMake'); if(mk) mk.addEventListener('click',()=>{ const lv=$('#gLv').value; S.glink={lv,mask:lv==='H'?S.mask:ALLTRAPS,seed:newSeed()}; save(); renderStudents(body); toast('Ссылка создана') });
+  const use=$('#gUse'); if(use) use.addEventListener('click',()=>{ const g=parseGroup(($('#gPaste').value||'').replace(/^.*#/,'')); if(!g){ toast('Это не ссылка группы: в конце должно быть #g.X.…'); return } S.glink=g; save(); renderStudents(body) });
+  const cp=$('#gCopy'); if(cp) cp.addEventListener('click',()=>copyText(glinkUrl(S.glink),$('#gUrl')));
+  const nw=$('#gNew'); if(nw) nw.addEventListener('click',()=>{ gConfirm=true; renderStudents(body) });
+  const ny=$('#gNewYes'); if(ny) ny.addEventListener('click',()=>{ gConfirm=false; S.glink=null; save(); renderStudents(body) });
+  const nn=$('#gNewNo'); if(nn) nn.addEventListener('click',()=>{ gConfirm=false; renderStudents(body) });
+  const fi=$('#gFind'); if(fi){ const show=()=>{ const v=fi.value, res=$('#gRes');
+      if(!nameOk(v)){ res.innerHTML=v.trim()?'<span class="hint">Нужны фамилия и имя</span>':''; return }
+      const code=codeForName(S.glink,v), p=parseCode(code);
+      res.innerHTML='<span class="pill" style="font-size:.85rem;padding:5px 12px"><span class="lvtag lv-'+p.lv+'"><span class="dot"></span>'+esc(code)+'</span></span><button type="button" class="rowbtn" id="gOpenT">Задание</button><button type="button" class="rowbtn" id="gOpenK">Ключ</button><button type="button" class="rowbtn" id="gAddOne">В журнал</button>';
+      const open=sub=>{ S.view='variant'; S.sub=sub; load(p.lv,p.num,p.mask); renderNav(); window.scrollTo({top:0}) };
+      $('#gOpenT').addEventListener('click',()=>open('task')); $('#gOpenK').addEventListener('click',()=>open('key'));
+      $('#gAddOne').addEventListener('click',async()=>{ const name=prettyName(v);
+        if(J.rows.some(r=>normName(r.name)===normName(name))){ toast(name+' уже в журнале'); return }
+        try{ await J.add({name,code,done:[],score:0,order:J.rows.length+1,created:new Date().toISOString()}); toast('Добавлен: '+name); fi.value=''; res.innerHTML='' }catch(e){ toast('Не удалось записать в журнал') } }) };
+    fi.addEventListener('input',show) }
+}
 function addForm(open,prevNames){
-  const next = J.rows.length ? Math.max(...J.rows.map(r=>(parseCode(r.code)||{num:0}).num))+1 : 1;
+  const next = J.rows.length ? Math.max(...J.rows.map(r=>(parseCode(r.code)||{num:0}).num))+1 : 1, g=S.glink;
   const inner='<div class="f"><label for="jNames">Список группы, по одному на строку</label><textarea id="jNames" placeholder="Иванов Иван&#10;Петрова Анна&#10;Сидоров Пётр">'+esc(prevNames||'')+'</textarea></div>'+
-    '<div class="inline"><div class="f"><label for="jLv">Сложность</label><select id="jLv">'+Object.entries(LEVELS).map(([k,v])=>'<option value="'+k+'"'+(S.lv===k?' selected':'')+'>'+v.name+'</option>').join('')+'</select></div>'+
-    '<div class="f"><label for="jStart">Первый номер</label><input id="jStart" class="mono w-n" inputmode="numeric" value="'+next+'"></div><button type="button" class="btn primary" id="jAdd">Раздать варианты</button></div>'+
-    '<p class="hint">Каждый получит свой вариант, номера идут подряд. Для уровня «С подвохами» берутся подвохи, выбранные сейчас на панели вверху.</p>';
-  return '<details class="fold"'+(open?' open':'')+'><summary>Добавить студентов'+ICON.chev+'</summary><div class="fb">'+inner+'</div></details>';
+    '<div class="inline">'+(g?'<div class="f"><label for="jMode">Как выдать варианты</label><select id="jMode"><option value="link" selected>Как по ссылке группы (по ФИ)</option><option value="seq">Номера подряд</option></select></div>':'')+
+    '<div class="f" id="seqF"'+(g?' hidden':'')+'><label for="jLv">Сложность</label><select id="jLv">'+Object.entries(LEVELS).map(([k,v])=>'<option value="'+k+'"'+(S.lv===k?' selected':'')+'>'+v.name+'</option>').join('')+'</select></div>'+
+    '<div class="f" id="seqS"'+(g?' hidden':'')+'><label for="jStart">Первый номер</label><input id="jStart" class="mono w-n" inputmode="numeric" value="'+next+'"></div><button type="button" class="btn primary" id="jAdd">Добавить</button></div>'+
+    '<p class="hint">'+(g?'По ссылке группы каждый получит тот же вариант, что увидит сам, когда введёт ФИ.':'Каждый получит свой вариант, номера идут подряд. Создайте ссылку группы выше, чтобы студенты вводили ФИ сами.')+'</p>';
+  return '<details class="fold"'+(open?' open':'')+'><summary>Добавить студентов списком'+ICON.chev+'</summary><div class="fb">'+inner+'</div></details>';
 }
 function renderStudents(body,prevNames){
   const rows=J.rows, tw=totalW();
-  const mode = J.mode==='db' ? 'Журнал общий: его видно с любого устройства, где открыта эта страница.' : J.mode==='local' ? 'Журнал хранится в этом браузере.' : 'Подключаю журнал…';
+  const mode = J.mode==='db' ? 'журнал общий для всех ваших устройств' : J.mode==='local' ? 'журнал хранится в этом браузере' : 'подключаю журнал…';
+  const dup={}; rows.forEach(r=>{ dup[r.code]=(dup[r.code]||0)+1 });
   const acts=$('#gActs');
   acts.innerHTML=rows.length?((canSave()?B_('jCsv','down','Журнал .csv'):'')+(jConfirm?'<span class="confirm">Удалить весь журнал?<button type="button" class="btn" id="jYes">Да, удалить</button><button type="button" class="btn" id="jNo">Отмена</button></span>':'<button type="button" class="btn ghost" id="jClear">Очистить</button>')):'';
-  body.innerHTML=(rows.length?'<section class="card"><h3>Группа <small>'+mode+(J.err?' Ошибка: '+esc(J.err):'')+'</small></h3><div class="tbl"><table class="dt"><thead><tr><th>№</th><th>Студент</th><th>Вариант</th><th>Баллы</th><th>Проверен</th><th></th></tr></thead><tbody>'+
-      rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.name)+'</td><td>'+esc(r.code)+'</td><td>'+(r.done&&r.done.length?'<span class="pill ok">'+fmt(r.score||0)+' из '+fmt(tw)+'</span>':'<span class="pill">не проверен</span>')+'</td><td>'+(r.updated?esc(new Date(r.updated).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})):'')+'</td>'+
+  body.innerHTML=linkCard()+(rows.length?'<section class="card"><h3>Журнал <small>'+rows.length+' · '+mode+(J.err?' · ошибка: '+esc(J.err):'')+'</small></h3><div class="tbl"><table class="dt"><thead><tr><th>№</th><th>Студент</th><th>Вариант</th><th>Баллы</th><th>Проверен</th><th></th></tr></thead><tbody>'+
+      rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td class="nm">'+esc(r.name)+'</td><td>'+esc(r.code)+(dup[r.code]>1?' <span class="pill warn" title="Такой же вариант у другого студента">повтор</span>':'')+'</td><td>'+(r.done&&r.done.length?'<span class="pill ok">'+fmt(r.score||0)+' из '+fmt(tw)+'</span>':'<span class="pill">не проверен</span>')+'</td><td>'+(r.updated?esc(new Date(r.updated).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})):'')+'</td>'+
         '<td><div class="act"><button type="button" class="rowbtn" data-k="'+esc(r.id)+'">Проверить</button><button type="button" class="rowbtn" data-t="'+esc(r.id)+'">Задание</button><button type="button" class="rowbtn del" data-d="'+esc(r.id)+'" aria-label="Удалить '+esc(r.name)+'" title="Удалить">×</button></div></td></tr>').join('')+'</tbody></table></div></section>'+addForm(!!prevNames,prevNames)
-    : '<div class="empty"><b>В журнале пока никого</b>Вставьте список группы: каждый студент получит свой вариант, а баллы за проверку будут храниться здесь.<br>'+mode+'</div>'+addForm(true,prevNames));
+    : '<div class="empty"><b>В журнале пока никого</b>Добавьте студентов списком или по одному через поиск по ФИ. Баллы за проверку будут храниться здесь, '+mode+'.</div>'+addForm(true,prevNames));
+  wireLinkCard(body);
   const open=(id,sub)=>{ const r=J.rows.find(x=>x.id===id); const p=r&&parseCode(r.code); if(!p) return; S.view='variant'; S.sub=sub; load(p.lv,p.num,p.mask); if(sub==='key'){ S.student=id; save(); renderMain() } renderNav(); window.scrollTo({top:0}) };
   body.querySelectorAll('[data-k]').forEach(b=>b.addEventListener('click',()=>open(b.dataset.k,'key')));
   body.querySelectorAll('[data-t]').forEach(b=>b.addEventListener('click',()=>open(b.dataset.t,'task')));
   body.querySelectorAll('[data-d]').forEach(b=>b.addEventListener('click',()=>J.remove(b.dataset.d).catch(()=>toast('Не удалось удалить'))));
+  const jm=$('#jMode'); if(jm) jm.addEventListener('change',()=>{ const seq=jm.value==='seq'; $('#seqF').hidden=!seq; $('#seqS').hidden=!seq });
   $('#jAdd').addEventListener('click',async()=>{
-    const names=$('#jNames').value.split('\n').map(s=>s.trim()).filter(Boolean); if(!names.length){ toast('Вставьте хотя бы одно имя'); $('#jNames').focus(); return }
-    const lv=$('#jLv').value, start=Math.max(1,parseInt($('#jStart').value,10)||1), base=J.rows.length;
-    $('#jNames').value='';
-    try{ for(let i=0;i<names.length;i++){ const c=makeVariant(lv,start+i,lv==='H'?S.mask:ALLTRAPS); await J.add({name:names[i].slice(0,120),code:codeOf(c),done:[],score:0,order:base+i+1,created:new Date().toISOString()}) }
-      toast('Добавлено студентов: '+names.length) }catch(e){ toast('Не удалось записать в журнал') }
+    const names=$('#jNames').value.split('\n').map(s=>prettyName(s)).filter(Boolean); if(!names.length){ toast('Вставьте хотя бы одно имя'); $('#jNames').focus(); return }
+    const byLink = S.glink && (!jm || jm.value==='link');
+    if(byLink){ const bad=names.filter(n=>!nameOk(n)); if(bad.length){ toast('Нужны фамилия и имя: '+bad[0]); return } }
+    const lv=$('#jLv').value, start=Math.max(1,parseInt($('#jStart').value,10)||1), base=J.rows.length, have=new Set(J.rows.map(r=>normName(r.name)));
+    $('#jNames').value=''; let added=0, skipped=0;
+    try{ for(let i=0;i<names.length;i++){ if(have.has(normName(names[i]))){ skipped++; continue } have.add(normName(names[i]));
+        const code = byLink ? codeForName(S.glink,names[i]) : codeOf(makeVariant(lv,start+i,lv==='H'?S.mask:ALLTRAPS));
+        await J.add({name:names[i].slice(0,120),code,done:[],score:0,order:base+added+1,created:new Date().toISOString()}); added++ }
+      toast('Добавлено: '+added+(skipped?', уже были в журнале: '+skipped:'')) }catch(e){ toast('Не удалось записать в журнал') }
   });
   const cl=$('#jClear'); if(cl) cl.addEventListener('click',()=>{ jConfirm=true; renderStudents(body) });
   const no=$('#jNo'); if(no) no.addEventListener('click',()=>{ jConfirm=false; renderStudents(body) });
   const yes=$('#jYes'); if(yes) yes.addEventListener('click',async()=>{ jConfirm=false; for(const r of J.rows.slice()) await J.remove(r.id).catch(()=>{}); toast('Журнал очищен') });
   const csv=$('#jCsv'); if(csv) csv.addEventListener('click',()=>{ const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
     const lines=[['№','Студент','Вариант'].concat(ITEM_NAMES.map((n,i)=>(i+1)+'. '+n)).concat(['Баллы','Из','Проверен']).map(q).join(';')].concat(J.rows.map((r,i)=>[i+1,r.name,r.code].concat(ITEM_NAMES.map((n,k)=>(r.done||[]).includes(k)?fmt(+ST.weights[k]||0):'0')).concat([fmt(r.score||0),fmt(tw),r.updated||'']).map(q).join(';')));
-    saveFile('journal.csv','\ufeff'+lines.join('\r\n')) });
+    saveFile('journal.csv','﻿'+lines.join('\r\n')) });
 }
 function batchList(){ const out=[]; for(let i=0;i<B.count;i++){ const c=makeVariant(B.lv,B.start+i,B.lv==='H'?S.mask:ALLTRAPS), r=compute(c); out.push({c,r,A:r.ok?addrs(c,r):null}) } return out }
 function renderBatch(body){

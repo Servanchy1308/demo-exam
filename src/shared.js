@@ -48,6 +48,18 @@ function parseCode(s){ const m=/^([EXH])-(\d{1,4})(?:\.(\d{1,3}))?$/.exec(String
   return {lv:m[1],num:Math.max(1,+m[2]),mask} }
 const codeOf = c => c.lv+'-'+c.num+(c.lv==='H'&&c.mask!=null&&c.mask!==ALLTRAPS?'.'+c.mask:'');
 
+// ---------- group links: variant derived from the student's name ----------
+// token: g.<level><mask?>.<seed>, e.g. g.X.k7f3q or g.H300.k7f3q
+function parseGroup(s){ const m=/^#?g\.([EXH])(\d{1,3})?\.([a-z0-9]{4,10})$/i.exec(String(s||'').trim());
+  if(!m) return null; const lv=m[1].toUpperCase(); return {lv, mask: lv==='H' ? (m[2]!=null?Math.min(ALLTRAPS,+m[2]):ALLTRAPS) : ALLTRAPS, seed:m[3].toLowerCase()} }
+const groupToken = g => 'g.'+g.lv+(g.lv==='H'&&g.mask!==ALLTRAPS?g.mask:'')+'.'+g.seed;
+function newSeed(){ let s=''; const a='abcdefghijkmnpqrstuvwxyz23456789'; for(let i=0;i<6;i++) s+=a[Math.floor(Math.random()*a.length)]; return s }
+function normName(n){ return String(n||'').toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9\s-]/g,' ').split(/\s+/).filter(Boolean).sort().join(' ') }
+function nameOk(n){ return String(n||'').trim().split(/\s+/).filter(w=>/[A-Za-zА-Яа-яЁё]{2,}/.test(w)).length>=2 }
+function codeForName(g,name){ let h=2166136261>>>0; const s=g.seed+'|'+normName(name); for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619)>>>0 }
+  return codeOf({lv:g.lv,num:1+(h%9999),mask:g.lv==='H'?g.mask:ALLTRAPS}) }
+const prettyName = n => String(n||'').replace(/[*{}<>]/g,'').trim().replace(/\s+/g,' ').split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+
 // ---------- seeded variants ----------
 function rngFor(s){ let h=2166136261>>>0; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619)>>>0 }
   let a=h; return function(){ a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296 } }
@@ -179,7 +191,7 @@ function topoSvg(c,r,forExport){
   <text class="lb" x="232" y="300">упр. VLAN ${esc(c.mgmtVid)}</text>
 </svg>`;
 }
-function taskModel(c,r,os){
+function taskModel(c,r,os,student){
   const D=c.dom, tl=c.tun==='gre'?'GRE':'IP-in-IP', ro=OSNAME[os]||OSNAME.astra;
   const cc=Object.assign({},c,{_os:os});
   const lanDesc={srv:['HQ-SRV',c.srvVid],cli:['HQ-CLI',c.cliVid],mgmt:['сети управления',c.mgmtVid],br:['BR-SRV',null]};
@@ -194,6 +206,7 @@ function taskModel(c,r,os){
     'Сведения об адресах занесите в отчёт по образцу таблицы 2: устройство, интерфейс, IP-адрес, шлюз по умолчанию.');
   return [
     {t:'meta',l:'Тренировочный вариант · ДЭ 09.02.06 · Модуль 1',r:'Вариант **'+codeOf(c)+'** · '+LEVELS[c.lv].name},
+    ...(student?[{t:'p',x:'Студент: **'+student+'**'}]:[]),
     {t:'h1',x:'Модуль 1. Настройка сетевой инфраструктуры'},
     {t:'p',x:'Топология сети показана на рисунке 1, операционные системы устройств перечислены в таблице 1. Все устройства входят в домен '+V(D)+'.'},
     {t:'img',svg:topoSvg(cc,r,false),svgx:topoSvg(cc,r,true)},
