@@ -1,0 +1,30 @@
+<div class="wrap">
+  <header>
+    <div class="eyebrow">ДЭ 09.02.06 · Сетевое и системное администрирование</div>
+    <h1>Задание Модуля 1</h1>
+    <p class="lead">Введите код варианта, который дал преподаватель, например X-12. Для самостоятельной тренировки выберите сложность и номер сами.</p>
+  </header>
+  <section class="desk" aria-label="Выбор варианта">
+    <div class="code" id="codeBox"></div>
+    <div class="levels" id="levels" role="group" aria-label="Сложность"></div>
+    <div class="numbox">
+      <div class="stepper">
+        <button type="button" id="prevBtn" aria-label="Предыдущий номер">−</button>
+        <input id="numIn" inputmode="numeric" aria-label="Номер варианта" value="1">
+        <button type="button" id="nextBtn" aria-label="Следующий номер">+</button>
+      </div>
+      <button type="button" class="btn primary" id="rndBtn">Случайный</button>
+    </div>
+    <div class="traprow" id="codeRow">
+      <span>Код от преподавателя</span>
+      <input id="codeIn" class="mono" style="width:9em" placeholder="X-12" aria-label="Код варианта">
+      <button type="button" class="btn" id="codeGo">Открыть</button>
+      <label for="osSel" style="margin-left:auto">ОС роутеров на стенде</label>
+      <select id="osSel" style="width:auto"><option value="astra">Astra Linux CE</option><option value="alt">Альт Сервер</option></select>
+    </div>
+    <div class="traprow" id="trapRow" hidden></div>
+  </section>
+  <main id="main" class="panel"></main>
+</div>
+<div id="printArea"></div>
+<div class="toast" id="toast" role="status"></div>
