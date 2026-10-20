@@ -1,24 +1,17 @@
 <div class="wrap">
-  <header>
-    <div class="eyebrow">ДЭ 09.02.06 · Сетевое и системное администрирование</div>
-    <h1>Варианты Модуля 1</h1>
-    <p class="lead">Выберите сложность и номер. Генератор составит задание, ключ с баллами, скрипты решения и проверки. Все адреса проверяются, так что каждый вариант решаем.</p>
-  </header>
-  <section class="desk" aria-label="Выбор варианта">
-    <div class="code" id="codeBox"></div>
-    <div class="levels" id="levels" role="group" aria-label="Сложность"></div>
-    <div class="numbox">
-      <div class="stepper">
-        <button type="button" id="prevBtn" aria-label="Предыдущий номер">−</button>
-        <input id="numIn" inputmode="numeric" aria-label="Номер варианта" value="1">
-        <button type="button" id="nextBtn" aria-label="Следующий номер">+</button>
-      </div>
-      <button type="button" class="btn primary" id="rndBtn"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="5.5" cy="5.5" r="1.1" fill="currentColor"/><circle cx="10.5" cy="10.5" r="1.1" fill="currentColor"/><circle cx="8" cy="8" r="1.1" fill="currentColor"/></svg>Новый вариант</button>
+  <header class="top">
+    <div class="brand">
+      <div class="eyebrow">ДЭ 09.02.06 · Модуль 1</div>
+      <h1>Генератор вариантов</h1>
     </div>
-    <div class="traprow" id="trapRow" hidden></div>
-  </section>
-  <nav class="tabs" role="tablist" id="tabs" aria-label="Разделы"></nav>
+    <div class="topacts">
+      <div class="seg theme" id="themeSeg" role="group" aria-label="Тема оформления"></div>
+      <button type="button" class="btn icon" id="gearBtn" aria-label="Настройки стенда и баллов" title="Настройки стенда и баллов" aria-pressed="false"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h6.5M12.5 4H14M2 8h1.5M7.5 8H14M2 12h8.5M14 12h0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/><circle cx="10.5" cy="4" r="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="5.5" cy="8" r="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12.5" cy="12" r="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+    </div>
+  </header>
+  <section class="toolbar" id="toolbar" aria-label="Выбор варианта"></section>
+  <nav class="nav" id="nav" aria-label="Разделы"></nav>
   <main id="main" class="panel"></main>
 </div>
 <div id="printArea"></div>
-<div class="toast" id="toast" role="status"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
