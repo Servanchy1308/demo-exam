@@ -333,17 +333,77 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
   #printArea{--paper:#fff;--paper-ink:#000;--paper-line:#999;--muted:#555;--accent:#0a7a70;--raise:#f4f4f4;--line:#ccc;--router:#0a7a70;--server:#b0640f;--client:#6d4fc9}
 }
 .dt td.nm{font-family:var(--sans);font-size:.88rem;font-weight:600}
+
+/* ===== brand: ДЭ·Лаб — RJ45 mark, T568B cable band, LED level lights ===== */
+:root{--c1:#f3a35c;--c2:#e2690f;--c3:#8fd19b;--c4:#2f6fdc;--c5:#9dbcf2;--c6:#2b9a4e;--c7:#cfa47c;--c8:#7a4a26;--glow:color-mix(in srgb,var(--lv,var(--accent)) 45%,transparent)}
+.brandbar{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{width:44px;height:44px;flex:none;filter:drop-shadow(0 4px 10px color-mix(in srgb,var(--accent) 30%,transparent))}
+.logo .lg-bg{fill:var(--accent)}
+.logo .lg-port{fill:var(--sunk)}
+.brand .wordmark{font-family:var(--display);font-weight:700;font-size:1.45rem;line-height:1;letter-spacing:-.01em}
+.brand .wordmark span{color:var(--accent);margin:0 .06em}
+.brand h1{font-family:var(--sans);font-size:.82rem;font-weight:600;color:var(--muted);letter-spacing:0;margin:3px 0 0}
+.cable{height:5px;border-radius:99px;background:linear-gradient(90deg,var(--c1) 0 12.5%,var(--c2) 0 25%,var(--c3) 0 37.5%,var(--c4) 0 50%,var(--c5) 0 62.5%,var(--c6) 0 75%,var(--c7) 0 87.5%,var(--c8) 0);opacity:.9;margin-top:-4px}
+:root{--easy:#2b9a4e;--exam:#2f6fdc;--hard:#e2690f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--easy:#62d07f;--exam:#7fa6ff;--hard:#ff9550}}
+:root[data-theme="dark"]{--easy:#62d07f;--exam:#7fa6ff;--hard:#ff9550}
+.dot{box-shadow:0 0 0 3px color-mix(in srgb,var(--lv,var(--muted)) 18%,transparent)}
+[aria-pressed="true"]>.dot{box-shadow:0 0 0 3px color-mix(in srgb,var(--lv) 25%,transparent),0 0 10px var(--glow)}
+
+/* toolbar as a patch-panel plate */
+.toolbar{padding:12px;gap:12px;background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface) 92%,var(--sunk)))}
+.plate{display:flex;align-items:center;gap:10px;padding:4px 4px 4px 12px;border-radius:14px;background:var(--sunk);border:1px solid var(--line)}
+.plate .pl{display:flex;flex-direction:column;line-height:1.1}
+.plate .pl small{font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.plate .pl b{font-size:.74rem;font-weight:700;color:var(--lv);display:flex;gap:6px;align-items:center;white-space:nowrap}
+.led{width:9px;height:9px;border-radius:50%;background:var(--lv);box-shadow:0 0 0 3px color-mix(in srgb,var(--lv) 22%,transparent),0 0 12px var(--glow);flex:none}
+@media (prefers-reduced-motion:no-preference){.led{animation:blink 2.6s ease-in-out infinite}}
+@keyframes blink{0%,86%,100%{opacity:1}90%{opacity:.35}}
+.codef{border-width:1.5px;box-shadow:0 1px 0 var(--surface) inset}
+.codef input{font-size:1.15rem;width:7.2em}
+
+/* section nav as three friendly cards */
+.nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;border-bottom:0;overflow:visible}
+.nav button{display:flex;align-items:center;gap:12px;text-align:left;padding:12px 14px;border:1.5px solid var(--line);border-radius:var(--r);background:var(--surface);margin:0;color:var(--ink);min-width:0;white-space:normal;transition:border-color .15s,background-color .15s,transform .15s}
+.nav button:hover{border-color:var(--line-strong);transform:translateY(-1px)}
+.nav button[aria-current="page"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,var(--surface));box-shadow:var(--shadow)}
+.nav .ni{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex:none;background:var(--raise);color:var(--muted)}
+.nav .ni svg{width:20px;height:20px}
+.nav button[aria-current="page"] .ni{background:var(--accent);color:var(--accent-ink)}
+.nav .nt{display:flex;flex-direction:column;min-width:0}
+.nav .nt b{font-size:.98rem;display:flex;gap:8px;align-items:center}
+.nav .nt span{font-size:.78rem;color:var(--muted);font-weight:500;line-height:1.35}
+@media (max-width:700px){.nav .nt span{display:none}.nav button{padding:10px;gap:8px;justify-content:center}.nav .ni{width:30px;height:30px}}
+
+/* first-run guide */
+.guide{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 10%,var(--surface)),var(--surface) 60%);border:1px solid color-mix(in srgb,var(--accent) 25%,var(--line));border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
+.guide .gh{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.guide .gh b{font-size:1.02rem}
+.guide ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;counter-reset:g}
+@media (max-width:760px){.guide ol{grid-template-columns:minmax(0,1fr)}}
+.guide li{counter-increment:g;display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.86rem}
+.guide li::before{content:counter(g);flex:none;width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:.78rem;display:grid;place-items:center}
+.guide li b{display:block;font-size:.9rem;margin-bottom:1px}
+.guide li span{color:var(--muted)}
+
+/* student hero */
+.entry{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 9%,var(--surface)),var(--surface) 55%);padding:18px}
+.hello{display:flex;flex-direction:column;gap:3px;flex:1 1 280px;min-width:0}
+.hello b{font-family:var(--display);font-size:1.15rem;font-weight:700;letter-spacing:-.01em}
+.hello span{color:var(--muted);font-size:.9rem}
+.badge{display:flex;align-items:center;gap:12px;padding:8px 16px 8px 12px;border-radius:14px;background:var(--surface);border:1.5px solid var(--lv);box-shadow:0 6px 18px color-mix(in srgb,var(--lv) 16%,transparent)}
+.badge .bc{display:flex;flex-direction:column;line-height:1.1}
+.badge small{font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.badge b{font-family:var(--display);font-size:1.4rem;color:var(--lv)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <div class="brand">
-      <div class="eyebrow">ДЭ 09.02.06 · Модуль 1</div>
-      <h1>Задание по варианту</h1>
-    </div>
+    <div class="brandbar"><svg class="logo" viewBox="0 0 44 44" aria-hidden="true"><rect x="1" y="1" width="42" height="42" rx="12" class="lg-bg"/><path d="M10 12h24v16h-6v4H16v-4h-6z" class="lg-port"/><rect x="12.3" y="14" width="1.8" height="5.5" rx=".6" fill="#f3a35c"/><rect x="15.1" y="14" width="1.8" height="5.5" rx=".6" fill="#e2690f"/><rect x="17.9" y="14" width="1.8" height="5.5" rx=".6" fill="#8fd19b"/><rect x="20.7" y="14" width="1.8" height="5.5" rx=".6" fill="#2f6fdc"/><rect x="23.5" y="14" width="1.8" height="5.5" rx=".6" fill="#9dbcf2"/><rect x="26.3" y="14" width="1.8" height="5.5" rx=".6" fill="#2b9a4e"/><rect x="29.1" y="14" width="1.8" height="5.5" rx=".6" fill="#cfa47c"/><rect x="31.9" y="14" width="1.8" height="5.5" rx=".6" fill="#7a4a26"/></svg><div class="brand"><div class="wordmark">ДЭ<span>·</span>Лаб</div><h1>Задание Модуля 1 · 09.02.06</h1></div></div>
     <div class="topacts"><div class="seg theme" id="themeSeg" role="group" aria-label="Тема оформления"></div></div>
   </header>
+  <div class="cable" aria-hidden="true"></div>
   <section class="entry" id="entry" aria-label="Выбор варианта"></section>
   <main id="main" class="panel"></main>
 </div>
@@ -706,6 +766,9 @@ function copyRich(html,text,el){
 function printSheets(parts){ const p=$('#printArea'); if(!p) return; p.innerHTML=parts.map(x=>'<article class="sheet">'+x+'</article>').join(''); window.print() }
 // ---------- theme & icons ----------
 const ICON={
+  doc:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 2.5h6.5L15 6v11.5H5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M11.5 2.5V6H15M7.5 10h5M7.5 13h5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+  term:'<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="3.5" width="15" height="13" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M6 8l2.5 2L6 12M10.5 12.5H14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  people:'<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="7.5" cy="7" r="2.8" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2.5 16.5c.6-2.8 2.6-4.3 5-4.3s4.4 1.5 5 4.3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="13.8" cy="7.6" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M14.5 12.3c1.6.3 2.7 1.6 3 3.7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
   sun:'<svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
   moon:'<svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.2 10.2A5.6 5.6 0 0 1 5.8 2.8a5.6 5.6 0 1 0 7.4 7.4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
   auto:'<svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2.2a5.8 5.8 0 0 1 0 11.6z" fill="currentColor"/></svg>',
@@ -765,24 +828,24 @@ function wireOs(){ $('#osSel').value=S.os; $('#osSel').addEventListener('change'
 function renderGroupEntry(){
   const e=$('#entry');
   if(!ME){
-    e.innerHTML='<div class="cur" style="flex:1 1 260px"><small>Ссылка группы · '+esc(LEVELS[GRP.lv].name)+'</small><span class="hint" style="font-size:.9rem;color:var(--ink)">Введите фамилию и имя, чтобы получить свой вариант. Пишите так же, как в журнале группы.</span></div>'+
+    e.innerHTML='<div class="hello"><b>Здравствуйте! Введите фамилию и имя</b><span>По ним выдаётся личный вариант уровня «'+esc(LEVELS[GRP.lv].name)+'». Пишите так же, как в журнале группы.</span></div>'+
       '<form class="ef" id="nameForm" style="flex:1 1 360px"><label class="sr" for="nameIn">Фамилия и имя</label><input id="nameIn" placeholder="Иванов Иван" autocomplete="name" spellcheck="false" style="flex:1;min-width:200px;font-size:1rem;padding:10px 12px"><button type="submit" class="btn primary">Получить вариант</button></form>';
     $('#nameForm').addEventListener('submit',ev=>{ ev.preventDefault(); const v=$('#nameIn').value;
       if(!nameOk(v)){ toast('Нужны фамилия и имя, например: Иванов Иван'); $('#nameIn').focus(); return }
       ME={name:prettyName(v)}; store.set(KEY+'.g.'+GRP.seed,ME); render(); toast('Ваш вариант: '+codeForName(GRP,ME.name)) });
     return;
   }
-  e.innerHTML='<div class="cur lv-'+C.lv+'"><small>Ваш вариант</small><b>'+esc(codeOf(C))+'</b></div>'+
-    '<div class="cur" style="flex:1 1 220px"><small>Студент</small><span style="font-weight:700;font-size:1.05rem">'+esc(ME.name)+'</span></div>'+
+  e.innerHTML='<div class="badge lv-'+C.lv+'"><span class="led"></span><span class="bc"><small>Ваш вариант</small><b>'+esc(codeOf(C))+'</b></span></div>'+
+    '<div class="hello"><b>'+esc(ME.name)+'</b><span>Вариант закреплён за вами. Назовите код преподавателю.</span></div>'+
     osPick()+'<button type="button" class="btn ghost" id="notMe">Изменить ФИ</button>';
   wireOs();
   $('#notMe').addEventListener('click',()=>{ ME=null; try{ localStorage.removeItem(KEY+'.g.'+GRP.seed) }catch(err){} render(); setTimeout(()=>{ const n=$('#nameIn'); if(n) n.focus() },0) });
 }
 function renderEntry(){
   const e=$('#entry'), dd = S.train && C.lv==='H' ? trapsDD(S.mask,m=>load('H',S.num,m)) : null;
-  e.innerHTML='<div class="cur lv-'+C.lv+'"><small>Вариант</small><b>'+esc(codeOf(C))+'</b></div>'+
+  e.innerHTML='<div class="badge lv-'+C.lv+'"><span class="led"></span><span class="bc"><small>Вариант</small><b>'+esc(codeOf(C))+'</b></span></div>'+
     '<div class="ef"><label class="sr" for="codeIn">Код варианта от преподавателя</label><input id="codeIn" class="bigin" placeholder="X-12" spellcheck="false" autocomplete="off"><button type="button" class="btn primary" id="codeGo">Открыть</button></div>'+
-    '<span class="hint" style="flex:1 1 220px">Введите код, который дал преподаватель, например X-12.</span>'+
+    '<span class="hint" style="flex:1 1 220px">Введите код от преподавателя, например X-12, или откройте ссылку группы.</span>'+
     osPick()+'<button type="button" class="btn ghost" id="trainBtn" aria-expanded="'+S.train+'">'+(S.train?'Скрыть тренировку':'Тренироваться самому')+'</button>'+
     (S.train?'<div class="train"><div class="seg" role="group" aria-label="Сложность">'+Object.entries(LEVELS).map(([k,v])=>'<button type="button" class="lv-'+k+'" data-lv="'+k+'" aria-pressed="'+(C.lv===k)+'" title="'+esc(v.desc)+'"><span class="dot"></span>'+v.name+'</button>').join('')+'</div>'+
       '<div class="codef lv-'+C.lv+'"><button type="button" id="prevBtn" aria-label="Предыдущий номер">‹</button><input id="numIn" inputmode="numeric" aria-label="Номер варианта" value="'+S.num+'" style="font-family:var(--mono);font-size:.95rem;width:5em"><button type="button" id="nextBtn" aria-label="Следующий номер">›</button></div>'+
