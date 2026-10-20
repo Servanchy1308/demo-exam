@@ -321,3 +321,4 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
 @media print{
   #printArea{--paper:#fff;--paper-ink:#000;--paper-line:#999;--muted:#555;--accent:#0a7a70;--raise:#f4f4f4;--line:#ccc;--router:#0a7a70;--server:#b0640f;--client:#6d4fc9}
 }
+.dt td.nm{font-family:var(--sans);font-size:.88rem;font-weight:600}
