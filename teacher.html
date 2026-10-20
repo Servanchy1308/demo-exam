@@ -1,0 +1,1513 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Генератор вариантов ДЭ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600;700&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}
+
+/* Layout: control desk (variant code · difficulty · number) → tab bar → one working surface per tab; the task tab is a paper sheet */
+:root{
+  --bg:#edf1f2; --surface:#ffffff; --raise:#f4f7f7; --ink:#0f1b1f; --muted:#56686e; --line:#d9e1e3;
+  --accent:#0a7a70; --accent-soft:#dcf0ed; --accent-ink:#ffffff;
+  --paper:#fffefc; --paper-ink:#1b1d1f; --paper-line:#cfd5d6;
+  --easy:#2c8a4b; --exam:#2b5fc4; --hard:#c2471f;
+  --router:#0a7a70; --server:#b0640f; --client:#6d4fc9;
+  --term:#0c1517; --term-ink:#d6e4e6; --term-dim:#6e8489; --term-line:#1c2a2e; --term-str:#e8c07d;
+  --warn:#8a5500; --warn-bg:#fff2d9; --err:#b42318; --err-bg:#fdecea; --ok:#0f7f55;
+  --shadow:0 1px 2px rgba(15,27,31,.06),0 8px 24px rgba(15,27,31,.07);
+  --display:"Unbounded","Golos Text",system-ui,sans-serif;
+  --sans:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --doc:"PT Serif","Times New Roman",Georgia,serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,"Courier New",monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0a1113; --surface:#111b1e; --raise:#162226; --ink:#e2ecee; --muted:#8ea2a7; --line:#223236;
+  --accent:#3fc6b5; --accent-soft:#11302c; --accent-ink:#03201b;
+  --paper:#141e21; --paper-ink:#e2e8e9; --paper-line:#2b3a3e;
+  --easy:#5fca83; --exam:#81a7ff; --hard:#ff8d63;
+  --router:#3fc6b5; --server:#f0a65a; --client:#b49cff;
+  --term:#060b0c; --term-ink:#d6e4e6; --term-dim:#6e8489; --term-line:#182427; --term-str:#e8c07d;
+  --warn:#f3b65c; --warn-bg:#2a2111; --err:#ff8b80; --err-bg:#2e1614; --ok:#4fd39a;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.28); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0a1113; --surface:#111b1e; --raise:#162226; --ink:#e2ecee; --muted:#8ea2a7; --line:#223236;
+  --accent:#3fc6b5; --accent-soft:#11302c; --accent-ink:#03201b;
+  --paper:#141e21; --paper-ink:#e2e8e9; --paper-line:#2b3a3e;
+  --easy:#5fca83; --exam:#81a7ff; --hard:#ff8d63;
+  --router:#3fc6b5; --server:#f0a65a; --client:#b49cff;
+  --term:#060b0c; --term-ink:#d6e4e6; --term-dim:#6e8489; --term-line:#182427; --term-str:#e8c07d;
+  --warn:#f3b65c; --warn-bg:#2a2111; --err:#ff8b80; --err-bg:#2e1614; --ok:#4fd39a;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.28); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 56px}
+.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header{display:flex;flex-direction:column;gap:4px}
+.eyebrow{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(1.45rem,3.2vw,2.1rem);letter-spacing:-.01em;margin:0;text-wrap:balance}
+.lead{color:var(--muted);margin:0;max-width:70ch}
+
+/* control desk */
+.desk{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:16px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px 22px;align-items:center}
+@media (max-width:1020px){.desk{grid-template-columns:minmax(0,1fr) auto}.levels{grid-column:1/-1;order:3}}
+@media (max-width:560px){.desk{grid-template-columns:minmax(0,1fr)}.numbox{justify-content:flex-start}}
+.code{display:flex;flex-direction:column;gap:2px;min-width:0}
+.code small{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.code .big{font-family:var(--display);font-weight:700;font-size:2.1rem;line-height:1.05;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.code .lvname{font-size:.82rem;font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+.lv-E{--lv:var(--easy)} .lv-X{--lv:var(--exam)} .lv-H{--lv:var(--hard)}
+.dot{background:var(--lv)}
+.code .big .let{color:var(--lv)}
+.edited{font-size:.72rem;font-weight:700;background:var(--warn-bg);color:var(--warn);border-radius:999px;padding:1px 8px;border:0;cursor:pointer}
+.levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:560px){.levels{grid-template-columns:minmax(0,1fr)}}
+.lvb{text-align:left;background:var(--raise);border:1.5px solid var(--line);border-radius:12px;padding:9px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:0}
+.lvb b{display:flex;gap:8px;align-items:center;font-size:.92rem}
+.lvb span{font-size:.76rem;color:var(--muted);line-height:1.35}
+.lvb:hover{border-color:var(--muted)}
+.lvb[aria-pressed="true"]{border-color:var(--lv);background:color-mix(in srgb,var(--lv) 9%,var(--surface))}
+.numbox{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.stepper{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--raise)}
+.stepper button{border:0;background:none;padding:0 12px;cursor:pointer;font-size:1.1rem;color:var(--muted)}
+.stepper button:hover{color:var(--ink);background:var(--surface)}
+.stepper input{width:5.2em;border:0;border-inline:1px solid var(--line);background:var(--surface);text-align:center;font-family:var(--mono);font-size:.95rem;padding:9px 4px;color:var(--ink)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:9px 14px;font-weight:600;font-size:.88rem;cursor:pointer;white-space:nowrap;display:inline-flex;gap:8px;align-items:center}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07);color:var(--accent-ink)}
+.btn svg{width:16px;height:16px;flex:none}
+
+/* tabs */
+.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:thin}
+.tab{background:none;border:0;padding:10px 14px 11px;font-weight:600;font-size:.92rem;color:var(--muted);cursor:pointer;white-space:nowrap;border-bottom:2.5px solid transparent;margin-bottom:-1px;display:flex;gap:7px;align-items:center}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab .tg{font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--raise);border:1px solid var(--line);color:var(--muted);border-radius:6px;padding:0 5px}
+.panel{display:flex;flex-direction:column;gap:16px;min-width:0}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.bar .acts{display:flex;gap:8px;flex-wrap:wrap}
+.bar p{margin:0;color:var(--muted);font-size:.86rem;max-width:70ch}
+.msgs{display:flex;flex-direction:column;gap:6px}
+.msg{font-size:.85rem;padding:8px 12px;border-radius:10px}
+.msg.warn{background:var(--warn-bg);color:var(--warn)}
+.msg.err{background:var(--err-bg);color:var(--err)}
+
+/* paper sheet */
+.sheet{background:var(--paper);color:var(--paper-ink);border:1px solid var(--paper-line);border-radius:6px;box-shadow:var(--shadow);padding:clamp(20px,4.5vw,56px);font-family:var(--doc);font-size:1.02rem;line-height:1.55;max-width:900px;width:100%;margin:0 auto;min-width:0}
+.sheet .dochead{display:flex;justify-content:space-between;gap:8px 20px;flex-wrap:wrap;font-family:var(--sans);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--paper-line);padding-bottom:10px;margin-bottom:22px}
+.sheet .dochead b{color:var(--paper-ink)}
+.sheet h2{font-family:var(--doc);font-size:1.45rem;margin:0 0 6px;text-wrap:balance}
+.sheet h3{font-family:var(--doc);font-size:1.08rem;margin:22px 0 8px}
+.sheet p{margin:0 0 10px}
+.sheet ol.items{padding-left:1.6em;margin:8px 0 0;display:flex;flex-direction:column;gap:14px}
+.sheet ol.items>li{padding-left:4px}
+.sheet ol.items>li::marker{font-weight:700}
+.sheet ul{margin:6px 0 0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
+.sheet b.v{font-family:var(--mono);font-size:.88em;font-weight:600;white-space:nowrap}
+.sheet .tblw{overflow-x:auto;margin:8px 0 4px}
+.sheet table{border-collapse:collapse;font-size:.92rem;min-width:420px;width:100%}
+.sheet th,.sheet td{border:1px solid var(--paper-line);padding:5px 9px;text-align:left;vertical-align:top}
+.sheet th{font-weight:700;background:color-mix(in srgb,var(--paper-line) 30%,transparent)}
+.sheet .cap{font-size:.86rem;font-style:italic;margin:16px 0 0}
+.sheet .note{font-size:.86rem;color:var(--muted);border-top:1px solid var(--paper-line);padding-top:10px;margin-top:22px}
+.topo{width:100%;max-width:100%;height:auto;display:block;margin:6px 0 0}
+.topo .ln{stroke:var(--muted);stroke-width:1.6;fill:none}
+.topo .tn{stroke:var(--accent);stroke-width:2;stroke-dasharray:7 5;fill:none}
+.topo .nd{fill:var(--paper);stroke-width:1.6}
+.topo .r{stroke:var(--router)} .topo .s{stroke:var(--server)} .topo .c{stroke:var(--client)} .topo .w{stroke:var(--muted)}
+.topo text{font-family:var(--sans);fill:var(--paper-ink)}
+.topo .nm{font-size:14px;font-weight:700}
+.topo .lb{font-size:11.5px;fill:var(--muted);font-family:var(--mono)}
+.topo .tl{font-size:12px;fill:var(--accent);font-weight:700}
+.topo .cloud{fill:var(--raise);stroke:var(--line);stroke-width:1.4}
+
+/* key */
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.kc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.kc .t{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;display:flex;justify-content:space-between;gap:8px}
+.kc .net{font-family:var(--mono);font-size:1.05rem;font-weight:600;font-variant-numeric:tabular-nums}
+.kc .d{font-family:var(--mono);font-size:.76rem;color:var(--muted);line-height:1.55}
+.kc .why{font-size:.78rem;color:var(--accent);font-weight:600}
+.sect{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.sect h3{margin:0;font-size:1.05rem}
+.sect .sub{margin:-6px 0 0;color:var(--muted);font-size:.84rem}
+.tbl{overflow-x:auto}
+table.dt{border-collapse:collapse;width:100%;font-size:.85rem}
+.dt th,.dt td{text-align:left;padding:7px 12px 7px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+.dt th{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.dt td{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.8rem}
+.dt td:first-child{font-family:var(--sans);font-weight:700;font-size:.85rem}
+.traps{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.traps li{display:flex;gap:10px;align-items:flex-start;font-size:.88rem;background:color-mix(in srgb,var(--hard) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--hard) 25%,var(--line));border-radius:10px;padding:8px 12px}
+.traps li::before{content:"!";flex:none;width:18px;height:18px;border-radius:50%;background:var(--hard);color:var(--surface);font-weight:800;font-size:.72rem;display:grid;place-items:center;margin-top:2px}
+.score{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.meter{flex:1;min-width:160px;height:8px;background:var(--raise);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);transition:width .2s}
+.score b{font-family:var(--mono);font-size:.9rem}
+.checks{display:flex;flex-direction:column}
+.ck{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;padding:12px 0;border-top:1px solid var(--line)}
+.ck:first-child{border-top:0}
+.ck input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--accent);cursor:pointer}
+.ck .h{font-weight:700;font-size:.92rem;cursor:pointer}
+.ck .h span{color:var(--muted);font-weight:600;font-family:var(--mono);font-size:.8rem;margin-right:6px}
+.ck .rows{grid-column:2;display:flex;flex-direction:column;gap:6px}
+.cr{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:4px 14px;font-size:.8rem}
+@media (max-width:640px){.cr{grid-template-columns:minmax(0,1fr)}}
+.cr code{font-family:var(--mono);font-size:.76rem;background:var(--raise);border:1px solid var(--line);border-radius:7px;padding:4px 8px;word-break:break-word;user-select:all}
+.cr .exp{color:var(--muted);align-self:center}
+.cr .exp b{color:var(--ok);font-family:var(--mono);font-weight:600;font-size:.76rem}
+
+/* scripts */
+.strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+@media (max-width:1100px){.strip{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:520px){.strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.mc{text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:11px 13px;cursor:pointer;display:flex;flex-direction:column;gap:5px;min-width:0}
+.mc:hover{border-color:var(--muted)}
+.mc[aria-pressed="true"]{border-color:var(--accent);box-shadow:var(--shadow)}
+.mc .top{display:flex;align-items:center;gap:8px;min-width:0}
+.mc .ic{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex:none}
+.mc .ic svg{width:16px;height:16px}
+.mc.router .ic{background:color-mix(in srgb,var(--router) 14%,transparent);color:var(--router)}
+.mc.server .ic{background:color-mix(in srgb,var(--server) 14%,transparent);color:var(--server)}
+.mc.client .ic{background:color-mix(in srgb,var(--client) 14%,transparent);color:var(--client)}
+.mc .nm{font-weight:700}
+.mc .os{font-size:.72rem;color:var(--muted)}
+.mc .ip{font-family:var(--mono);font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc .steps{display:flex;gap:4px;flex-wrap:wrap}
+.chip{font-family:var(--mono);font-size:.66rem;font-weight:600;background:var(--raise);border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:0 7px}
+.mc[aria-pressed="true"] .chip{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.viewer{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.vh{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:10px 16px}
+.vh h2{margin:0;font-size:1.2rem}
+.vh p{margin:2px 0 0;color:var(--muted);font-size:.85rem}
+.seg{display:inline-flex;background:var(--raise);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;color:var(--muted);padding:6px 12px;border-radius:7px;cursor:pointer;font-size:.82rem;font-weight:600;display:flex;gap:6px;align-items:baseline}
+.seg button .n{font-family:var(--mono);font-size:.7rem}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.howto{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:760px){.howto{grid-template-columns:minmax(0,1fr)}}
+.hs{background:var(--raise);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.82rem;display:flex;flex-direction:column;gap:6px;min-width:0}
+.hs b{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.hs code{font-family:var(--mono);font-size:.72rem;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 6px;display:block;word-break:break-all;user-select:all}
+.term{background:var(--term);border:1px solid var(--term-line);border-radius:14px;overflow:hidden;min-width:0}
+.tbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px 8px 14px;border-bottom:1px solid var(--term-line)}
+.tbar .fn{font-family:var(--mono);font-size:.74rem;color:var(--term-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tbar .acts{display:flex;gap:6px}
+.tb{font-size:.78rem;font-weight:600;border-radius:8px;padding:6px 12px;white-space:nowrap;cursor:pointer;border:1px solid var(--term-line);background:transparent;color:var(--term-ink)}
+.tb.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+pre{margin:0;padding:14px 16px;overflow:auto;max-height:62vh;font-family:var(--mono);font-size:.79rem;line-height:1.6;color:var(--term-ink);tab-size:2}
+pre.wrap{white-space:pre-wrap}
+pre .cm{color:var(--term-dim)} pre .hd{color:var(--term-str)}
+
+/* forms */
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:14px;align-items:start}
+.fg{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.fg h3{margin:0;font-size:1rem}
+.fg .sub{margin:-8px 0 0;color:var(--muted);font-size:.8rem}
+.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:420px){.row{grid-template-columns:minmax(0,1fr)}}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f.full{grid-column:1/-1}
+label{font-size:.78rem;font-weight:600}
+.hint{font-size:.74rem;color:var(--muted)}
+input,select{font:inherit;font-size:.86rem;color:var(--ink);background:var(--raise);border:1px solid var(--line);border-radius:10px;padding:8px 10px;width:100%;min-width:0}
+input.mono{font-family:var(--mono);font-size:.82rem}
+.lan{background:var(--raise);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.lan .lt{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.lan .lt b{font-size:.88rem}
+.lan .sentence{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:.84rem}
+.lan .sentence input,.lan .sentence select{width:auto;background:var(--surface);padding:6px 8px}
+.w-ip{width:9.5em!important}.w-n{width:4.5em!important}.w-v{width:5.2em!important}
+.calc{font-family:var(--mono);font-size:.74rem;color:var(--ok)}
+
+/* batch */
+.bctl{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.bctl .f{width:auto}
+.bctl input,.bctl select{width:auto}
+.dt .open{font:inherit;font-size:.78rem;font-weight:600;background:none;border:1px solid var(--line);border-radius:8px;padding:3px 10px;cursor:pointer;color:var(--accent)}
+.dt .open:hover{border-color:var(--accent)}
+.lvtag{display:inline-flex;gap:6px;align-items:center;font-family:var(--sans);font-weight:700}
+
+.toast{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:.85rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.on{opacity:1}
+#printArea{display:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{
+  body{background:#fff;padding:0}
+  body>*:not(#printArea){display:none!important}
+  #printArea{display:block}
+  #printArea .sheet{box-shadow:none;border:0;max-width:none;padding:0;background:#fff;color:#000;page-break-after:always}
+  #printArea .sheet:last-child{page-break-after:auto}
+}
+
+/* v3 additions */
+.traprow{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;align-items:center;border-top:1px solid var(--line);padding-top:12px}
+.traprow>span{font-size:.74rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+.tchip{border:1.5px solid var(--line);background:var(--raise);border-radius:999px;padding:4px 11px;font-size:.8rem;font-weight:600;cursor:pointer;color:var(--muted)}
+.tchip[aria-pressed="true"]{border-color:var(--hard);color:var(--hard);background:color-mix(in srgb,var(--hard) 9%,var(--surface))}
+.tchip.all{color:var(--ink)}
+.who{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);border-radius:14px;padding:10px 14px;font-size:.9rem}
+.who b{font-weight:700}
+.ck .w{grid-column:2;display:flex;gap:6px;align-items:center;font-size:.76rem;color:var(--muted)}
+.ck .h em{font-style:normal;font-family:var(--mono);font-size:.74rem;color:var(--accent);margin-left:8px}
+.manual{display:flex;flex-direction:column;gap:14px}
+.mi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.mi h3{margin:0;font-size:1.02rem;display:flex;gap:10px;align-items:baseline}
+.mi h3 span{font-family:var(--mono);font-size:.8rem;color:var(--accent)}
+.mi p{margin:0;color:var(--muted);font-size:.88rem;max-width:80ch}
+.mi .blk{display:flex;flex-direction:column;gap:6px;min-width:0}
+.mi .blk .mh{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.78rem;font-weight:700}
+.mi .blk .mh button{font-size:.74rem;font-weight:600;border:1px solid var(--line);background:var(--raise);border-radius:8px;padding:3px 10px;cursor:pointer}
+.mi pre{background:var(--term);border:1px solid var(--term-line);border-radius:12px;max-height:none;font-size:.76rem}
+.mi .chk{font-size:.8rem;color:var(--muted)}
+.mi .chk code{font-family:var(--mono);font-size:.74rem;background:var(--raise);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+textarea{font:inherit;font-size:.86rem;color:var(--ink);background:var(--raise);border:1px solid var(--line);border-radius:10px;padding:8px 10px;width:100%;min-height:120px;resize:vertical}
+.jgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:14px;align-items:start}
+@media (max-width:900px){.jgrid{grid-template-columns:minmax(0,1fr)}}
+.dt .act{display:flex;gap:6px}
+.dt .open.del{color:var(--err)}
+.pill{display:inline-block;font-size:.7rem;font-weight:700;border-radius:999px;padding:1px 8px;background:var(--raise);border:1px solid var(--line);color:var(--muted)}
+.pill.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 40%,var(--line))}
+.linkbox{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.84rem}
+.linkbox code{font-family:var(--mono);font-size:.78rem;background:var(--raise);border:1px solid var(--line);border-radius:8px;padding:4px 8px;user-select:all;word-break:break-all}
+.confirm{display:inline-flex;gap:6px;align-items:center;font-size:.84rem;color:var(--err);font-weight:600}
+.sw{display:flex;gap:8px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">ДЭ 09.02.06 · Сетевое и системное администрирование</div>
+    <h1>Варианты Модуля 1</h1>
+    <p class="lead">Выберите сложность и номер. Генератор составит задание, ключ с баллами, скрипты решения и проверки. Все адреса проверяются, так что каждый вариант решаем.</p>
+  </header>
+  <section class="desk" aria-label="Выбор варианта">
+    <div class="code" id="codeBox"></div>
+    <div class="levels" id="levels" role="group" aria-label="Сложность"></div>
+    <div class="numbox">
+      <div class="stepper">
+        <button type="button" id="prevBtn" aria-label="Предыдущий номер">−</button>
+        <input id="numIn" inputmode="numeric" aria-label="Номер варианта" value="1">
+        <button type="button" id="nextBtn" aria-label="Следующий номер">+</button>
+      </div>
+      <button type="button" class="btn primary" id="rndBtn"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="5.5" cy="5.5" r="1.1" fill="currentColor"/><circle cx="10.5" cy="10.5" r="1.1" fill="currentColor"/><circle cx="8" cy="8" r="1.1" fill="currentColor"/></svg>Новый вариант</button>
+    </div>
+    <div class="traprow" id="trapRow" hidden></div>
+  </section>
+  <nav class="tabs" role="tablist" id="tabs" aria-label="Разделы"></nav>
+  <main id="main" class="panel"></main>
+</div>
+<div id="printArea"></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+(function(){
+// ===== shared: used by the teacher page and the student page =====
+const $ = s => document.querySelector(s);
+const framed = (function(){ try { return window.self !== window.top } catch(e){ return true } })();
+const store={ get(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v) }catch(e){ return d } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)) }catch(e){} } };
+function esc(s){ return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch])) }
+let tt; function toast(t){ const e=$('#toast'); if(!e) return; e.textContent=t; e.classList.add('on'); clearTimeout(tt); tt=setTimeout(()=>e.classList.remove('on'),2200) }
+
+// ---------- IP math ----------
+function ip2n(s){ const p=String(s).trim().split('.'); if(p.length!==4) return null; let n=0;
+  for(const x of p){ if(!/^\d{1,3}$/.test(x)||+x>255) return null; n=n*256+(+x) } return n }
+function n2ip(n){ return [n>>>24,(n>>>16)&255,(n>>>8)&255,n&255].join('.') }
+function maskN(p){ return p===0?0:((0xFFFFFFFF<<(32-p))>>>0) }
+function mkNet(ipn,p){ const m=maskN(p); const net=(ipn&m)>>>0; const size=Math.pow(2,32-p);
+  return {net, p, size, bc:net+size-1, mask:n2ip(m), aligned:net===ipn, h:i=>n2ip(net+i), cidr:n2ip(net)+'/'+p} }
+function parseCidr(s){ const [a,b]=String(s||'').split('/'); const n=ip2n(a||''); const p=+b;
+  if(n===null||!Number.isInteger(p)||p<8||p>30) return null; return mkNet(n,p) }
+function prefixFor(n,rule){ n=+n; if(!(n>=4)) return null;
+  let k = rule==='le' ? Math.floor(Math.log2(n)) : Math.ceil(Math.log2(n)); if(k<2) k=2; if(k>24) return null; return 32-k }
+function isPrivate(n){ return (n>>>24)===10 || ((n>>>24)===172 && ((n>>>16)&255)>=16 && ((n>>>16)&255)<=31) || ((n>>>24)===192 && ((n>>>16)&255)===168) }
+
+// ---------- reference data ----------
+const LEVELS={
+  E:{name:'Лёгкий',desc:'Как в демоверсии: ровные маски, стандартные логины и порты'},
+  X:{name:'Экзамен',desc:'Случайные адреса, VLAN, порты, пароли и часовой пояс'},
+  H:{name:'С подвохами',desc:'Подвохи на выбор: VLSM, «неровные» числа, IP-in-IP и другие'}
+};
+const TRAPS=[['vlsm','VLSM из общего блока'],['odd','«Неровные» числа адресов'],['ipip','Туннель IP-in-IP'],['m29','Маски /29 у провайдера и туннеля'],
+  ['off','Сети провайдера и туннеля не с нуля'],['login','Свои логины'],['dom','Свой домен'],['docker','docker на стороне BR'],['ssh','Необычный порт и попытки SSH']];
+const ALLTRAPS=(1<<TRAPS.length)-1;
+const LANS=[['srv','HQ-SRV'],['cli','HQ-CLI'],['mgmt','сеть управления'],['br','BR-SRV']];
+const TZ={'Europe/Kaliningrad':'калининградское время (UTC+2)','Europe/Moscow':'московское время (UTC+3)','Europe/Samara':'самарское время (UTC+4)',
+  'Asia/Yekaterinburg':'екатеринбургское время (UTC+5)','Asia/Omsk':'омское время (UTC+6)','Asia/Novosibirsk':'новосибирское время (UTC+7)',
+  'Asia/Krasnoyarsk':'красноярское время (UTC+7)','Asia/Irkutsk':'иркутское время (UTC+8)','Asia/Yakutsk':'якутское время (UTC+9)',
+  'Asia/Vladivostok':'владивостокское время (UTC+10)','Asia/Magadan':'магаданское время (UTC+11)','Asia/Kamchatka':'камчатское время (UTC+12)'};
+const DNSP=[['77.88.8.8','77.88.8.1'],['77.88.8.88','77.88.8.2'],['77.88.8.7','77.88.8.3'],['77.88.8.8','77.88.8.3']];
+const BANNERS=['Authorized access only','Restricted area','Unauthorized access is prohibited','Authorized personnel only','Access is monitored'];
+const PASS=['P@ssw0rd','P@$$word','Pa$$w0rd','Adm1n@2026','N3t@dm1n','S3cur3$Pass','Qwerty@123'];
+const OSPFP=['P@ssw0rd','0spfKey26','Rout3Key','Ospf@Pass','Area0Key'];
+const ADM=['rtr_admin','netadmin','net_adm','router_adm'];
+const SU=['srv_user','remote_user','sshadmin','srv_admin'];
+const DOMS=['it-lab.irpo','net-team.irpo','demo-exam.irpo','corp-net.irpo'];
+const OSNAME={astra:'Astra Linux CE',alt:'Альт Сервер'};
+
+// ---------- variant codes ----------
+function parseCode(s){ const m=/^([EXH])-(\d{1,4})(?:\.(\d{1,3}))?$/.exec(String(s||'').trim().toUpperCase().replace(/^#/,''));
+  if(!m) return null; const mask = m[1]==='H' ? (m[3]!=null ? Math.min(ALLTRAPS,+m[3]) : ALLTRAPS) : ALLTRAPS;
+  return {lv:m[1],num:Math.max(1,+m[2]),mask} }
+const codeOf = c => c.lv+'-'+c.num+(c.lv==='H'&&c.mask!=null&&c.mask!==ALLTRAPS?'.'+c.mask:'');
+
+// ---------- seeded variants ----------
+function rngFor(s){ let h=2166136261>>>0; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619)>>>0 }
+  let a=h; return function(){ a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296 } }
+function build(lv,num,att,mask){
+  if(mask==null) mask=ALLTRAPS;
+  const rnd=rngFor(lv+'-'+num+(att?'/'+att:''));
+  const int=(a,b)=>a+Math.floor(rnd()*(b-a+1)), pick=a=>a[Math.floor(rnd()*a.length)];
+  const distinct=(n,f)=>{ const s=new Set(); let g=0; while(s.size<n&&g++<500) s.add(f()); return [...s] };
+  const T = key => lv==='H' && !!(mask & (1<<TRAPS.findIndex(t=>t[0]===key)));
+  const c={lv,num:+num,mask:lv==='H'?mask:ALLTRAPS,addrMode:'given',block:''};
+  const K = lv==='E'?{srv:pick([5,6]),cli:pick([4,5]),mgmt:3,br:pick([4,5])}
+    : lv==='X'?{srv:pick([5,6,7]),cli:pick([4,5,6]),mgmt:pick([3,4]),br:pick([4,5,6])}
+    : {srv:pick([5,6]),cli:pick([4,5,6]),mgmt:pick([3,4]),br:pick([4,5,6])};
+  const ER={srv:'le',cli:'ge',mgmt:'le',br:'le'};
+  for(const k in K){ const e=K[k], rule = lv==='E'?ER[k]:pick(['le','ge']); c[k+'Rule']=rule;
+    c[k+'N']=String(T('odd') ? (rule==='le' ? 2**e+int(1,2**e-1) : int(2**(e-1)+1,2**e-1)) : 2**e) }
+  let v; if(lv==='E'){ const a=int(1,4); v=[a*100,a*100+100,999] } else if(lv==='X') v=distinct(3,()=>int(100,899)); else v=distinct(3,()=>int(2,4094));
+  [c.srvVid,c.cliVid,c.mgmtVid]=v.map(String);
+  if(T('vlsm')){ c.addrMode='vlsm'; const f=pick([0,1,2]);
+    c.block = f===0 ? '10.'+int(1,254)+'.'+int(0,255)+'.0/24' : f===1 ? '172.'+int(17,31)+'.'+int(0,255)+'.0/24' : '192.168.'+int(1,254)+'.0/24' }
+  else { const fam = lv!=='E'&&rnd()<.3 ? '10.'+int(1,254)+'.' : '192.168.';
+    const th = lv==='E' ? distinct(4,()=>int(1,25)*10) : distinct(4,()=>int(1,254));
+    ['srv','cli','mgmt','br'].forEach((k,i)=>c[k+'Base']=fam+th[i]+'.0') }
+  if(lv==='E'){ const x=int(1,8); c.netIspHq='172.16.'+x+'.0/28'; c.netIspBr='172.16.'+(x+1)+'.0/28' }
+  else { const p=T('m29')?29:28, sz=2**(32-p), off=()=>T('off')?int(1,256/sz-1)*sz:0; const [a,b]=distinct(2,()=>int(1,250));
+    c.netIspHq='172.16.'+a+'.'+off()+'/'+p; c.netIspBr='172.16.'+b+'.'+off()+'/'+p }
+  if(lv==='E'){ c.netTun=pick(['10.10.10.0/30','10.5.5.0/30','10.0.0.0/30']); c.tun='gre' }
+  else { const p=T('m29')?29:30, sz=2**(32-p); const pre=rnd()<.6?'10.'+int(0,255)+'.'+int(0,255):'192.168.255';
+    c.netTun=pre+'.'+(T('off')?int(1,256/sz-1)*sz:0)+'/'+p;
+    c.tun = lv==='X' ? pick(['gre','gre','ipip']) : (T('ipip')?'ipip':'gre') }
+  const tzs=Object.keys(TZ);
+  if(lv==='E') Object.assign(c,{adm:'net_admin',admPass:'P@$$word',su:'sshuser',suPass:'P@ssw0rd',uid:'1010',sshPort:'2024',maxTries:'2',
+    banner:'Authorized access only',ospfPass:'P@ssw0rd',dom:'au-team.irpo',tz:'Europe/Moscow',fwd1:'77.88.8.8',fwd2:'77.88.8.1',dockerTo:'hq'});
+  else { const d=pick(DNSP);
+    Object.assign(c,{adm:T('login')?pick(ADM):'net_admin',admPass:pick(PASS),su:T('login')?pick(SU):'sshuser',suPass:pick(PASS),
+      uid:String(lv==='H'?int(1100,4999):int(1010,2099)),
+      sshPort:String(T('ssh')?pick([int(2200,2999),int(4000,4999),int(6100,6999)]):int(2020,2099)),
+      maxTries:String(T('ssh')?int(3,5):pick([2,3])),banner:pick(BANNERS),ospfPass:pick(OSPFP),
+      dom:T('dom')?pick(DOMS):'au-team.irpo',tz:pick(tzs),fwd1:d[0],fwd2:d[1],
+      dockerTo: lv==='X' ? pick(['hq','br']) : (T('docker')?'br':'hq')}) }
+  return c;
+}
+function fillBases(c,r){ LANS.forEach(([k])=>{ if(r.lans[k]) c[k+'Base']=n2ip(r.lans[k].net) }) }
+function makeVariant(lv,num,mask){
+  for(let a=0;a<40;a++){ const c=build(lv,num,a,mask), r=compute(c); if(r.ok){ if(c.addrMode==='vlsm') fillBases(c,r); return c } }
+  return build('E',1,0);
+}
+const variantFromCode = code => { const p=parseCode(code); return p ? makeVariant(p.lv,p.num,p.mask) : null };
+
+// ---------- compute ----------
+function compute(c){
+  const W=[], E=[];
+  const ispHq=parseCidr(c.netIspHq), ispBr=parseCidr(c.netIspBr), tun=parseCidr(c.netTun);
+  if(!ispHq) E.push('Сеть ISP — HQ-RTR задана неверно. Формат: 172.16.4.0/28');
+  if(!ispBr) E.push('Сеть ISP — BR-RTR задана неверно. Формат: 172.16.5.0/28');
+  if(!tun) E.push('Сеть туннеля задана неверно. Формат: 10.10.10.0/30');
+  [['ISP — HQ-RTR',ispHq],['ISP — BR-RTR',ispBr],['туннеля',tun]].forEach(([n,x])=>{ if(x&&!x.aligned) W.push('Адрес сети '+n+' не на границе /'+x.p+', используется '+x.cidr) });
+  const lans={}, pre={};
+  LANS.forEach(([k,name])=>{ const p=prefixFor(c[k+'N'],c[k+'Rule']); if(p===null) E.push(name+': число адресов должно быть от 4'); else pre[k]=p });
+  let block=null;
+  if(c.addrMode==='vlsm'){
+    block=parseCidr(c.block);
+    if(!block) E.push('Общий блок задан неверно. Формат: 10.20.30.0/24');
+    else if(Object.keys(pre).length===4){
+      if(!block.aligned) W.push('Блок выровнен до '+block.cidr);
+      const order=LANS.map(([k],i)=>({k,i,p:pre[k]})).sort((a,b)=>a.p-b.p||a.i-b.i);
+      let cur=block.net;
+      order.forEach(o=>{ const size=2**(32-o.p); cur=Math.ceil(cur/size)*size; lans[o.k]=mkNet(cur,o.p); cur+=size });
+      if(cur-1>block.bc) E.push('Сети не помещаются в блок '+block.cidr+': нужно '+(cur-block.net)+' адресов из '+block.size);
+    }
+  } else {
+    LANS.forEach(([k,name])=>{ if(pre[k]==null) return; const base=ip2n(c[k+'Base']);
+      if(base===null){ E.push(name+': адрес сети задан неверно'); return }
+      const net=mkNet(base,pre[k]); lans[k]=net; if(!net.aligned) W.push(name+': адрес не на границе /'+net.p+', используется '+net.cidr) });
+  }
+  LANS.forEach(([k,name])=>{ const n=lans[k]; if(n&&!isPrivate(n.net)) W.push(name+': сеть '+n.cidr+' не из частного диапазона RFC 1918') });
+  if(lans.cli && lans.cli.size<8) E.push('HQ-CLI: в сети меньше 8 адресов, диапазону DHCP не хватит места');
+  const all=[['ISP — HQ-RTR',ispHq],['ISP — BR-RTR',ispBr],['туннель',tun],['HQ-SRV',lans.srv],['HQ-CLI',lans.cli],['управление',lans.mgmt],['BR-SRV',lans.br]].filter(x=>x[1]);
+  for(let i=0;i<all.length;i++) for(let j=i+1;j<all.length;j++){ const a=all[i][1],b=all[j][1];
+    if(a.net<=b.bc && b.net<=a.bc) E.push('Сети «'+all[i][0]+'» и «'+all[j][0]+'» пересекаются') }
+  const vids=[c.srvVid,c.cliVid,c.mgmtVid];
+  vids.forEach(v=>{ if(!(/^\d+$/.test(v)&&+v>=1&&+v<=4094)) E.push('VLAN '+v+': номер должен быть от 1 до 4094') });
+  if(new Set(vids).size<3) E.push('Номера VLAN должны различаться');
+  [['adm','Логин на роутерах'],['su','Логин на серверах'],['admPass','Пароль на роутерах'],['suPass','Пароль на серверах'],['ospfPass','Пароль OSPF'],['dom','Домен'],['banner','Баннер']]
+    .forEach(([k,n])=>{ if(!String(c[k]||'').trim()) E.push(n+': поле пустое') });
+  if(/['"`\\]/.test(c.admPass+c.suPass+c.ospfPass)) E.push('Пароли не должны содержать кавычки и обратную косую черту');
+  if(/['"`\\$]/.test(c.banner)) E.push('Баннер не должен содержать кавычки, $ и обратную косую черту');
+  if(String(c.ospfPass).length>16) E.push('Пароль OSPF (MD5) не длиннее 16 символов');
+  if(!/^[a-z_][a-z0-9_-]*$/.test(c.adm)||!/^[a-z_][a-z0-9_-]*$/.test(c.su)) E.push('Логины: только маленькие латинские буквы, цифры, _ и -');
+  if(!(+c.sshPort>=1&&+c.sshPort<=65535)) E.push('Порт SSH должен быть от 1 до 65535');
+  if(!(/^\d+$/.test(c.uid)&&+c.uid>=1000&&+c.uid<=60000)) E.push('UID должен быть числом от 1000 до 60000');
+  if(!(+c.maxTries>=1&&+c.maxTries<=10)) E.push('Число попыток входа: от 1 до 10');
+  if(/[^\x00-\x7F]/.test([c.adm,c.su,c.admPass,c.suPass,c.ospfPass,c.banner,c.dom].join(''))) W.push('В логинах, паролях, баннере или домене есть русские буквы. VirtualBox печатает только латиницу.');
+  const ok=!!(ispHq&&ispBr&&tun&&lans.srv&&lans.cli&&lans.mgmt&&lans.br)&&E.length===0;
+  return {W,E,ok,ispHq,ispBr,tun,lans,pre,block};
+}
+function addrs(c,r){
+  const {ispHq,ispBr,tun,lans}=r; const s=lans.srv, cl=lans.cli, m=lans.mgmt, b=lans.br;
+  const A={ ispHq:ispHq.h(1), hqWan:ispHq.h(2), ispBr:ispBr.h(1), brWan:ispBr.h(2), tHq:tun.h(1), tBr:tun.h(2),
+    hqSrvGw:s.h(1), hqSrv:s.h(2), hqCliGw:cl.h(1), hqCli:cl.h(2), hqMg:m.h(1), brGw:b.h(1), brSrv:b.h(2),
+    dhcpFrom:cl.h(3), dhcpTo:n2ip(cl.bc-1) };
+  A.docker = c.dockerTo==='br'?A.ispBr:A.ispHq; A.web = c.dockerTo==='br'?A.ispHq:A.ispBr;
+  return A;
+}
+
+// ---------- task sheet (one model → HTML and DOCX) ----------
+// Text markup inside the model: **bold** and {{value}} (monospace value)
+const ruleTxt = r => r==='le'?'не более':'не менее';
+const V = t => '{{'+t+'}}';
+function topoSvg(c,r,forExport){
+  const tl=c.tun==='gre'?'GRE':'IP-in-IP', ros=c._os==='alt'?'Альт':'Astra';
+  const box=(x,y,w,cls,name,sub)=>`<rect class="nd ${cls}" x="${x-w/2}" y="${y-19}" width="${w}" height="38" rx="9"/><text class="nm" x="${x}" y="${y+(sub?-1:5)}" text-anchor="middle">${name}</text>`+(sub?`<text class="lb" x="${x}" y="${y+13}" text-anchor="middle">${sub}</text>`:'');
+  const st = forExport ? `<style>.ln{stroke:#56686e;stroke-width:1.6;fill:none}.tn{stroke:#0a7a70;stroke-width:2;stroke-dasharray:7 5;fill:none}.nd{fill:#ffffff;stroke-width:1.6}.r{stroke:#0a7a70}.s{stroke:#b0640f}.c{stroke:#6d4fc9}.w{stroke:#56686e}text{font-family:Arial,Helvetica,sans-serif;fill:#1b1d1f}.nm{font-size:14px;font-weight:700}.lb{font-size:11.5px;fill:#56686e;font-family:Consolas,monospace}.tl{font-size:12px;fill:#0a7a70;font-weight:700}.cloud{fill:#f4f7f7;stroke:#d9e1e3;stroke-width:1.4}</style><rect width="760" height="410" fill="#ffffff"/>` : '';
+  return `<svg class="topo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 410" width="760" height="410" role="img" aria-label="Топология сети: ISP соединяет офисы HQ и BR, между HQ-RTR и BR-RTR туннель">${st}
+  <path class="ln" d="M380 52 V 96"/><path class="ln" d="M380 115 L 170 196"/><path class="ln" d="M380 115 L 590 196"/>
+  <path class="ln" d="M170 215 V 276"/><path class="ln" d="M170 295 L 85 356"/><path class="ln" d="M170 295 L 255 356"/><path class="ln" d="M590 215 V 336"/>
+  <path class="tn" d="M222 214 Q 380 290 538 214"/>
+  <ellipse class="cloud" cx="380" cy="34" rx="78" ry="20"/><text class="nm" x="380" y="39" text-anchor="middle">Интернет</text>
+  ${box(380,115,120,'r','ISP',ros)}
+  ${box(170,215,130,'r','HQ-RTR',ros)}${box(590,215,130,'r','BR-RTR',ros)}
+  ${box(170,295,110,'w','HQ-SW','')}
+  ${box(85,375,120,'s','HQ-SRV','Альт Сервер')}${box(255,375,120,'c','HQ-CLI','Альт РС')}${box(590,355,120,'s','BR-SRV','Альт Сервер')}
+  <text class="lb" x="262" y="146" text-anchor="end">${esc(r.ispHq?r.ispHq.cidr:c.netIspHq)}</text>
+  <text class="lb" x="498" y="146">${esc(r.ispBr?r.ispBr.cidr:c.netIspBr)}</text>
+  <text class="tl" x="380" y="262" text-anchor="middle">туннель ${tl}</text>
+  <text class="lb" x="380" y="279" text-anchor="middle">${esc(r.tun?r.tun.cidr:c.netTun)}</text>
+  <text class="lb" x="112" y="330" text-anchor="end">VLAN ${esc(c.srvVid)}</text>
+  <text class="lb" x="228" y="330">VLAN ${esc(c.cliVid)}</text>
+  <text class="lb" x="232" y="300">упр. VLAN ${esc(c.mgmtVid)}</text>
+</svg>`;
+}
+function taskModel(c,r,os){
+  const D=c.dom, tl=c.tun==='gre'?'GRE':'IP-in-IP', ro=OSNAME[os]||OSNAME.astra;
+  const cc=Object.assign({},c,{_os:os});
+  const lanDesc={srv:['HQ-SRV',c.srvVid],cli:['HQ-CLI',c.cliVid],mgmt:['сети управления',c.mgmtVid],br:['BR-SRV',null]};
+  const lan = k => { const [nm,vid]=lanDesc[k];
+    const head = k==='mgmt' ? 'Сеть управления (VLAN '+V(vid)+')' : 'Локальная сеть в сторону '+nm+(vid?' (VLAN '+V(vid)+')':'');
+    return head+' должна вмещать '+ruleTxt(c[k+'Rule'])+' '+V(c[k+'N'])+' адресов*'+(c.addrMode==='given'?'; адрес сети '+V(c[k+'Base']):'')+'.' };
+  const dockerSide = c.dockerTo==='br' ? 'BR-RTR' : 'HQ-RTR', webSide = c.dockerTo==='br' ? 'HQ-RTR' : 'BR-RTR';
+  const s1=['Настройте имена устройств согласно топологии. Используйте полное доменное имя, например '+V('hq-rtr.'+D)+'.',
+    'На всех устройствах сконфигурируйте IPv4. Адреса локальных сетей выберите из частных диапазонов RFC 1918.'];
+  if(c.addrMode==='vlsm') s1.push('Все четыре локальные сети нарежьте из блока '+V(c.block)+' методом VLSM: по убыванию размера, при равном размере — в порядке HQ-SRV, HQ-CLI, сеть управления, BR-SRV. Каждая следующая сеть начинается сразу за предыдущей.');
+  s1.push(lan('srv'),lan('cli'),lan('mgmt'),lan('br'),'Маршрутизатору назначьте первый адрес подсети, серверу и рабочему месту — второй.',
+    'Сведения об адресах занесите в отчёт по образцу таблицы 2: устройство, интерфейс, IP-адрес, шлюз по умолчанию.');
+  return [
+    {t:'meta',l:'Тренировочный вариант · ДЭ 09.02.06 · Модуль 1',r:'Вариант **'+codeOf(c)+'** · '+LEVELS[c.lv].name},
+    {t:'h1',x:'Модуль 1. Настройка сетевой инфраструктуры'},
+    {t:'p',x:'Топология сети показана на рисунке 1, операционные системы устройств перечислены в таблице 1. Все устройства входят в домен '+V(D)+'.'},
+    {t:'img',svg:topoSvg(cc,r,false),svgx:topoSvg(cc,r,true)},
+    {t:'cap',x:'Рисунок 1. Топология сети'},
+    {t:'cap',x:'Таблица 1. Устройства'},
+    {t:'table',head:['Устройство','Операционная система','Назначение'],rows:[['ISP',ro,'Маршрутизатор провайдера'],['HQ-RTR',ro,'Маршрутизатор офиса HQ'],['BR-RTR',ro,'Маршрутизатор офиса BR'],
+      ['HQ-SRV','Альт Сервер','Сервер офиса HQ'],['BR-SRV','Альт Сервер','Сервер офиса BR'],['HQ-CLI','Альт Рабочая станция','Рабочее место офиса HQ']]},
+    {t:'h2',x:'Задания'},
+    {t:'ol',items:[
+      {x:'**Произведите базовую настройку устройств.**',sub:s1},
+      {x:'**Настройте ISP.**',sub:['Интерфейс, подключённый к магистральному провайдеру, получает адрес и маршрут по умолчанию по DHCP.',
+        'Интерфейс в сторону HQ-RTR подключён к сети '+V(c.netIspHq)+', в сторону BR-RTR — к сети '+V(c.netIspBr)+'. ISP получает первый адрес сети, маршрутизатор офиса — второй.',
+        'Настройте динамическую сетевую трансляцию в сторону HQ-RTR и BR-RTR для доступа к сети Интернет.']},
+      {x:'**Создайте локальные учётные записи.**',sub:['На серверах HQ-SRV и BR-SRV: пользователь '+V(c.su)+' с паролем '+V(c.suPass)+' и идентификатором '+V(c.uid)+'. Пользователь запускает sudo без дополнительной аутентификации.',
+        'На маршрутизаторах HQ-RTR и BR-RTR: пользователь '+V(c.adm)+' с паролем '+V(c.admPass)+' и правами sudo без пароля.']},
+      {x:'**Настройте коммутацию в офисе HQ.** На интерфейсе HQ-RTR в сторону офиса создайте подынтерфейсы 802.1Q: HQ-SRV в VLAN '+V(c.srvVid)+', HQ-CLI в VLAN '+V(c.cliVid)+', сеть управления в VLAN '+V(c.mgmtVid)+'. Трафик HQ-SRV и HQ-CLI должен быть тегирован. Опишите схему коммутации в отчёте.'},
+      {x:'**Настройте безопасный удалённый доступ на HQ-SRV и BR-SRV.**',sub:['SSH принимает подключения на порту '+V(c.sshPort)+'.','Входить разрешено только пользователю '+V(c.su)+'.',
+        'Количество попыток входа ограничьте до '+V(c.maxTries)+'.','При подключении выводится баннер '+V(c.banner)+'.']},
+      {x:'**Между HQ-RTR и BR-RTR настройте туннель '+tl+'.** Сеть туннеля '+V(c.netTun)+': HQ-RTR получает первый адрес, BR-RTR — второй. Сведения о туннеле занесите в отчёт.'},
+      {x:'**Обеспечьте динамическую маршрутизацию.** Используйте протокол link-state (OSPF). Соседство устанавливается только через туннель, все локальные сети офисов доступны друг другу. Защитите протокол паролем '+V(c.ospfPass)+'. Опишите настройку в отчёте.'},
+      {x:'**Настройте динамическую трансляцию адресов на HQ-RTR и BR-RTR,** чтобы все устройства офисов имели доступ в Интернет.'},
+      {x:'**Настройте DHCP на HQ-RTR для HQ-CLI.**',sub:['Адрес маршрутизатора исключите из выдачи, HQ-CLI всегда получает второй адрес своей сети.','Шлюз по умолчанию — HQ-RTR, DNS-сервер — HQ-SRV, DNS-суффикс — '+V(D)+'.']},
+      {x:'**Настройте DNS-сервер на HQ-SRV.** Создайте записи по таблице 3. Внешние запросы пересылайте на '+V(c.fwd1)+' и '+V(c.fwd2)+'.'},
+      {x:'**На всех устройствах установите часовой пояс:** '+(TZ[c.tz]||c.tz)+'.'}
+    ]},
+    {t:'cap',x:'Таблица 3. Записи DNS'},
+    {t:'table',head:['Имя','Тип записи','На что указывает'],rows:[['hq-rtr.'+D,'A, PTR','HQ-RTR, адрес в сети HQ-SRV'],['br-rtr.'+D,'A','BR-RTR, адрес в сети BR-SRV'],
+      ['hq-srv.'+D,'A, PTR','HQ-SRV'],['hq-cli.'+D,'A, PTR','HQ-CLI'],['br-srv.'+D,'A','BR-SRV'],['docker.'+D,'A','ISP, адрес в сторону '+dockerSide],['web.'+D,'A','ISP, адрес в сторону '+webSide]]},
+    {t:'note',x:'* Адресами считается полный размер подсети вместе с адресом сети и широковещательным адресом.'}
+  ];
+}
+function runsOf(x){ return String(x).split(/(\*\*[^*]+\*\*|\{\{[^}]+\}\})/).filter(Boolean).map(p=>
+  p.startsWith('**')?{b:1,t:p.slice(2,-2)}:p.startsWith('{{')?{m:1,t:p.slice(2,-2)}:{t:p}) }
+function mdHtml(x){ return runsOf(x).map(r=>r.b?'<b>'+esc(r.t)+'</b>':r.m?'<b class="v">'+esc(r.t)+'</b>':esc(r.t)).join('') }
+function modelHtml(M){
+  const tbl=b=>'<div class="tblw"><table border="1" cellpadding="4" style="border-collapse:collapse"><thead><tr>'+b.head.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+b.rows.map(r=>'<tr>'+r.map(x=>'<td>'+mdHtml(x)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+  return M.map(b=>{
+    if(b.t==='meta') return '<div class="dochead"><span>'+mdHtml(b.l)+'</span><span>'+mdHtml(b.r)+'</span></div>';
+    if(b.t==='h1') return '<h2>'+mdHtml(b.x)+'</h2>';
+    if(b.t==='h2') return '<h3>'+mdHtml(b.x)+'</h3>';
+    if(b.t==='p') return '<p>'+mdHtml(b.x)+'</p>';
+    if(b.t==='cap') return '<p class="cap">'+mdHtml(b.x)+'</p>';
+    if(b.t==='note') return '<p class="note">'+mdHtml(b.x)+'</p>';
+    if(b.t==='img') return b.svg;
+    if(b.t==='table') return tbl(b);
+    if(b.t==='ol') return '<ol class="items">'+b.items.map(i=>'<li>'+mdHtml(i.x)+(i.sub?'<ul>'+i.sub.map(s=>'<li>'+mdHtml(s)+'</li>').join('')+'</ul>':'')+'</li>').join('')+'</ol>';
+    return '';
+  }).join('\n');
+}
+function modelText(M){
+  const pl=x=>runsOf(x).map(r=>r.t).join('');
+  return M.map(b=>{
+    if(b.t==='meta') return pl(b.l)+'   '+pl(b.r)+'\n';
+    if(b.t==='img') return '[Рисунок: топология сети]';
+    if(b.t==='table') return [b.head.join(' | ')].concat(b.rows.map(r=>r.map(pl).join(' | '))).join('\n')+'\n';
+    if(b.t==='ol') return b.items.map((i,n)=>(n+1)+'. '+pl(i.x)+(i.sub?'\n'+i.sub.map(s=>'   – '+pl(s)).join('\n'):'')).join('\n')+'\n';
+    return pl(b.x)+(b.t==='h1'||b.t==='h2'?'\n':'');
+  }).join('\n');
+}
+
+// ---------- DOCX writer (Word, LibreOffice, Google Docs) ----------
+const xe = s => String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+function svgToPng(svg,w,h){ return new Promise(res=>{ try{ const img=new Image();
+  img.onload=()=>{ try{ const cv=document.createElement('canvas'); cv.width=w*2; cv.height=h*2; const x=cv.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,cv.width,cv.height); x.drawImage(img,0,0,cv.width,cv.height); cv.toBlob(b=>res(b),'image/png') }catch(e){ res(null) } };
+  img.onerror=()=>res(null); img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg) }catch(e){ res(null) } }) }
+function dRun(r,o){ o=o||{}; const sz=o.sz||24, mono=r.m;
+  const f = mono ? 'Consolas' : 'Times New Roman';
+  return '<w:r><w:rPr><w:rFonts w:ascii="'+f+'" w:hAnsi="'+f+'" w:cs="'+f+'"/>'+((r.b||mono||o.b)?'<w:b/>':'')+(o.i?'<w:i/>':'')+(o.color?'<w:color w:val="'+o.color+'"/>':'')+'<w:sz w:val="'+(mono?sz-2:sz)+'"/></w:rPr><w:t xml:space="preserve">'+xe(r.t)+'</w:t></w:r>' }
+function dPara(x,o){ o=o||{};
+  const pPr='<w:pPr><w:spacing w:after="'+(o.after??120)+'" w:before="'+(o.before??0)+'"/>'+(o.ind?'<w:ind w:left="'+o.ind+'" w:hanging="'+(o.hang||0)+'"/>':'')+(o.jc?'<w:jc w:val="'+o.jc+'"/>':'')+(o.keep?'<w:keepNext/>':'')+'</w:pPr>';
+  return '<w:p>'+pPr+(o.prefix?dRun({t:o.prefix},o):'')+runsOf(x).map(r=>dRun(r,o)).join('')+'</w:p>' }
+function dTable(b){
+  const n=b.head.length, w=Math.floor(9638/n), bd='w:val="single" w:sz="4" w:space="0" w:color="808080"';
+  const cell=(x,h)=>'<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/>'+(h?'<w:shd w:val="clear" w:color="auto" w:fill="EDEFF0"/>':'')+'</w:tcPr>'+dPara(x,{after:0,sz:22,b:h})+'</w:tc>';
+  return '<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/><w:tblBorders><w:top '+bd+'/><w:left '+bd+'/><w:bottom '+bd+'/><w:right '+bd+'/><w:insideH '+bd+'/><w:insideV '+bd+'/></w:tblBorders><w:tblCellMar><w:left w:w="90" w:type="dxa"/><w:right w:w="90" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>'+
+    Array(n).fill('<w:gridCol w:w="'+w+'"/>').join('')+'</w:tblGrid>'+
+    '<w:tr>'+b.head.map(h=>cell(h,true)).join('')+'</w:tr>'+b.rows.map(r=>'<w:tr>'+r.map(x=>cell(x,false)).join('')+'</w:tr>').join('')+'</w:tbl>'+dPara('',{after:60});
+}
+function dImage(id,cx,cy){
+  return '<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="'+cx+'" cy="'+cy+'"/><wp:docPr id="'+id+'" name="Picture '+id+'"/>'+
+    '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">'+
+    '<pic:nvPicPr><pic:cNvPr id="'+id+'" name="topo'+id+'.png"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rImg'+id+'"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>'+
+    '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>' }
+// docs: array of models; plain text pages may be passed as {lines:[...]} for keys
+async function buildDocx(docs){
+  if(!window.JSZip) throw new Error('Архиватор не загрузился');
+  const z=new JSZip(); let body='', rels='', img=0;
+  for(let i=0;i<docs.length;i++){
+    if(i) body+='<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
+    const M=docs[i];
+    if(M.lines){ M.lines.forEach(l=>body+=dPara(l,{after:0,sz:20})); continue }
+    for(const b of M){
+      if(b.t==='meta') body+=dPara(b.l+'   ·   '+b.r,{sz:18,color:'56686E',after:240});
+      else if(b.t==='h1') body+=dPara('**'+b.x+'**',{sz:32,after:160});
+      else if(b.t==='h2') body+=dPara('**'+b.x+'**',{sz:26,before:200,after:120,keep:1});
+      else if(b.t==='p') body+=dPara(b.x);
+      else if(b.t==='cap') body+=dPara(b.x,{i:1,sz:22,before:120,after:60,keep:1});
+      else if(b.t==='note') body+=dPara(b.x,{sz:20,before:200,color:'56686E'});
+      else if(b.t==='table') body+=dTable(b);
+      else if(b.t==='ol') b.items.forEach((it,n)=>{ body+=dPara(it.x,{ind:360,hang:360,prefix:(n+1)+'. ',after:it.sub?40:140});
+        (it.sub||[]).forEach((s,k,arr)=>body+=dPara(s,{ind:720,hang:280,prefix:'– ',after:k===arr.length-1?140:40})) });
+      else if(b.t==='img'){ const png=await svgToPng(b.svgx,760,410);
+        if(png){ img++; z.file('word/media/topo'+img+'.png',png);
+          rels+='<Relationship Id="rImg'+img+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/topo'+img+'.png"/>';
+          body+=dImage(img,5760720,Math.round(5760720*410/760)) } }
+    }
+  }
+  z.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+  z.file('_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+  z.file('word/_rels/document.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+rels+'</Relationships>');
+  z.file('word/document.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><w:body>'+
+    body+'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="567" w:footer="567" w:gutter="0"/></w:sectPr></w:body></w:document>');
+  return z.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+}
+
+// ---------- files & clipboard ----------
+let DL=null, dlReady=false; const dlWaiters=[];
+(async()=>{ try{ if(window.claude&&window.claude.use) DL=await window.claude.use('downloads') }catch(e){ DL=null } dlReady=true; dlWaiters.forEach(f=>f()) })();
+const canSave = () => !!DL || !framed;
+function onSaveReady(f){ dlReady?f():dlWaiters.push(f) }
+async function saveFile(name,data){
+  if(DL){ try{ await DL.save({filename:name,data}); toast('Файл '+name+' сохранён') }
+    catch(e){ if(e&&e.code==='declined') return; toast(e&&e.code==='rate_limited'?'Подождите, предыдущее сохранение ещё не закончено':'Не удалось сохранить файл') } return }
+  if(!framed){ const bl=data instanceof Blob?data:new Blob([data],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(bl); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500); return }
+  toast('Сохранение файлов здесь недоступно');
+}
+function selectEl(el){ if(!el) return; const sel=window.getSelection(), rg=document.createRange(); rg.selectNodeContents(el); sel.removeAllRanges(); sel.addRange(rg) }
+function copyText(text,el){
+  const fb=()=>{ if(el){ selectEl(el); toast('Текст выделен, нажмите Ctrl+C') } else toast('Браузер не дал скопировать') };
+  try{ navigator.clipboard.writeText(text).then(()=>toast('Скопировано'),fb) }catch(e){ fb() }
+}
+function copyRich(html,text,el){
+  const doc='<div style="font-family:\'Times New Roman\',serif;font-size:12pt">'+html+'</div>';
+  const plain=()=>copyText(text,el);
+  try{
+    if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
+      navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([doc],{type:'text/html'}),'text/plain':new Blob([text],{type:'text/plain'})})])
+        .then(()=>toast('Скопировано с оформлением, вставьте в Word'),plain); return }
+  }catch(e){}
+  plain();
+}
+function printSheets(parts){ const p=$('#printArea'); if(!p) return; p.innerHTML=parts.map(x=>'<article class="sheet">'+x+'</article>').join(''); window.print() }
+// ===== end shared =====
+
+// ===== teacher page =====
+const KEY='degen.v3';
+const STUDENT_URL='https://servanchy1308.github.io/demo-exam/';
+
+// ---------- script fragments (shared by scripts, manual solution and report) ----------
+function users(user, uid, pass, alt){
+  return `id ${user} >/dev/null 2>&1 || `+(uid?`useradd -m -u ${uid} ${user}`:`useradd -m -s /bin/bash ${user}`)+`
+echo '${user}:${pass}' | chpasswd
+`+(alt?`usermod -aG wheel ${user}
+control sudo public
+`:'')+`echo '${user} ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers.d/${user}
+chmod 440 /etc/sudoers.d/${user}`;
+}
+function sshBlock(c){
+  return `echo ${c.banner} > /etc/openssh/banner
+sed -i -E '/^#?(Port|AllowUsers|MaxAuthTries|Banner) /d' /etc/openssh/sshd_config
+cat >> /etc/openssh/sshd_config <<EOF
+Port ${c.sshPort}
+AllowUsers ${c.su}
+MaxAuthTries ${c.maxTries}
+Banner /etc/openssh/banner
+EOF
+systemctl restart sshd`;
+}
+const ospfConf=(short,rid,nets,c)=>`hostname ${short}
+!
+interface gre1
+ ip ospf network point-to-point
+ ip ospf authentication message-digest
+ ip ospf message-digest-key 1 md5 ${c.ospfPass}
+!
+router ospf
+ ospf router-id ${rid}
+ passive-interface default
+ no passive-interface gre1
+${nets.map(n=>' network '+n+' area 0').join('\n')}
+ area 0 authentication message-digest
+!`;
+function ospfAstra(short,rid,nets,c){
+  return `grep -q orel /etc/apt/sources.list || echo 'deb http://dl.astralinux.ru/astra/stable/orel/repository orel main contrib non-free' >> /etc/apt/sources.list
+apt update
+apt install -y frr || apt install -y quagga
+
+OSPF='${ospfConf(short,rid,nets,c)}'
+
+if [ -d /etc/frr ]; then
+ sed -i 's/^ospfd=no/ospfd=yes/' /etc/frr/daemons
+ echo "$OSPF" > /etc/frr/frr.conf
+ systemctl enable frr
+ systemctl restart frr
+else
+ echo 'hostname ${short}' > /etc/quagga/zebra.conf
+ echo "$OSPF" > /etc/quagga/ospfd.conf
+ sed -i 's/^zebra=no/zebra=yes/; s/^ospfd=no/ospfd=yes/' /etc/quagga/daemons 2>/dev/null
+ chown quagga:quagga /etc/quagga/*.conf
+ systemctl enable zebra ospfd 2>/dev/null
+ systemctl restart zebra ospfd 2>/dev/null || systemctl restart quagga
+fi`;
+}
+function ospfAlt(short,rid,nets,c){
+  return `apt-get update
+apt-get install -y frr
+sed -i 's/^ospfd=no/ospfd=yes/' /etc/frr/daemons
+cat > /etc/frr/frr.conf <<'EOF'
+${ospfConf(short,rid,nets,c)}
+EOF
+systemctl enable frr
+systemctl restart frr`;
+}
+const altIf=(name,opts,addr,route)=>`mkdir -p /etc/net/ifaces/${name}
+rm -f /etc/net/ifaces/${name}/ipv4address /etc/net/ifaces/${name}/ipv4route
+cat > /etc/net/ifaces/${name}/options <<EOF
+${opts}DISABLED=no
+NM_CONTROLLED=no
+CONFIG_IPV4=yes
+EOF`+(addr?`\necho ${addr} > /etc/net/ifaces/${name}/ipv4address`:'')+(route?`\necho default via ${route} > /etc/net/ifaces/${name}/ipv4route`:'');
+const CHK=`chk(){ if eval "$2" >/dev/null 2>&1; then echo "[ OK ] $1"; else echo "[FAIL] $1"; fi; }`;
+
+function frags(c,st,r){
+  const A=addrs(c,r), {ispHq,ispBr,tun,lans}=r, s=lans.srv, cl=lans.cli, m=lans.mgmt, b=lans.br, D=c.dom, alt=st.rtrOs==='alt';
+  const natPost = `post-up iptables -t nat -C POSTROUTING -o $WAN -j MASQUERADE 2>/dev/null || iptables -t nat -A POSTROUTING -o $WAN -j MASQUERADE`;
+  const F={A,alt};
+  F.head = short => alt ? `hostnamectl set-hostname ${short}.${D}
+timedatectl set-timezone ${c.tz}
+systemctl disable --now NetworkManager 2>/dev/null` : `hostnamectl set-hostname ${short}.${D}
+sed -i 's/^127.0.1.1.*/127.0.1.1 ${short}.${D} ${short}/' /etc/hosts
+timedatectl set-timezone ${c.tz}
+systemctl disable --now NetworkManager network-manager 2>/dev/null`;
+  F.fwd = alt ? `sed -i 's/^net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/' /etc/net/sysctl.conf
+grep -q '^net.ipv4.ip_forward = 1' /etc/net/sysctl.conf || echo 'net.ipv4.ip_forward = 1' >> /etc/net/sysctl.conf
+sysctl -w net.ipv4.ip_forward=1` : `grep -q '^net.ipv4.ip_forward=1' /etc/sysctl.conf || echo net.ipv4.ip_forward=1 >> /etc/sysctl.conf
+sysctl -p`;
+  F.natAlt = `command -v iptables >/dev/null || { apt-get update; apt-get install -y iptables; }
+iptables -t nat -C POSTROUTING -o $WAN -j MASQUERADE 2>/dev/null || iptables -t nat -A POSTROUTING -o $WAN -j MASQUERADE
+iptables-save > /etc/sysconfig/iptables
+systemctl enable iptables`;
+  F.ispNet = alt ? [altIf('$WAN','TYPE=eth\nBOOTPROTO=dhcp\n'), altIf('$HQ','TYPE=eth\nBOOTPROTO=static\n',A.ispHq+'/'+ispHq.p), altIf('$BR','TYPE=eth\nBOOTPROTO=static\n',A.ispBr+'/'+ispBr.p)].join('\n\n') :
+`cat > /etc/network/interfaces <<EOF
+auto lo
+iface lo inet loopback
+
+auto $WAN
+iface $WAN inet dhcp
+ ${natPost}
+
+auto $HQ
+iface $HQ inet static
+ address ${A.ispHq}/${ispHq.p}
+
+auto $BR
+iface $BR inet static
+ address ${A.ispBr}/${ispBr.p}
+EOF`;
+  F.rtrBase = side => { const hq=side==='hq', w=hq?A.hqWan:A.brWan, wp=hq?ispHq.p:ispBr.p, gw=hq?A.ispHq:A.ispBr;
+    if(alt) return altIf('$WAN','TYPE=eth\nBOOTPROTO=static\n',w+'/'+wp,gw)+`\necho nameserver ${c.fwd1} > /etc/net/ifaces/$WAN/resolv.conf\n\n`+
+      (hq?altIf('$LAN','TYPE=eth\nBOOTPROTO=static\n'):altIf('$LAN','TYPE=eth\nBOOTPROTO=static\n',A.brGw+'/'+b.p));
+    return `cat > /etc/network/interfaces <<EOF
+auto lo
+iface lo inet loopback
+
+auto $WAN
+iface $WAN inet static
+ address ${w}/${wp}
+ gateway ${gw}
+ ${natPost}
+
+auto $LAN
+`+(hq?`iface $LAN inet manual
+ up ip link set $LAN up`:`iface $LAN inet static
+ address ${A.brGw}/${b.p}`)+`
+EOF`; };
+  F.vlans = alt ? [[c.srvVid,A.hqSrvGw,s.p],[c.cliVid,A.hqCliGw,cl.p],[c.mgmtVid,A.hqMg,m.p]].map(([v,a,p])=>altIf('vlan'+v,'TYPE=vlan\nHOST=$LAN\nVID='+v+'\nBOOTPROTO=static\n',a+'/'+p)).join('\n\n') :
+    'cat >> /etc/network/interfaces <<EOF\n'+[[c.srvVid,A.hqSrvGw,s.p],[c.cliVid,A.hqCliGw,cl.p],[c.mgmtVid,A.hqMg,m.p]].map(([v,a,p])=>`
+auto vlan${v}
+iface vlan${v} inet static
+ pre-up ip link add link $LAN name vlan${v} type vlan id ${v} || true
+ address ${a}/${p}`).join('\n')+'\nEOF';
+  F.tunnel = side => { const hq=side==='hq', me=hq?A.tHq:A.tBr, lo=hq?A.hqWan:A.brWan, rem=hq?A.brWan:A.hqWan;
+    if(alt) return altIf('gre1','TYPE=iptun\nTUNTYPE='+c.tun+'\nTUNLOCAL='+lo+'\nTUNREMOTE='+rem+"\nTUNOPTIONS='ttl 64'\nHOST=$WAN\nBOOTPROTO=static\n",me+'/'+tun.p);
+    return `cat >> /etc/network/interfaces <<EOF
+
+auto gre1
+iface gre1 inet tunnel
+ mode ${c.tun}
+ address ${me}
+ netmask ${tun.mask}
+ local ${lo}
+ endpoint ${rem}
+ ttl 64
+EOF`; };
+  F.rtrFinish = alt ? F.fwd+'\nsystemctl restart network\nsleep 3\n'+F.natAlt : F.fwd+`\necho nameserver ${c.fwd1} > /etc/resolv.conf`;
+  F.ospf = side => side==='hq' ? (alt?ospfAlt:ospfAstra)('hq-rtr',A.tHq,[tun.cidr,s.cidr,cl.cidr,m.cidr],c) : (alt?ospfAlt:ospfAstra)('br-rtr',A.tBr,[tun.cidr,b.cidr],c);
+  F.dhcp = (alt?'apt-get install -y dnsmasq':'apt install -y dnsmasq')+`
+cat > /etc/dnsmasq.conf <<EOF
+port=0
+interface=vlan${c.cliVid}
+dhcp-range=${A.dhcpFrom},${A.dhcpTo},${cl.mask},12h
+dhcp-host=hq-cli,${A.hqCli}
+dhcp-option=3,${A.hqCliGw}
+dhcp-option=6,${A.hqSrv}
+domain=${D}
+dhcp-option=15,${D}
+EOF
+systemctl enable dnsmasq
+systemctl restart dnsmasq`;
+  F.srvHead = short => `hostnamectl set-hostname ${short}.${D}
+timedatectl set-timezone ${c.tz}`;
+  F.srvNet = side => side==='hq' ? altIf('$IF','TYPE=eth\nBOOTPROTO=static\n')+'\n\n'+altIf('vlan'+c.srvVid,'TYPE=vlan\nHOST=$IF\nVID='+c.srvVid+'\nBOOTPROTO=static\n',A.hqSrv+'/'+s.p,A.hqSrvGw)+
+      `\necho nameserver ${c.fwd1} > /etc/net/ifaces/vlan${c.srvVid}/resolv.conf\nsystemctl restart network`
+    : altIf('$IF','TYPE=eth\nBOOTPROTO=static\n',A.brSrv+'/'+b.p,A.brGw)+`
+echo nameserver ${A.hqSrv} > /etc/net/ifaces/$IF/resolv.conf
+echo nameserver ${c.fwd1} >> /etc/net/ifaces/$IF/resolv.conf
+echo search ${D} >> /etc/net/ifaces/$IF/resolv.conf
+systemctl restart network`;
+  F.cli = `nmcli -g UUID,TYPE con show | grep ethernet | cut -d: -f1 | xargs -r -n1 nmcli con delete
+nmcli con delete vlan${c.cliVid} 2>/dev/null
+nmcli con add type ethernet con-name lan ifname $IF ipv4.method disabled ipv6.method ignore
+nmcli con add type vlan con-name vlan${c.cliVid} ifname vlan${c.cliVid} dev $IF id ${c.cliVid} ipv4.method auto
+nmcli con mod vlan${c.cliVid} ipv4.dhcp-hostname hq-cli
+nmcli con up lan
+nmcli con up vlan${c.cliVid}`;
+  F.dns = `apt-get update
+apt-get install -y dnsmasq
+
+cat > /etc/dnsmasq.conf <<EOF
+no-resolv
+server=${c.fwd1}
+server=${c.fwd2}
+domain=${D}
+host-record=hq-rtr.${D},${A.hqSrvGw}
+host-record=hq-srv.${D},${A.hqSrv}
+host-record=hq-cli.${D},${A.hqCli}
+address=/br-rtr.${D}/${A.brGw}
+address=/br-srv.${D}/${A.brSrv}
+address=/docker.${D}/${A.docker}
+address=/web.${D}/${A.web}
+EOF
+systemctl enable dnsmasq
+systemctl restart dnsmasq
+
+echo nameserver 127.0.0.1 > /etc/net/ifaces/vlan${c.srvVid}/resolv.conf
+echo search ${D} >> /etc/net/ifaces/vlan${c.srvVid}/resolv.conf
+systemctl restart network`;
+  return F;
+}
+
+// ---------- solution scripts ----------
+function wrap(out,st){
+  const autoReboot = st.autoReboot==='yes';
+  out.forEach(x=>{
+    const body=x.text.replace(/\necho DONE - now type: reboot\n$/, '\necho DONE\n');
+    const rb = autoReboot && /now type: reboot/.test(x.text);
+    x.text='set +H\ncat > /root/'+x.sh+" << 'EOF_FINAL'\n"+body+'EOF_FINAL\nbash /root/'+x.sh+(rb?' && reboot':'')+'\n';
+  });
+  return out;
+}
+function gen(c,st,r){
+  const F=frags(c,st,r), A=F.A, osTag=F.alt?'ALT Server':'Astra Linux CE', out=[];
+  const rtr=(id,side,name,short,vm,when)=>({id,vm,machine:name,sh:short+'.sh',title:'Базовая настройка '+name,when,text:
+`#!/bin/bash
+# ${name} (${osTag}). Check names: ip -br a
+WAN=${side==='hq'?st.ifHqWan:st.ifBrWan}
+LAN=${side==='hq'?st.ifHqLan:st.ifBrLan}
+
+${F.head(short)}
+
+${F.rtrBase(side)}
+${side==='hq'?'\n'+F.vlans+'\n':''}
+${F.tunnel(side)}
+
+${F.rtrFinish}
+
+${users(c.adm,'',c.admPass,F.alt)}
+
+echo DONE - now type: reboot
+`});
+  out.push({id:'isp',vm:st.vmIsp,machine:'ISP',sh:'isp.sh',title:'Базовая настройка ISP',when:'Первым, затем reboot',text:
+`#!/bin/bash
+# ISP (${osTag}). Check names: ip -br a
+WAN=${st.ifIspWan}
+HQ=${st.ifIspHq}
+BR=${st.ifIspBr}
+
+${F.head('isp')}
+
+${F.ispNet}
+
+${F.alt?F.fwd+'\nsystemctl restart network\nsleep 5\n'+F.natAlt:F.fwd}
+
+echo DONE - now type: reboot
+`});
+  out.push(rtr('hqrtr','hq','HQ-RTR','hq-rtr',st.vmHqRtr,'После ISP, затем reboot'));
+  out.push(rtr('brrtr','br','BR-RTR','br-rtr',st.vmBrRtr,'После HQ-RTR, затем reboot'));
+  const srv=(id,side,name,short,vm)=>({id,vm,machine:name,sh:short+'.sh',title:'Базовая настройка '+name,when:'После роутеров, затем reboot',text:
+`#!/bin/bash
+# ${name} (ALT Server). Check name: ip -br a
+IF=${st.ifSrv}
+
+${F.srvHead(short)}
+
+${F.srvNet(side)}
+
+${users(c.su,c.uid,c.suPass,true)}
+
+${sshBlock(c)}
+
+echo DONE - now type: reboot
+`});
+  out.push(srv('hqsrv','hq','HQ-SRV','hq-srv',st.vmHqSrv));
+  out.push(srv('brsrv','br','BR-SRV','br-srv',st.vmBrSrv));
+  const waitOspf=`for i in $(seq 1 12); do vtysh -c "show ip ospf neighbor" 2>/dev/null | grep -q Full && break; sleep 5; done`;
+  out.push({id:'hqrtr2',vm:st.vmHqRtr,machine:'HQ-RTR',sh:'hq-rtr-2.sh',title:'OSPF и DHCP на HQ-RTR',when:'Когда ping '+c.fwd1+' проходит',text:
+`#!/bin/bash
+# HQ-RTR step 2: OSPF + DHCP. Needs internet (ping ${c.fwd1})
+
+${F.ospf('hq')}
+
+${F.dhcp}
+
+echo Waiting for OSPF neighbor...
+${waitOspf}
+${CHK}
+chk "internet ${c.fwd1}" "ping -c1 -W3 ${c.fwd1}"
+chk "tunnel peer ${A.tBr}" "ping -c1 -W2 ${A.tBr}"
+chk "ospf neighbor Full" "vtysh -c 'show ip ospf neighbor' | grep -q Full"
+chk "route to ${r.lans.br.cidr}" "ip route | grep -q '^${r.lans.br.cidr} '"
+chk "dhcp listening" "ss -lun | grep -q ':67 '"
+echo DONE
+`});
+  out.push({id:'brrtr2',vm:st.vmBrRtr,machine:'BR-RTR',sh:'br-rtr-2.sh',title:'OSPF на BR-RTR',when:'Когда ping '+c.fwd1+' проходит',text:
+`#!/bin/bash
+# BR-RTR step 2: OSPF. Needs internet (ping ${c.fwd1})
+
+${F.ospf('br')}
+
+echo Waiting for OSPF neighbor...
+${waitOspf}
+${CHK}
+chk "internet ${c.fwd1}" "ping -c1 -W3 ${c.fwd1}"
+chk "tunnel peer ${A.tHq}" "ping -c1 -W2 ${A.tHq}"
+chk "ospf neighbor Full" "vtysh -c 'show ip ospf neighbor' | grep -q Full"
+chk "route to ${r.lans.srv.cidr}" "ip route | grep -q '^${r.lans.srv.cidr} '"
+echo DONE
+`});
+  out.push({id:'hqcli',vm:st.vmHqCli,machine:'HQ-CLI',sh:'hq-cli.sh',title:'Настройка HQ-CLI',when:'После DHCP на HQ-RTR. В терминале su -',text:
+`#!/bin/bash
+# HQ-CLI (ALT Workstation, NetworkManager). Run as root
+IF=${st.ifCli}
+
+${F.srvHead('hq-cli')}
+
+${F.cli}
+
+sleep 5
+ip -br a
+${CHK}
+chk "dhcp address ${A.hqCli}" "ip -4 -o addr | grep -q 'inet ${A.hqCli}/'"
+chk "gateway ${A.hqCliGw}" "ping -c1 -W2 ${A.hqCliGw}"
+chk "dns server ${A.hqSrv} in resolv.conf" "grep -q '^nameserver ${A.hqSrv}' /etc/resolv.conf"
+echo DONE
+`});
+  out.push({id:'hqsrv2',vm:st.vmHqSrv,machine:'HQ-SRV',sh:'hq-srv-2.sh',title:'DNS на HQ-SRV',when:'Последним',text:
+`#!/bin/bash
+# HQ-SRV step 2: DNS (dnsmasq). Needs internet (ping ${c.fwd1})
+
+${F.dns}
+
+sleep 3
+${CHK}
+chk "hq-cli.${c.dom} -> ${A.hqCli}" "nslookup hq-cli.${c.dom} 127.0.0.1 | grep -q 'Address: ${A.hqCli}'"
+chk "PTR ${A.hqSrv}" "nslookup ${A.hqSrv} 127.0.0.1 | grep -qi 'hq-srv.${c.dom}'"
+chk "docker.${c.dom} -> ${A.docker}" "nslookup docker.${c.dom} 127.0.0.1 | grep -q 'Address: ${A.docker}'"
+chk "external ya.ru" "nslookup ya.ru 127.0.0.1 | grep -A2 '^Name:' | grep -q Address"
+echo DONE
+`});
+  return {out:wrap(out,st),A,F};
+}
+function orderText(list){
+  return 'Порядок запуска\n\n'+list.map((x,i)=>String(i+1).padStart(2,'0')+'  '+x.machine.padEnd(7)+'  '+x.title+'  ('+x.when+')').join('\n')+
+`
+
+Как отправить файл в ВМ
+1. Сохраните скрипт в C:\\1.txt
+2. Откройте C:\\Program Files\\Oracle\\VirtualBox, в адресной строке наберите cmd
+3. В ВМ залогиньтесь под root, раскладка английская, курсор в приглашении #
+4. В cmd:   VBoxManage controlvm ИМЯ_ВМ keyboardputfile C:\\1.txt
+5. Ничего нажимать не нужно: файл /root/<имя>.sh создастся и сразу запустится.
+   Перезапустить его вручную можно командой  bash /root/<имя>.sh
+   Скрипты можно запускать повторно, они ничего не сломают.
+`;
+}
+
+// ---------- autocheck scripts ----------
+function autoChecks(c,st,r){
+  const A=addrs(c,r), L=r.lans, D=c.dom, P=c.sshPort, tw=c.tun==='gre'?'gre':'ipip';
+  const host=h=>[1,'hostname '+h+'.'+D,`[ "$(hostname)" = "${h}.${D}" ] || [ "$(hostname -f 2>/dev/null)" = "${h}.${D}" ]`];
+  const ip=(n,a,p,d)=>[n,d||('address '+a+'/'+p),`ip -4 -o addr | grep -q "inet ${a}/${p} "`];
+  const ping=(n,a,d)=>[n,d||('ping '+a),`ping -c2 -W2 ${a}`];
+  const tz=[11,'timezone '+c.tz,`timedatectl | grep -q "${c.tz}"`];
+  const nat=[8,'NAT masquerade',`iptables -t nat -S POSTROUTING 2>/dev/null | grep -q MASQUERADE || nft list ruleset 2>/dev/null | grep -q masquerade`];
+  const fwd=[8,'ip forwarding on',`[ "$(sysctl -n net.ipv4.ip_forward)" = 1 ]`];
+  const sudo=u=>[3,'sudo without password for '+u,`sudo -l -U ${u} 2>/dev/null | grep -q NOPASSWD`];
+  const tunMode=(rem)=>[6,'tunnel mode '+tw+' remote '+rem,`ip -d link | grep "remote ${rem}" | grep -qw ${tw}`];
+  const ospfFull=[7,'ospf neighbor Full',`vtysh -c "show ip ospf neighbor" 2>/dev/null | grep -q Full`];
+  const ospfAuth=[7,'ospf authentication configured',`vtysh -c "show running-config" 2>/dev/null | grep -qiE "message-digest-key|authentication-key"`];
+  const route=(net)=>[7,'route to '+net+' learned by ospf',`ip route | grep "^${net} " | grep -qE "proto (ospf|zebra)"`];
+  const srvCommon=[
+    [3,'user '+c.su+' uid '+c.uid,`[ "$(id -u ${c.su} 2>/dev/null)" = "${c.uid}" ]`], sudo(c.su),
+    [5,'sshd listens on '+P,`ss -ltn | grep -q ":${P} "`],
+    [5,'sshd AllowUsers '+c.su,`sshd -T 2>/dev/null | grep -qix "allowusers ${c.su}"`],
+    [5,'sshd MaxAuthTries '+c.maxTries,`sshd -T 2>/dev/null | grep -qix "maxauthtries ${c.maxTries}"`],
+    [5,'banner text',`B=$(sshd -T 2>/dev/null | awk '$1=="banner"{print $2}'); [ -n "$B" ] && grep -qF "${c.banner}" "$B"`]];
+  return [
+    {id:'isp',machine:'ISP',vm:st.vmIsp,list:[host('isp'),ip(2,A.ispHq,r.ispHq.p),ip(2,A.ispBr,r.ispBr.p),[2,'default route via DHCP','ip route | grep -q "^default"'],fwd,nat,
+      ping(2,c.fwd1,'internet '+c.fwd1),ping(2,A.hqWan,'reach HQ-RTR '+A.hqWan),ping(2,A.brWan,'reach BR-RTR '+A.brWan),tz]},
+    {id:'hqrtr',machine:'HQ-RTR',vm:st.vmHqRtr,list:[host('hq-rtr'),ip(1,A.hqWan,r.ispHq.p),ping(2,A.ispHq,'reach ISP '+A.ispHq),
+      [4,'vlan '+c.srvVid,`ip -d link | grep -q "802.1Q id ${c.srvVid} "`],[4,'vlan '+c.cliVid,`ip -d link | grep -q "802.1Q id ${c.cliVid} "`],[4,'vlan '+c.mgmtVid,`ip -d link | grep -q "802.1Q id ${c.mgmtVid} "`],
+      ip(1,A.hqSrvGw,L.srv.p),ip(1,A.hqCliGw,L.cli.p),ip(1,A.hqMg,L.mgmt.p),
+      [3,'user '+c.adm,`id ${c.adm}`],sudo(c.adm),tunMode(A.brWan),ip(6,A.tHq,r.tun.p,'tunnel address '+A.tHq+'/'+r.tun.p),ping(6,A.tBr,'tunnel peer '+A.tBr),
+      ospfFull,route(L.br.cidr),ospfAuth,fwd,nat,ping(8,c.fwd1,'internet '+c.fwd1),[9,'dhcp server listening',`ss -lun | grep -q ":67 "`],tz]},
+    {id:'brrtr',machine:'BR-RTR',vm:st.vmBrRtr,list:[host('br-rtr'),ip(1,A.brWan,r.ispBr.p),ip(1,A.brGw,L.br.p),ping(2,A.ispBr,'reach ISP '+A.ispBr),
+      [3,'user '+c.adm,`id ${c.adm}`],sudo(c.adm),tunMode(A.hqWan),ip(6,A.tBr,r.tun.p,'tunnel address '+A.tBr+'/'+r.tun.p),ping(6,A.tHq,'tunnel peer '+A.tHq),
+      ospfFull,route(L.srv.cidr),route(L.cli.cidr),ospfAuth,fwd,nat,ping(8,c.fwd1,'internet '+c.fwd1),tz]},
+    {id:'hqsrv',machine:'HQ-SRV',vm:st.vmHqSrv,list:[host('hq-srv'),ip(1,A.hqSrv,L.srv.p),[4,'tagged vlan '+c.srvVid,`ip -d link | grep -q "802.1Q id ${c.srvVid} "`],
+      [1,'default via '+A.hqSrvGw,`ip route | grep -q "^default via ${A.hqSrvGw}"`],...srvCommon,
+      ping(7,A.brSrv,'reach BR-SRV '+A.brSrv),ping(8,c.fwd1,'internet '+c.fwd1),
+      [10,'dns hq-rtr.'+D+' A',`nslookup hq-rtr.${D} 127.0.0.1 | grep -q "Address: ${A.hqSrvGw}"`],
+      [10,'dns br-srv.'+D+' A',`nslookup br-srv.${D} 127.0.0.1 | grep -q "Address: ${A.brSrv}"`],
+      [10,'dns PTR '+A.hqCli,`nslookup ${A.hqCli} 127.0.0.1 | grep -qi "hq-cli.${D}"`],
+      [10,'dns docker.'+D,`nslookup docker.${D} 127.0.0.1 | grep -q "Address: ${A.docker}"`],
+      [10,'dns web.'+D,`nslookup web.${D} 127.0.0.1 | grep -q "Address: ${A.web}"`],
+      [10,'dns forwarding ya.ru',`nslookup ya.ru 127.0.0.1 | grep -A2 "^Name:" | grep -q Address`],tz]},
+    {id:'brsrv',machine:'BR-SRV',vm:st.vmBrSrv,list:[host('br-srv'),ip(1,A.brSrv,L.br.p),[1,'default via '+A.brGw,`ip route | grep -q "^default via ${A.brGw}"`],...srvCommon,
+      ping(7,A.hqSrv,'reach HQ-SRV '+A.hqSrv),ping(8,c.fwd1,'internet '+c.fwd1),tz]},
+    {id:'hqcli',machine:'HQ-CLI',vm:st.vmHqCli,list:[host('hq-cli'),[9,'dhcp address '+A.hqCli+'/'+L.cli.p,`ip -4 -o addr | grep -q "inet ${A.hqCli}/${L.cli.p} "`],
+      [9,'default via '+A.hqCliGw,`ip route | grep -q "^default via ${A.hqCliGw}"`],[9,'nameserver '+A.hqSrv,`grep -q "^nameserver ${A.hqSrv}" /etc/resolv.conf`],
+      [9,'search '+D,`grep -qE "^(search|domain) .*${D}" /etc/resolv.conf`],[4,'tagged vlan '+c.cliVid,`ip -d link | grep -q "802.1Q id ${c.cliVid} "`],
+      [10,'resolve hq-srv.'+D,`nslookup hq-srv.${D} | grep -q "Address: ${A.hqSrv}"`],[10,'resolve br-rtr.'+D,`nslookup br-rtr.${D} | grep -q "Address: ${A.brGw}"`],
+      [5,'ssh port '+P+' open on HQ-SRV',`timeout 3 bash -c "</dev/tcp/${A.hqSrv}/${P}"`],[5,'ssh port '+P+' open on BR-SRV',`timeout 3 bash -c "</dev/tcp/${A.brSrv}/${P}"`],
+      ping(7,A.brSrv,'reach BR-SRV '+A.brSrv),ping(8,c.fwd1,'internet '+c.fwd1),tz]}
+  ];
+}
+function checkScripts(c,st,r){
+  const code=codeOf(c);
+  return wrap(autoChecks(c,st,r).map(m=>({id:m.id,vm:m.vm,machine:m.machine,sh:'check-'+m.id+'.sh',title:'Проверка '+m.machine,when:'После выполнения задания',count:m.list.length,text:
+`#!/bin/bash
+# Autocheck ${m.machine}, variant ${code}. Run as root
+P=0; T=0; F=""
+ok(){ T=$((T+1)); if "$3" >/dev/null 2>&1; then P=$((P+1)); echo "[ OK ] p$1 $2"; else echo "[FAIL] p$1 $2"; F="$F p$1"; fi; }
+`+m.list.map((x,i)=>'c'+i+'(){ '+x[2]+'; }').join('\n')+'\n\n'+m.list.map((x,i)=>'ok '+x[0]+' "'+x[1]+'" c'+i).join('\n')+`
+
+echo "----------------------------------------"
+echo "RESULT ${m.machine}: $P / $T"
+[ -n "$F" ] && echo "FAILED ITEMS:$(echo $F | tr ' ' '\\n' | sort -uV | tr '\\n' ' ')"
+`})),{autoReboot:'no'});
+}
+
+// ---------- report ----------
+function reportText(c,st,r,A){
+  const L=r.lans, tl=c.tun==='gre'?'GRE':'IP in IP';
+  return `Таблица 2. IP-адресация
+Устройство | Интерфейс | IP-адрес | Шлюз по умолчанию
+`+addrRows(c,st,r,A).map(x=>x.join(' | ')).join('\n')+`
+
+Коммутация (п. 4)
+Роль коммутатора HQ-SW выполняет внутренняя сеть VirtualBox. На HQ-RTR интерфейс ${st.ifHqLan} работает как транк 802.1Q, на нём подынтерфейсы vlan${c.srvVid} (HQ-SRV, ${A.hqSrvGw}/${L.srv.p}), vlan${c.cliVid} (HQ-CLI, ${A.hqCliGw}/${L.cli.p}) и vlan${c.mgmtVid} (сеть управления, ${A.hqMg}/${L.mgmt.p}). HQ-SRV и HQ-CLI тегируют свой трафик сами: vlan${c.srvVid} и vlan${c.cliVid}.
+
+Туннель (п. 6)
+Технология ${tl}, интерфейс gre1. HQ-RTR: ${A.tHq}/${r.tun.p}, local ${A.hqWan}, remote ${A.brWan}. BR-RTR: ${A.tBr}/${r.tun.p}, local ${A.brWan}, remote ${A.hqWan}. TTL 64.
+
+Динамическая маршрутизация (п. 7)
+Протокол OSPF (link-state), область 0, пакет FRR. Все интерфейсы пассивные (passive-interface default), активен только gre1, поэтому соседство устанавливается только между HQ-RTR и BR-RTR. Router-id: HQ-RTR ${A.tHq}, BR-RTR ${A.tBr}. Защита: аутентификация message-digest (MD5), ключ 1. Сети HQ-RTR: ${r.tun.cidr}, ${L.srv.cidr}, ${L.cli.cidr}, ${L.mgmt.cidr}. Сети BR-RTR: ${r.tun.cidr}, ${L.br.cidr}.
+
+NAT (п. 2 и п. 8)
+На ISP, HQ-RTR и BR-RTR правило iptables MASQUERADE на внешнем интерфейсе, включена пересылка net.ipv4.ip_forward = 1.
+
+DHCP (п. 9)
+Сервер dnsmasq на HQ-RTR, интерфейс vlan${c.cliVid}. Подсеть ${L.cli.cidr}, диапазон ${A.dhcpFrom}–${A.dhcpTo}, для HQ-CLI закреплён адрес ${A.hqCli}. Адрес маршрутизатора ${A.hqCliGw} исключён из выдачи. Шлюз ${A.hqCliGw}, DNS ${A.hqSrv}, DNS-суффикс ${c.dom}.
+
+DNS (п. 10)
+Сервер dnsmasq на HQ-SRV, пересылка на ${c.fwd1} и ${c.fwd2}.
+hq-rtr.${c.dom}  A, PTR  ${A.hqSrvGw}
+br-rtr.${c.dom}  A       ${A.brGw}
+hq-srv.${c.dom}  A, PTR  ${A.hqSrv}
+hq-cli.${c.dom}  A, PTR  ${A.hqCli}
+br-srv.${c.dom}  A       ${A.brSrv}
+docker.${c.dom}  A       ${A.docker}
+web.${c.dom}     A       ${A.web}
+
+Часовой пояс (п. 11): ${c.tz} на всех устройствах.
+`;
+}
+
+// ---------- teacher key ----------
+const WEIGHTS_DEF=[1,1,1,1,1,1,1.5,0.5,1,1.5,0.5];
+function why(c,k,p){ const N=+c[k+'N'], size=2**(32-p);
+  return c[k+'Rule']==='le' ? (size===N?'ровно '+N:size+' ≤ '+N+' < '+size*2)+' → /'+p : (size===N?'ровно '+N:size/2+' < '+N+' ≤ '+size)+' → /'+p }
+function traps(c,r){
+  const t=[];
+  LANS.forEach(([k,n])=>{ const N=+c[k+'N']; if(N&(N-1)) t.push(n+': «'+ruleTxt(c[k+'Rule'])+' '+N+'» не степень двойки, правильно /'+r.lans[k].p+' (размер '+r.lans[k].size+')') });
+  if(c.addrMode==='vlsm'){ const o=LANS.map(([k,n])=>n+' '+r.lans[k].cidr).join(', '); t.push('VLSM: сети начинаются не с нуля. Верная нарезка: '+o) }
+  if(c.tun==='ipip') t.push('Туннель IP-in-IP, а не GRE: нужен mode ipip на обоих концах');
+  if(r.tun.p!==30) t.push('Сеть туннеля /'+r.tun.p+', маска '+r.tun.mask);
+  if((r.tun.net&255)!==0) t.push('Сеть туннеля начинается с '+n2ip(r.tun.net)+', HQ-RTR получает '+r.tun.h(1));
+  [['ISP — HQ-RTR',r.ispHq],['ISP — BR-RTR',r.ispBr]].forEach(([n,x])=>{ if(x.p!==28) t.push(n+': маска /'+x.p+' ('+x.mask+'), а не привычная /28'); if((x.net&255)!==0) t.push(n+': сеть начинается с '+n2ip(x.net)+', первый адрес '+x.h(1)) });
+  if(c.adm!=='net_admin'||c.su!=='sshuser') t.push('Нестандартные логины: '+c.adm+' и '+c.su);
+  if(c.dom!=='au-team.irpo') t.push('Домен '+c.dom+', а не au-team.irpo');
+  if(c.dockerTo==='br') t.push('docker указывает на сторону BR-RTR, web — на сторону HQ-RTR');
+  if(+c.maxTries!==2) t.push('MaxAuthTries '+c.maxTries+', а не 2');
+  return t;
+}
+const ITEM_NAMES=['Базовая настройка','ISP','Учётные записи','Коммутация VLAN','SSH','Туннель','OSPF','NAT на роутерах','DHCP','DNS','Часовой пояс'];
+function checks(c,r,A){
+  const D=c.dom, L=r.lans;
+  return [
+    [['hostname','на каждой машине → <b>'+esc('hq-rtr.'+D)+'</b> и т.д.'],['ip -br a','адреса совпадают с таблицей 2']],
+    [['ip -br a','на ISP: <b>'+A.ispHq+'/'+r.ispHq.p+'</b> и <b>'+A.ispBr+'/'+r.ispBr.p+'</b>'],['iptables -t nat -S POSTROUTING','на ISP: <b>-j MASQUERADE</b>'],['ping -c2 '+c.fwd1,'с HQ-RTR и BR-RTR: ответы идут']],
+    [['id '+c.su,'на HQ-SRV/BR-SRV: <b>uid='+esc(c.uid)+'</b>'],['su - '+c.su+' -c "sudo -n id"','<b>uid=0(root)</b> без запроса пароля'],['su - '+c.adm+' -c "sudo -n id"','на HQ-RTR/BR-RTR: <b>uid=0(root)</b>']],
+    [['ip -d link | grep 802.1Q','на HQ-RTR: <b>id '+c.srvVid+'</b>, <b>id '+c.cliVid+'</b>, <b>id '+c.mgmtVid+'</b>'],['ip -d link | grep 802.1Q','на HQ-SRV: <b>id '+c.srvVid+'</b>; на HQ-CLI: <b>id '+c.cliVid+'</b>']],
+    [['ssh -p '+c.sshPort+' '+c.su+'@'+A.hqSrv,'с HQ-CLI: баннер <b>'+esc(c.banner)+'</b>, вход успешен'],['ssh -p '+c.sshPort+' root@'+A.brSrv,'отказ в доступе'],['sshd -T | grep -E "^(port|allowusers|maxauthtries|banner)"','<b>port '+c.sshPort+'</b>, <b>maxauthtries '+c.maxTries+'</b>']],
+    [['ip -d link show gre1','на HQ-RTR: <b>'+(c.tun==='gre'?'gre':'ipip')+'</b> remote '+A.brWan+' local '+A.hqWan],['ping -c2 '+A.tBr,'с HQ-RTR: ответы идут']],
+    [['vtysh -c "show ip ospf neighbor"','сосед <b>'+A.tBr+'</b> (или '+A.tHq+'), состояние <b>Full</b>'],['vtysh -c "show ip route ospf"','на HQ-RTR есть <b>'+L.br.cidr+'</b> через gre1'],['vtysh -c "show running-config"','<b>message-digest-key 1 md5</b>']],
+    [['ping -c2 '+c.fwd1,'с HQ-SRV и BR-SRV: ответы идут'],['iptables -t nat -S POSTROUTING','на HQ-RTR/BR-RTR: <b>-j MASQUERADE</b>']],
+    [['ip -br a','на HQ-CLI: <b>'+A.hqCli+'/'+L.cli.p+'</b>'],['ip r','<b>default via '+A.hqCliGw+'</b>'],['cat /etc/resolv.conf','<b>nameserver '+A.hqSrv+'</b>, <b>search '+esc(D)+'</b>']],
+    [['nslookup hq-rtr.'+D,'<b>'+A.hqSrvGw+'</b>'],['nslookup '+A.hqCli,'<b>hq-cli.'+esc(D)+'</b>'],['nslookup docker.'+D,'<b>'+A.docker+'</b>; web → <b>'+A.web+'</b>'],['nslookup ya.ru','внешнее имя разрешается']],
+    [['timedatectl | grep zone','на всех машинах: <b>'+esc(c.tz)+'</b>']]
+  ];
+}
+function addrRows(c,st,r,A){
+  const L=r.lans;
+  return [
+    ['ISP',st.ifIspWan,'DHCP',''],['',st.ifIspHq,A.ispHq+'/'+r.ispHq.p,''],['',st.ifIspBr,A.ispBr+'/'+r.ispBr.p,''],
+    ['HQ-RTR',st.ifHqWan,A.hqWan+'/'+r.ispHq.p,A.ispHq],['','vlan'+c.srvVid,A.hqSrvGw+'/'+L.srv.p,''],['','vlan'+c.cliVid,A.hqCliGw+'/'+L.cli.p,''],['','vlan'+c.mgmtVid,A.hqMg+'/'+L.mgmt.p,''],['','gre1',A.tHq+'/'+r.tun.p,''],
+    ['BR-RTR',st.ifBrWan,A.brWan+'/'+r.ispBr.p,A.ispBr],['',st.ifBrLan,A.brGw+'/'+L.br.p,''],['','gre1',A.tBr+'/'+r.tun.p,''],
+    ['HQ-SRV','vlan'+c.srvVid,A.hqSrv+'/'+L.srv.p,A.hqSrvGw],['HQ-CLI','vlan'+c.cliVid,A.hqCli+'/'+L.cli.p+' (DHCP)',A.hqCliGw],['BR-SRV',st.ifSrv,A.brSrv+'/'+L.br.p,A.brGw]];
+}
+function keyPlain(c,r,A){
+  const L=r.lans;
+  return 'Ключ к варианту '+codeOf(c)+' ('+LEVELS[c.lv].name+')\n'+
+    LANS.map(([k,n])=>n+': '+L[k].cidr+', маска '+L[k].mask+(k==='br'?'':', VLAN '+c[k+'Vid'])).join('\n')+
+    '\nISP—HQ: '+r.ispHq.cidr+' (ISP '+A.ispHq+', HQ-RTR '+A.hqWan+')\nISP—BR: '+r.ispBr.cidr+' (ISP '+A.ispBr+', BR-RTR '+A.brWan+')'+
+    '\nТуннель '+(c.tun==='gre'?'GRE':'IP-in-IP')+': '+r.tun.cidr+' (HQ '+A.tHq+', BR '+A.tBr+')'+
+    '\nHQ-SRV '+A.hqSrv+', HQ-CLI '+A.hqCli+', BR-SRV '+A.brSrv+'\nDHCP: '+A.dhcpFrom+'–'+A.dhcpTo+'\nSSH: порт '+c.sshPort+', '+c.su+', попыток '+c.maxTries+
+    '\ndocker → '+A.docker+', web → '+A.web+'\nЧасовой пояс: '+c.tz+'\n';
+}
+
+// ---------- manual solution ----------
+function manualItems(c,st,r){
+  const F=frags(c,st,r), A=F.A, ck=checks(c,r,A), rt=F.alt?'ALT':'Astra';
+  const wan=(w,l)=>'WAN='+w+'\nLAN='+l+'\n';
+  const it=(n,title,why,blocks)=>({n,title,why,blocks,check:ck[n-1]});
+  return [
+    it(1,'Имена и адреса','Задайте полное имя и адреса каждой машине. Вписывайте имена интерфейсов со своего стенда, их видно в ip -br a. На роутерах '+rt+' адреса VLAN и туннеля добавим в пунктах 4 и 6.',[
+      ['HQ-RTR',wan(st.ifHqWan,st.ifHqLan)+F.head('hq-rtr')+'\n\n'+F.rtrBase('hq')],['BR-RTR',wan(st.ifBrWan,st.ifBrLan)+F.head('br-rtr')+'\n\n'+F.rtrBase('br')],
+      ['HQ-SRV','IF='+st.ifSrv+'\n'+F.srvHead('hq-srv')+'\n\n'+F.srvNet('hq')],['BR-SRV','IF='+st.ifSrv+'\n'+F.srvHead('br-srv')+'\n\n'+F.srvNet('br')]]),
+    it(2,'ISP','Внешний интерфейс берёт адрес по DHCP, два внутренних получают первые адреса сетей. Пересылка и маскарад дают офисам выход в интернет.',[
+      ['ISP','WAN='+st.ifIspWan+'\nHQ='+st.ifIspHq+'\nBR='+st.ifIspBr+'\n'+F.head('isp')+'\n\n'+F.ispNet+'\n\n'+(F.alt?F.fwd+'\nsystemctl restart network\n'+F.natAlt:F.fwd)]]),
+    it(3,'Учётные записи','sudo без пароля даёт файл в /etc/sudoers.d. На серверах ALT пользователя ещё добавляют в группу wheel и открывают sudo командой control.',[
+      ['HQ-RTR и BR-RTR',users(c.adm,'',c.admPass,F.alt)],['HQ-SRV и BR-SRV',users(c.su,c.uid,c.suPass,true)]]),
+    it(4,'Коммутация VLAN','HQ-RTR работает как «роутер на палочке»: один физический порт в сторону офиса и три подынтерфейса 802.1Q. HQ-SRV тегирует трафик сам (vlan'+c.srvVid+' настроен в пункте 1), HQ-CLI тоже (пункт 9).',[
+      ['HQ-RTR',wan(st.ifHqWan,st.ifHqLan)+F.vlans]]),
+    it(5,'SSH','Порт, разрешённый пользователь, число попыток и баннер задаются в /etc/openssh/sshd_config. После правки перезапустите sshd.',[['HQ-SRV и BR-SRV',sshBlock(c)]]),
+    it(6,'Туннель '+(c.tun==='gre'?'GRE':'IP-in-IP'),'Туннель строится между внешними адресами роутеров. Внутри него своя маленькая сеть '+r.tun.cidr+'.',[
+      ['HQ-RTR',wan(st.ifHqWan,st.ifHqLan)+F.tunnel('hq')],['BR-RTR',wan(st.ifBrWan,st.ifBrLan)+F.tunnel('br')],
+      ['Оба роутера, затем перезагрузка',F.rtrFinish+'\nreboot']]),
+    it(7,'OSPF','Все интерфейсы пассивные, кроме gre1, поэтому соседство появляется только через туннель. Пароль защищает обмен маршрутами (MD5). Нужен интернет для установки FRR.',[
+      ['HQ-RTR',F.ospf('hq')],['BR-RTR',F.ospf('br')]]),
+    it(8,'NAT на роутерах',F.alt?'На ALT маскарад задаётся правилом iptables и сохраняется в /etc/sysconfig/iptables. Это уже сделано в конце пункта 6.':'На Astra маскарад включается строкой post-up в описании WAN в /etc/network/interfaces (пункт 1). Проверьте, что правило появилось:',[
+      ['HQ-RTR и BR-RTR','iptables -t nat -S POSTROUTING\nsysctl net.ipv4.ip_forward']]),
+    it(9,'DHCP','dnsmasq на HQ-RTR раздаёт адреса только в VLAN '+c.cliVid+'. Адрес роутера в диапазон не входит, HQ-CLI закреплён по имени.',[
+      ['HQ-RTR',F.dhcp],['HQ-CLI (под root)','IF='+st.ifCli+'\n'+F.srvHead('hq-cli')+'\n\n'+F.cli]]),
+    it(10,'DNS','dnsmasq на HQ-SRV отвечает за зону '+c.dom+'. Запись host-record создаёт A и PTR сразу, address — только A.',[['HQ-SRV',F.dns]]),
+    it(11,'Часовой пояс','Пояс уже задан в пункте 1. Команда для проверки и ручной установки:',[['Все машины','timedatectl set-timezone '+c.tz+'\ntimedatectl']])
+  ];
+}
+
+// ---------- journal (shared db when available) ----------
+const J={rows:[],mode:'loading',col:null,subs:[],
+  emit(){ J.rows.sort((a,b)=>(a.order||0)-(b.order||0)); J.subs.forEach(f=>{ try{ f() }catch(e){} }) },
+  saveLocal(){ store.set(KEY+'.journal',J.rows) },
+  async add(o){ if(J.mode==='db'){ await J.col.add(o) } else { o.id='l'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); J.rows.push(o); J.saveLocal(); J.emit() } },
+  async update(id,p){ if(J.mode==='db'){ await J.col.doc(id).update(p) } else { const r=J.rows.find(x=>x.id===id); if(r){ Object.assign(r,p); J.saveLocal(); J.emit() } } },
+  async remove(id){ if(J.mode==='db'){ await J.col.doc(id).delete() } else { J.rows=J.rows.filter(x=>x.id!==id); J.saveLocal(); J.emit() } }
+};
+(async()=>{ let db=null; try{ if(window.claude&&window.claude.use) db=await window.claude.use('db') }catch(e){}
+  if(db){ J.mode='db'; J.col=db.collection('journal');
+    J.col.onSnapshot(s=>{ J.rows=s.docs.map(d=>Object.assign({id:d.id},d.data())); J.emit() }, e=>{ J.err=e&&e.message; J.emit() }) }
+  else { J.mode='local'; J.rows=store.get(KEY+'.journal',[]); J.emit() } })();
+
+// ---------- state ----------
+const STAND_DEF={ifIspWan:'eth0',ifIspHq:'eth1',ifIspBr:'eth2',ifHqWan:'eth0',ifHqLan:'eth1',ifBrWan:'eth0',ifBrLan:'eth1',ifSrv:'enp0s3',ifCli:'enp0s3',
+  vmIsp:'ISP',vmHqRtr:'HQ-RTR',vmBrRtr:'BR-RTR',vmHqSrv:'HQ-SRV',vmBrSrv:'BR-SRV',vmHqCli:'HQ-CLI',autoReboot:'no',rtrOs:'astra',weights:WEIGHTS_DEF.slice()};
+let S = Object.assign({lv:'X',num:1,mask:ALLTRAPS,custom:null,tab:'task',sel:'isp',step:0,mode:'auto',student:null}, store.get(KEY,{}));
+let ST = Object.assign({},STAND_DEF,store.get(KEY+'.stand',{}));
+if(!Array.isArray(ST.weights)||ST.weights.length!==11) ST.weights=WEIGHTS_DEF.slice();
+const hc=parseCode(location.hash);
+if(hc){ S.lv=hc.lv; S.num=hc.num; S.mask=hc.mask; S.custom=null; S.student=null }
+S.customOn=!!S.custom;
+let C = S.custom || makeVariant(S.lv,S.num,S.mask), R=null, G=null, A=null, CK=null;
+function save(){ S.custom = S.customOn ? C : null; store.set(KEY,S) }
+const totalW = () => ST.weights.reduce((a,b)=>a+(+b||0),0);
+const fmt = x => (Math.round(x*100)/100).toString().replace('.',',');
+
+function renderHead(){
+  const lv=C.lv;
+  $('#codeBox').className='code lv-'+lv;
+  $('#codeBox').innerHTML='<small>Вариант</small><div class="big"><span class="let">'+lv+'</span>'+esc(codeOf(C).slice(1))+'</div><div class="lvname"><span class="dot"></span>'+LEVELS[lv].name+
+    (S.customOn?'<button type="button" class="edited" id="unedit" title="Вернуть параметры варианта">изменён вручную ×</button>':'')+'</div>';
+  const u=$('#unedit'); if(u) u.addEventListener('click',()=>{ load(S.lv,S.num,S.mask); toast('Параметры варианта '+codeOf(C)+' восстановлены') });
+  $('#levels').innerHTML=Object.entries(LEVELS).map(([k,v])=>'<button type="button" class="lvb lv-'+k+'" data-lv="'+k+'" aria-pressed="'+(S.lv===k)+'"><b><span class="dot"></span>'+v.name+'</b><span>'+v.desc+'</span></button>').join('');
+  $('#levels').querySelectorAll('.lvb').forEach(b=>b.addEventListener('click',()=>load(b.dataset.lv,S.num,S.mask)));
+  if(document.activeElement!==$('#numIn')) $('#numIn').value=S.num;
+  const tr=$('#trapRow'); tr.hidden = S.lv!=='H';
+  if(S.lv==='H'){ tr.innerHTML='<span>Подвохи</span>'+TRAPS.map((t,i)=>'<button type="button" class="tchip" data-b="'+i+'" aria-pressed="'+!!(S.mask&(1<<i))+'">'+t[1]+'</button>').join('')+
+      '<button type="button" class="tchip all" data-b="all">'+(S.mask===ALLTRAPS?'Снять все':'Включить все')+'</button>';
+    tr.querySelectorAll('.tchip').forEach(b=>b.addEventListener('click',()=>{ const m = b.dataset.b==='all' ? (S.mask===ALLTRAPS?0:ALLTRAPS) : S.mask^(1<<+b.dataset.b); load('H',S.num,m) })) }
+}
+function load(lv,num,mask){
+  num=Math.max(1,Math.min(9999,parseInt(num,10)||1)); S.lv=lv; S.num=num; S.mask=lv==='H'?(mask==null?ALLTRAPS:mask):ALLTRAPS; S.customOn=false;
+  C=makeVariant(lv,num,S.mask); if(S.student){ const st=J.rows.find(x=>x.id===S.student); if(!st||st.code!==codeOf(C)) S.student=null }
+  try{ history.replaceState(null,'','#'+codeOf(C)) }catch(e){}
+  render();
+}
+$('#prevBtn').addEventListener('click',()=>load(S.lv,S.num-1,S.mask));
+$('#nextBtn').addEventListener('click',()=>load(S.lv,S.num+1,S.mask));
+$('#numIn').addEventListener('change',e=>load(S.lv,e.target.value,S.mask));
+$('#rndBtn').addEventListener('click',()=>{ let n; do{ n=1+Math.floor(Math.random()*999) }while(n===S.num); load(S.lv,n,S.mask); toast('Вариант '+codeOf(C)) });
+
+const TABS=[['task','Задание','студенту'],['key','Ключ','преподавателю'],['solve','Решение',''],['journal','Журнал',''],['batch','Пакет на группу',''],['params','Параметры',''],['settings','Настройки','']];
+function renderTabs(){
+  $('#tabs').innerHTML=TABS.map(([k,n,t])=>'<button type="button" class="tab" role="tab" data-t="'+k+'" aria-selected="'+(S.tab===k)+'">'+n+(t?'<span class="tg">'+t+'</span>':'')+'</button>').join('');
+  $('#tabs').querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{ S.tab=b.dataset.t; save(); renderTabs(); renderMain() }));
+}
+function msgsHtml(){ if(!R) return ''; let h='';
+  R.E.forEach(t=>h+='<div class="msg err">'+esc(t)+'</div>'); R.W.forEach(t=>h+='<div class="msg warn">'+esc(t)+'</div>');
+  return h?'<div class="msgs">'+h+'</div>':'' }
+const brokenHtml = () => msgsHtml()+'<p class="lead">В параметрах варианта есть ошибки. Исправьте их на вкладке «Параметры» или выберите другой номер.</p>';
+const fname = s => 'module1_'+codeOf(C).replace('.','_')+s;
+
+function renderMain(){
+  const m=$('#main');
+  if(S.tab==='task'){
+    if(!R.ok){ m.innerHTML=brokenHtml(); return }
+    const M=taskModel(C,R,ST.rtrOs);
+    m.innerHTML='<div class="bar"><p>Лист задания для студента. Ответов в нём нет, только условия.</p><div class="acts">'+
+      '<button type="button" class="btn" id="cpTask">Скопировать для Word</button>'+(canSave()?'<button type="button" class="btn primary" id="dxTask">Скачать .docx</button>':'')+(framed?'':'<button type="button" class="btn" id="prTask">Печать</button>')+'</div></div>'+
+      '<article class="sheet" id="sheet">'+modelHtml(M)+'</article>';
+    $('#cpTask').addEventListener('click',()=>copyRich($('#sheet').innerHTML,modelText(M),$('#sheet')));
+    const dx=$('#dxTask'); if(dx) dx.addEventListener('click',async()=>{ try{ toast('Собираю документ…'); await saveFile(fname('_task.docx'),await buildDocx([M])) }catch(e){ toast('Не удалось собрать документ') } });
+    if(!framed) $('#prTask').addEventListener('click',()=>printSheets([modelHtml(M)]));
+  }
+  else if(S.tab==='key') renderKey(m);
+  else if(S.tab==='solve') renderSolve(m);
+  else if(S.tab==='journal') renderJournal(m);
+  else if(S.tab==='batch') renderBatch(m);
+  else if(S.tab==='params') renderParams(m);
+  else renderSettings(m);
+}
+
+// ---------- key tab ----------
+function renderKey(m){
+  if(!R.ok){ m.innerHTML=brokenHtml(); return }
+  const L=R.lans, code=codeOf(C)+(S.customOn?'*':''), tr=traps(C,R), ck=CK;
+  const stu = S.student ? J.rows.find(x=>x.id===S.student) : null;
+  const done = stu ? (stu.done||[]) : store.get(KEY+'.chk.'+code,[]);
+  const card=(t,net,d,w)=>'<div class="kc"><div class="t"><span>'+t+'</span></div><div class="net">'+net+'</div><div class="d">'+d+'</div>'+(w?'<div class="why">'+w+'</div>':'')+'</div>';
+  const cards=LANS.map(([k,n])=>card(n+(k==='br'?'':' · VLAN '+esc(C[k+'Vid'])),L[k].cidr,'маска '+L[k].mask+'<br>шлюз '+L[k].h(1)+(k==='mgmt'?'':' · '+(k==='cli'?'клиент':'сервер')+' '+L[k].h(2)),why(C,k,L[k].p))).join('')+
+    card('ISP ↔ HQ-RTR',R.ispHq.cidr,'ISP '+A.ispHq+' · HQ-RTR '+A.hqWan)+card('ISP ↔ BR-RTR',R.ispBr.cidr,'ISP '+A.ispBr+' · BR-RTR '+A.brWan)+
+    card('Туннель '+(C.tun==='gre'?'GRE':'IP-in-IP'),R.tun.cidr,'HQ-RTR '+A.tHq+' · BR-RTR '+A.tBr+'<br>маска '+R.tun.mask)+
+    card('DHCP на HQ-RTR',A.dhcpFrom+' – '+A.dhcpTo,'резерв HQ-CLI '+A.hqCli+'<br>шлюз '+A.hqCliGw+' · DNS '+A.hqSrv)+
+    card('SSH на серверах','порт '+esc(C.sshPort),esc(C.su)+' · uid '+esc(C.uid)+' · попыток '+esc(C.maxTries)+'<br>«'+esc(C.banner)+'»');
+  const D=C.dom, rep=reportText(C,ST,R,A);
+  const dns=[['hq-rtr.'+D,'A, PTR',A.hqSrvGw],['br-rtr.'+D,'A',A.brGw],['hq-srv.'+D,'A, PTR',A.hqSrv],['hq-cli.'+D,'A, PTR',A.hqCli],['br-srv.'+D,'A',A.brSrv],['docker.'+D,'A',A.docker],['web.'+D,'A',A.web]];
+  m.innerHTML=(stu?'<div class="who"><span>Проверяете: <b>'+esc(stu.name)+'</b> · вариант '+esc(stu.code)+'. Отметки сохраняются в журнал.</span><button type="button" class="btn" id="noStu">Проверять без студента</button></div>':'')+
+    '<div class="bar"><p>Правильные значения и команды проверки для варианта '+esc(code)+'. Если студент выбрал другие адреса внутри верной подсети, пункт можно засчитать.</p><div class="acts"><button type="button" class="btn" id="cpKey">Скопировать ключ</button>'+(canSave()?'<button type="button" class="btn" id="dlKey">Скачать .txt</button>':'')+'</div></div>'+
+    (tr.length?'<section class="sect"><h3>На что обратить внимание</h3><ul class="traps">'+tr.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul></section>':'')+
+    '<div class="kgrid">'+cards+'</div>'+
+    '<section class="sect"><h3>Проверка по пунктам</h3><p class="sub">Баллы за пункты меняются на вкладке «Настройки». Быстрее всего проверять скриптами: «Решение» → «Скрипты проверки».</p><div class="score"><div class="meter"><i id="meter"></i></div><b id="scoreTxt"></b><button type="button" class="btn" id="ckReset">Снять отметки</button></div><div class="checks">'+
+    ck.map((rows,i)=>'<div class="ck"><input type="checkbox" id="ck'+i+'" data-i="'+i+'"'+(done.includes(i)?' checked':'')+'><label class="h" for="ck'+i+'"><span>'+(i+1)+'</span>'+ITEM_NAMES[i]+'<em>'+fmt(+ST.weights[i]||0)+' б.</em></label><div class="rows">'+
+      rows.map(([cmd,exp])=>'<div class="cr"><code>'+esc(cmd)+'</code><span class="exp">'+exp+'</span></div>').join('')+'</div></div>').join('')+'</div></section>'+
+    '<section class="sect"><h3>Таблица 2. IP-адресация</h3><p class="sub">Имена интерфейсов взяты с вкладки «Настройки»</p>'+dtable(['Устройство','Интерфейс','IP-адрес','Шлюз'],addrRows(C,ST,R,A))+'</section>'+
+    '<section class="sect"><h3>Таблица 3. Записи DNS</h3>'+dtable(['Имя','Тип','Адрес'],dns)+'<p class="sub">Пересылка на '+esc(C.fwd1)+' и '+esc(C.fwd2)+' · часовой пояс '+esc(C.tz)+'</p></section>'+
+    '<section class="sect"><h3>Текст для отчёта</h3><p class="sub">Образец того, что студент пишет в отчёт по пунктам 1, 4, 6–10</p>'+termHtml('report.txt',rep,true,'rep')+'</section>';
+  const upd=(write)=>{ const on=[...m.querySelectorAll('.ck input')].filter(x=>x.checked).map(x=>+x.dataset.i);
+    const sc=on.reduce((a,i)=>a+(+ST.weights[i]||0),0);
+    $('#meter').style.width=(totalW()?sc/totalW()*100:0)+'%'; $('#scoreTxt').textContent='Пунктов '+on.length+' из 11 · '+fmt(sc)+' из '+fmt(totalW())+' б.';
+    if(!write) return;
+    if(stu) J.update(stu.id,{done:on,score:sc,updated:new Date().toISOString()}).catch(()=>toast('Не удалось сохранить в журнал'));
+    else store.set(KEY+'.chk.'+code,on) };
+  m.querySelectorAll('.ck input').forEach(x=>x.addEventListener('change',()=>upd(true))); upd(false);
+  $('#ckReset').addEventListener('click',()=>{ m.querySelectorAll('.ck input').forEach(x=>x.checked=false); upd(true) });
+  $('#cpKey').addEventListener('click',()=>copyText(keyPlain(C,R,A)));
+  const dk=$('#dlKey'); if(dk) dk.addEventListener('click',()=>saveFile(fname('_key.txt'),keyPlain(C,R,A)+'\n\n'+rep));
+  const ns=$('#noStu'); if(ns) ns.addEventListener('click',()=>{ S.student=null; save(); renderKey(m) });
+  wireTerm('rep',rep,'report.txt');
+}
+const dtable=(head,rows)=>'<div class="tbl"><table class="dt"><thead><tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(x=>'<td>'+esc(x)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+
+// ---------- solve tab ----------
+const ICONS={
+  router:'<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 8h6M8 5v6" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>',
+  server:'<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="10" height="5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="9" width="10" height="5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="5.5" cy="4.5" r=".9" fill="currentColor"/><circle cx="5.5" cy="11.5" r=".9" fill="currentColor"/></svg>',
+  client:'<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="8" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 14h6M8 11v3" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>'
+};
+const MACH=[
+  {key:'isp',name:'ISP',role:'router',steps:['isp']},
+  {key:'hqrtr',name:'HQ-RTR',role:'router',steps:['hqrtr','hqrtr2']},
+  {key:'brrtr',name:'BR-RTR',role:'router',steps:['brrtr','brrtr2']},
+  {key:'hqsrv',name:'HQ-SRV',os:'Альт Сервер',role:'server',steps:['hqsrv','hqsrv2']},
+  {key:'brsrv',name:'BR-SRV',os:'Альт Сервер',role:'server',steps:['brsrv']},
+  {key:'hqcli',name:'HQ-CLI',os:'Альт Рабочая станция',role:'client',steps:['hqcli']}
+];
+const STEPNAME={isp:'База',hqrtr:'База',hqrtr2:'OSPF и DHCP',brrtr:'База',brrtr2:'OSPF',hqsrv:'База',hqsrv2:'DNS',brsrv:'База',hqcli:'Сеть и имя'};
+function hl(t){ return esc(t).split('\n').map(l=>/^\s*#/.test(l)?'<span class="cm">'+l+'</span>':/(EOF_FINAL|&lt;&lt;\s*'?EOF'?|^EOF$)/.test(l)?'<span class="hd">'+l+'</span>':/^\[ OK \]|^chk |^ok /.test(l)?'<span class="hd">'+l+'</span>':l).join('\n') }
+function termHtml(fn,text,wrapL,id){ id=id||'t';
+  return '<div class="term"><div class="tbar"><span class="fn">'+esc(fn)+'</span><div class="acts"><button type="button" class="tb primary" id="'+id+'Copy">Копировать</button>'+
+    (canSave()?'<button type="button" class="tb" id="'+id+'Dl">Скачать .txt</button>':'')+'</div></div><pre id="'+id+'Code"'+(wrapL?' class="wrap"':'')+'>'+hl(text)+'</pre></div>' }
+function wireTerm(id,text,file){ const c=$('#'+id+'Copy'); if(c) c.addEventListener('click',()=>copyText(text,$('#'+id+'Code'))); const d=$('#'+id+'Dl'); if(d) d.addEventListener('click',()=>saveFile(file,text)) }
+function mainIp(key){ const L=R.lans;
+  return {isp:A.ispHq+' · '+A.ispBr, hqrtr:A.hqWan+' · '+A.hqSrvGw, brrtr:A.brWan+' · '+A.brGw, hqsrv:A.hqSrv+'/'+L.srv.p, brsrv:A.brSrv+'/'+L.br.p, hqcli:A.hqCli+' (DHCP)'}[key] }
+function renderSolve(m){
+  if(!G){ m.innerHTML=brokenHtml(); return }
+  const modes=[['auto','Скрипты решения'],['check','Скрипты проверки'],['manual','Решение вручную']];
+  m.innerHTML=(R.W.length?msgsHtml():'')+'<div class="bar"><div class="seg" role="group" aria-label="Что показать">'+modes.map(([k,n])=>'<button type="button" data-m="'+k+'" aria-pressed="'+(S.mode===k)+'">'+n+'</button>').join('')+'</div><div class="acts" id="solveActs"></div></div><div id="solveBody" class="panel"></div>';
+  m.querySelectorAll('[data-m]').forEach(b=>b.addEventListener('click',()=>{ S.mode=b.dataset.m; save(); renderSolve(m) }));
+  if(S.mode==='manual') return renderManual($('#solveBody'));
+  const isChk=S.mode==='check', list=isChk?checkScripts(C,ST,R):G.out;
+  const acts=$('#solveActs');
+  acts.innerHTML=(isChk?'':'<button type="button" class="btn" id="orderBtn">Порядок запуска</button>')+(canSave()?'<button type="button" class="btn" id="zipBtn">Скачать всё (.zip)</button>':'');
+  const ob=$('#orderBtn'); if(ob) ob.addEventListener('click',()=>{ S.sel='order'; save(); renderSolve(m) });
+  const zb=$('#zipBtn'); if(zb) zb.addEventListener('click',()=>downloadZip(isChk));
+  const body=$('#solveBody');
+  body.innerHTML='<p class="lead" style="font-size:.88rem">'+(isChk?'Запустите на каждой машине после выполнения задания. Скрипт ничего не меняет, только проверяет и печатает [ OK ] или [FAIL] с номером пункта. Сверьте результат и отметьте пункты на вкладке «Ключ».':'Скрипты собраны под вариант '+esc(codeOf(C))+' и стенд с вкладки «Настройки». Запускайте по номерам шагов. Повторный запуск безопасен.')+'</p><div class="strip" id="strip"></div><section class="viewer" id="viewer"></section>';
+  const orderOf = id => list.findIndex(x=>x.id===id)+1;
+  const st=$('#strip');
+  MACH.forEach(mm=>{ const b=document.createElement('button'); b.type='button'; b.className='mc '+mm.role; b.setAttribute('aria-pressed',S.sel===mm.key?'true':'false');
+    const os = mm.os || OSNAME[ST.rtrOs];
+    const chips = isChk ? '<span class="chip">'+list.find(x=>x.id===mm.key).count+' проверок</span>' : mm.steps.map(s=>'<span class="chip">шаг '+orderOf(s)+'</span>').join('');
+    b.innerHTML='<div class="top"><span class="ic">'+ICONS[mm.role]+'</span><div><div class="nm">'+mm.name+'</div><div class="os">'+os+'</div></div></div><div class="ip">'+esc(mainIp(mm.key))+'</div><div class="steps">'+chips+'</div>';
+    b.addEventListener('click',()=>{ S.sel=mm.key; S.step=0; save(); renderSolve(m) }); st.appendChild(b) });
+  const v=$('#viewer'), mm=MACH.find(x=>x.key===S.sel);
+  if(!mm){ if(isChk){ S.sel='isp'; return renderSolve(m) } const t=orderText(G.out); v.innerHTML='<div class="vh"><div><h2>Порядок запуска</h2><p>Запускайте строго по номерам шагов</p></div></div>'+termHtml('order.txt',t,true); wireTerm('t',t,'order.txt'); return }
+  let x, seg='', sub;
+  if(isChk){ x=list.find(o=>o.id===mm.key); sub=x.count+' проверок · скрипт только читает настройки' }
+  else { const sid=mm.steps[Math.min(S.step,mm.steps.length-1)]; x=list.find(o=>o.id===sid); sub='Шаг '+orderOf(sid)+' из '+list.length+' · '+x.when;
+    if(mm.steps.length>1) seg='<div class="seg" role="group" aria-label="Шаги">'+mm.steps.map((s,i)=>'<button type="button" data-i="'+i+'" aria-pressed="'+(s===sid)+'"><span class="n">'+orderOf(s)+'</span>'+STEPNAME[s]+'</button>').join('')+'</div>' }
+  v.innerHTML='<div class="vh"><div><h2>'+esc(x.title)+'</h2><p>'+esc(sub)+'</p></div>'+seg+'</div>'+
+    '<div class="howto"><div class="hs"><b>1 · В виртуалке</b>Войдите под root, раскладка английская</div>'+
+    '<div class="hs"><b>2 · На Windows</b>Сохраните текст в C:\\1.txt и выполните в cmd из папки VirtualBox<code>VBoxManage controlvm "'+esc(x.vm)+'" keyboardputfile C:\\1.txt</code></div>'+
+    '<div class="hs"><b>3 · Готово</b>Скрипт сам запишется в /root/'+esc(x.sh)+' и выполнится</div></div>'+
+    termHtml('/root/'+x.sh+' · '+x.text.split('\n').length+' строк', x.text, false);
+  v.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{ S.step=+b.dataset.i; save(); renderSolve(m) }));
+  wireTerm('t',x.text,(isChk?'':String(orderOf(x.id)).padStart(2,'0')+'_')+x.sh.replace('.sh','')+'.txt');
+}
+function renderManual(body){
+  const items=manualItems(C,ST,R);
+  $('#solveActs').innerHTML=canSave()?'<button type="button" class="btn" id="dlMan">Скачать решение .txt</button>':'';
+  const plain=items.map(it=>'=== '+it.n+'. '+it.title+' ===\n'+it.why+'\n\n'+it.blocks.map(([mm,code])=>'# '+mm+'\n'+code).join('\n\n')).join('\n\n\n');
+  const d=$('#dlMan'); if(d) d.addEventListener('click',()=>saveFile(fname('_solution.txt'),plain));
+  body.innerHTML='<p class="lead" style="font-size:.88rem">Команды набираются в терминале под root. Это те же действия, что делают скрипты, только по пунктам задания и с пояснениями.</p><div class="manual">'+items.map((it,i)=>'<section class="mi"><h3><span>'+it.n+'</span>'+esc(it.title)+'</h3><p>'+esc(it.why)+'</p>'+
+    it.blocks.map(([mm,code],j)=>'<div class="blk"><div class="mh"><span>'+esc(mm)+'</span><button type="button" data-c="'+i+'_'+j+'">Копировать</button></div><pre id="mc'+i+'_'+j+'">'+hl(code)+'</pre></div>').join('')+
+    '<div class="chk">Проверка: '+it.check.map(([cmd])=>'<code>'+esc(cmd)+'</code>').join(' ')+'</div></section>').join('')+'</div>';
+  body.querySelectorAll('[data-c]').forEach(b=>b.addEventListener('click',()=>{ const [i,j]=b.dataset.c.split('_').map(Number); copyText(items[i].blocks[j][1],$('#mc'+b.dataset.c)) }));
+}
+function downloadZip(isChk){
+  if(!window.JSZip){ toast('Архиватор не загрузился'); return }
+  const z=new JSZip();
+  if(isChk) checkScripts(C,ST,R).forEach(x=>z.file(x.sh.replace('.sh','')+'.txt',x.text));
+  else { G.out.forEach((x,i)=>z.file(String(i+1).padStart(2,'0')+'_'+x.sh.replace('.sh','')+'.txt',x.text)); z.file('00_order.txt',orderText(G.out)); z.file('key.txt',keyPlain(C,R,A)); z.file('report.txt',reportText(C,ST,R,A)) }
+  z.generateAsync({type:'blob'}).then(bl=>saveFile(fname(isChk?'_check.zip':'_scripts.zip'),bl));
+}
+
+// ---------- journal tab ----------
+let jConfirm=false;
+function renderJournal(m){
+  const rows=J.rows, tw=totalW();
+  const prevNames=$('#jNames')?$('#jNames').value:'';
+  const modeTxt = J.mode==='db' ? 'Журнал общий: его видно с любого устройства, где открыта эта страница.' : J.mode==='local' ? 'Журнал хранится только в этом браузере. В claude.ai он станет общим.' : 'Подключаю журнал…';
+  m.innerHTML='<div class="bar"><p>'+modeTxt+(J.err?' Ошибка: '+esc(J.err):'')+'</p><div class="acts">'+(canSave()&&rows.length?'<button type="button" class="btn" id="jCsv">Скачать .csv</button>':'')+(rows.length?(jConfirm?'<span class="confirm">Удалить весь журнал? <button type="button" class="btn" id="jYes">Да, удалить</button><button type="button" class="btn" id="jNo">Нет</button></span>':'<button type="button" class="btn" id="jClear">Очистить журнал</button>'):'')+'</div></div>'+
+    (STUDENT_URL.startsWith('http')?'<div class="linkbox">Страница для студентов (без ключа и скриптов): <code>'+esc(STUDENT_URL)+'</code><button type="button" class="btn" id="jLink">Скопировать ссылку</button></div>':'')+
+    '<div class="jgrid"><section class="sect"><h3>Добавить студентов</h3><p class="sub">По одному на строку. Каждый получит свой вариант, номера идут подряд.</p>'+
+    '<div class="f"><label for="jNames">Список группы</label><textarea id="jNames" placeholder="Иванов Иван&#10;Петрова Анна"></textarea></div>'+
+    '<div class="row"><div class="f"><label for="jLv">Сложность</label><select id="jLv">'+Object.entries(LEVELS).map(([k,v])=>'<option value="'+k+'"'+(S.lv===k?' selected':'')+'>'+v.name+'</option>').join('')+'</select></div>'+
+    '<div class="f"><label for="jStart">Начиная с номера</label><input id="jStart" class="mono" inputmode="numeric" value="'+(rows.length?Math.max(...rows.map(r=>(parseCode(r.code)||{num:0}).num))+1:1)+'"></div></div>'+
+    '<p class="hint">Для уровня «С подвохами» берутся подвохи, выбранные сейчас вверху.</p><button type="button" class="btn primary" id="jAdd">Раздать варианты</button></section>'+
+    '<section class="sect"><h3>Группа · '+rows.length+'</h3>'+(rows.length?'<div class="tbl"><table class="dt"><thead><tr><th>№</th><th>Студент</th><th>Вариант</th><th>Баллы</th><th>Проверен</th><th></th></tr></thead><tbody>'+
+      rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.name)+'</td><td>'+esc(r.code)+'</td><td>'+(r.done&&r.done.length?'<span class="pill ok">'+fmt(r.score||0)+' / '+fmt(tw)+'</span>':'<span class="pill">—</span>')+'</td><td>'+(r.updated?esc(new Date(r.updated).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})):'')+'</td>'+
+        '<td><div class="act"><button type="button" class="open" data-k="'+esc(r.id)+'">Проверить</button><button type="button" class="open" data-t="'+esc(r.id)+'">Задание</button><button type="button" class="open del" data-d="'+esc(r.id)+'" aria-label="Удалить '+esc(r.name)+'">×</button></div></td></tr>').join('')+'</tbody></table></div>'
+      :'<p class="sub" style="margin:0">Пока пусто. Вставьте список группы слева и нажмите «Раздать варианты».</p>')+'</section></div>';
+  if(prevNames) $('#jNames').value=prevNames;
+  const go=(id,tab)=>{ const r=J.rows.find(x=>x.id===id); const p=r&&parseCode(r.code); if(!p) return; S.tab=tab; load(p.lv,p.num,p.mask); if(tab==='key'){ S.student=id; save(); renderMain() } renderTabs(); window.scrollTo({top:0}) };
+  m.querySelectorAll('[data-k]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.k,'key')));
+  m.querySelectorAll('[data-t]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.t,'task')));
+  m.querySelectorAll('[data-d]').forEach(b=>b.addEventListener('click',()=>J.remove(b.dataset.d).catch(()=>toast('Не удалось удалить'))));
+  $('#jAdd').addEventListener('click',async()=>{
+    const names=$('#jNames').value.split('\n').map(s=>s.trim()).filter(Boolean); if(!names.length){ toast('Вставьте хотя бы одно имя'); return }
+    const lv=$('#jLv').value, start=Math.max(1,parseInt($('#jStart').value,10)||1), base=J.rows.length;
+    try{ for(let i=0;i<names.length;i++){ const c=makeVariant(lv,start+i,lv==='H'?S.mask:ALLTRAPS); await J.add({name:names[i].slice(0,120),code:codeOf(c),done:[],score:0,order:base+i+1,created:new Date().toISOString()}) }
+      toast('Добавлено: '+names.length); $('#jNames').value='' }catch(e){ toast('Не удалось записать в журнал') }
+  });
+  const cl=$('#jClear'); if(cl) cl.addEventListener('click',()=>{ jConfirm=true; renderJournal(m) });
+  const no=$('#jNo'); if(no) no.addEventListener('click',()=>{ jConfirm=false; renderJournal(m) });
+  const yes=$('#jYes'); if(yes) yes.addEventListener('click',async()=>{ jConfirm=false; for(const r of J.rows.slice()) await J.remove(r.id).catch(()=>{}); toast('Журнал очищен') });
+  const lk=$('#jLink'); if(lk) lk.addEventListener('click',()=>copyText(STUDENT_URL));
+  const csv=$('#jCsv'); if(csv) csv.addEventListener('click',()=>{ const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
+    const lines=[['№','Студент','Вариант'].concat(ITEM_NAMES.map((n,i)=>(i+1)+'. '+n)).concat(['Баллы','Из','Проверен']).map(q).join(';')].concat(J.rows.map((r,i)=>[i+1,r.name,r.code].concat(ITEM_NAMES.map((n,k)=>(r.done||[]).includes(k)?fmt(+ST.weights[k]||0):'0')).concat([fmt(r.score||0),fmt(tw),r.updated||'']).map(q).join(';')));
+    saveFile('journal.csv','\ufeff'+lines.join('\r\n')) });
+}
+
+// ---------- batch tab ----------
+let B=Object.assign({lv:'X',count:15,start:1},store.get(KEY+'.batch',{}));
+function batchList(){ const out=[]; for(let i=0;i<B.count;i++){ const c=makeVariant(B.lv,B.start+i,B.lv==='H'?S.mask:ALLTRAPS), r=compute(c); out.push({c,r,A:r.ok?addrs(c,r):null}) } return out }
+function renderBatch(m){
+  const list=batchList(), ok=list.filter(x=>x.r.ok);
+  m.innerHTML='<div class="bar"><p>Разные варианты на всю группу. Номера идут подряд, любой вариант можно открыть снова по коду. Чтобы закрепить варианты за студентами, используйте «Журнал».</p></div>'+
+    '<section class="sect"><div class="bctl">'+
+    '<div class="f"><label for="b_lv">Сложность</label><select id="b_lv">'+Object.entries(LEVELS).map(([k,v])=>'<option value="'+k+'"'+(B.lv===k?' selected':'')+'>'+v.name+'</option>').join('')+'</select></div>'+
+    '<div class="f"><label for="b_count">Сколько вариантов</label><input id="b_count" class="mono w-n" inputmode="numeric" value="'+B.count+'"></div>'+
+    '<div class="f"><label for="b_start">Начиная с номера</label><input id="b_start" class="mono w-n" inputmode="numeric" value="'+B.start+'"></div>'+
+    '<div class="sw">'+(canSave()?'<button type="button" class="btn primary" id="b_dxTasks">Все задания .docx</button><button type="button" class="btn" id="b_dlKeys">Все ключи .txt</button>':'')+'<button type="button" class="btn" id="b_cpTasks">Скопировать задания</button><button type="button" class="btn" id="b_cpKeys">Скопировать ключи</button>'+
+    (framed?'':'<button type="button" class="btn" id="b_prTasks">Печать заданий</button>')+'</div></div>'+
+    '<div class="tbl"><table class="dt"><thead><tr><th>Вариант</th><th>HQ-SRV</th><th>HQ-CLI</th><th>Управление</th><th>BR-SRV</th><th>Туннель</th><th>SSH</th><th></th></tr></thead><tbody>'+
+    list.map(({c,r})=>{ const code=codeOf(c); if(!r.ok) return '<tr><td>'+esc(code)+'</td><td colspan="7">не удалось собрать</td></tr>';
+      return '<tr><td><span class="lvtag lv-'+c.lv+'"><span class="dot"></span>'+esc(code)+'</span></td><td>'+r.lans.srv.cidr+'</td><td>'+r.lans.cli.cidr+'</td><td>'+r.lans.mgmt.cidr+'</td><td>'+r.lans.br.cidr+'</td><td>'+(c.tun==='gre'?'GRE ':'IPIP ')+r.tun.cidr+'</td><td>'+esc(c.sshPort)+'</td><td><button type="button" class="open" data-code="'+esc(code)+'">Открыть</button></td></tr>' }).join('')+'</tbody></table></div></section>';
+  const upd=()=>{ B={lv:$('#b_lv').value,count:Math.max(1,Math.min(40,parseInt($('#b_count').value,10)||1)),start:Math.max(1,Math.min(9960,parseInt($('#b_start').value,10)||1))}; store.set(KEY+'.batch',B); renderBatch(m) };
+  ['#b_lv','#b_count','#b_start'].forEach(s=>$(s).addEventListener('change',upd));
+  m.querySelectorAll('[data-code]').forEach(b=>b.addEventListener('click',()=>{ const p=parseCode(b.dataset.code); S.tab='task'; load(p.lv,p.num,p.mask); renderTabs(); window.scrollTo({top:0}) }));
+  const models=()=>ok.map(x=>taskModel(x.c,x.r,ST.rtrOs));
+  const keys=()=>ok.map(x=>keyPlain(x.c,x.r,x.A)+'\n'+reportText(x.c,ST,x.r,x.A)).join('\n════════════════════\n\n');
+  $('#b_cpTasks').addEventListener('click',()=>{ const ms=models(); copyRich(ms.map(modelHtml).join('<br style="page-break-before:always">'),ms.map(modelText).join('\n\n════════\n\n')) });
+  $('#b_cpKeys').addEventListener('click',()=>copyText(ok.map(x=>keyPlain(x.c,x.r,x.A)).join('\n────────\n\n')));
+  const dx=$('#b_dxTasks'); if(dx) dx.addEventListener('click',async()=>{ try{ toast('Собираю '+ok.length+' заданий…'); await saveFile('module1_'+B.lv+'_'+B.start+'-'+(B.start+B.count-1)+'_tasks.docx',await buildDocx(models())) }catch(e){ toast('Не удалось собрать документ') } });
+  const dk=$('#b_dlKeys'); if(dk) dk.addEventListener('click',()=>saveFile('module1_'+B.lv+'_'+B.start+'-'+(B.start+B.count-1)+'_keys.txt',keys()));
+  if(!framed) $('#b_prTasks').addEventListener('click',()=>printSheets(models().map(modelHtml)));
+}
+
+// ---------- params tab ----------
+const PF=[
+  ['Провайдер и туннель','Пункты 2, 6 и 7',[['netIspHq','ISP ↔ HQ-RTR',1],['netIspBr','ISP ↔ BR-RTR',1],['netTun','Сеть туннеля',1],['tun','Технология туннеля',0,[['gre','GRE'],['ipip','IP-in-IP']]],['ospfPass','Пароль OSPF',1]]],
+  ['Пользователи и SSH','Пункты 3 и 5',[['adm','Логин на роутерах',1],['admPass','Пароль на роутерах',1],['su','Логин на серверах',1],['suPass','Пароль на серверах',1],['uid','UID на серверах',1],['sshPort','Порт SSH',1],['maxTries','Попыток входа',1],['banner','Текст баннера',1,null,1]]],
+  ['Домен, время и DNS','Пункты 9, 10 и 11',[['dom','Домен',1],['tz','Часовой пояс',0,Object.keys(TZ).map(k=>[k,k])],['fwd1','Внешний DNS 1',1],['fwd2','Внешний DNS 2',1],['dockerTo','Куда указывает docker',0,[['hq','ISP в сторону HQ-RTR, web — в сторону BR'],['br','ISP в сторону BR-RTR, web — в сторону HQ']],1]]]
+];
+function field(k,l,mono,opts,full){
+  const v=C[k]??'';
+  return '<div class="f'+(full?' full':'')+'"><label for="p_'+k+'">'+l+'</label>'+(opts?'<select id="p_'+k+'" data-k="'+k+'">'+opts.map(([a,b])=>'<option value="'+esc(a)+'"'+(a===v?' selected':'')+'>'+esc(b)+'</option>').join('')+'</select>'
+    :'<input id="p_'+k+'" data-k="'+k+'"'+(mono?' class="mono"':'')+' value="'+esc(v)+'">')+'</div>';
+}
+function renderParams(m){
+  const lanBox=([k,n])=>'<div class="lan"><div class="lt"><b>'+(k==='mgmt'?'Сеть управления':'Сеть '+n)+'</b><span class="calc" id="calc_'+k+'"></span></div><div class="sentence">'+
+    (C.addrMode==='given'?'Адрес <input class="mono w-ip" id="p_'+k+'Base" data-k="'+k+'Base" aria-label="Адрес сети '+n+'" value="'+esc(C[k+'Base'])+'">,':'')+' вмещать '+
+    '<select id="p_'+k+'Rule" data-k="'+k+'Rule" aria-label="Правило '+n+'"><option value="le"'+(C[k+'Rule']==='le'?' selected':'')+'>не более</option><option value="ge"'+(C[k+'Rule']==='ge'?' selected':'')+'>не менее</option></select> '+
+    '<input class="mono w-n" id="p_'+k+'N" data-k="'+k+'N" aria-label="Число адресов '+n+'" inputmode="numeric" value="'+esc(C[k+'N'])+'"> адресов'+
+    (k==='br'?'':', VLAN <input class="mono w-v" id="p_'+k+'Vid" data-k="'+k+'Vid" aria-label="VLAN '+n+'" inputmode="numeric" value="'+esc(C[k+'Vid'])+'">')+'</div></div>';
+  m.innerHTML='<div class="bar"><p>Правьте любые значения. Задание, ключ и скрипты пересчитываются сразу. Изменённый вариант нельзя открыть по коду, поэтому для группы лучше брать варианты без правок.</p><div class="acts"><button type="button" class="btn" id="resetP">Вернуть значения варианта</button></div></div><div id="pmsgs"></div>'+
+    '<div class="form" id="pform"><div class="fg"><h3>Локальные сети</h3><p class="sub">Пункты 1 и 4</p>'+
+    field('addrMode','Как заданы адреса',0,[['given','Адрес каждой сети указан в задании'],['vlsm','Нарезать из общего блока (VLSM)']],1)+
+    (C.addrMode==='vlsm'?field('block','Общий блок',1):'')+LANS.map(lanBox).join('')+'</div>'+
+    PF.map(([t,sub,fs])=>'<div class="fg"><h3>'+t+'</h3><p class="sub">'+sub+'</p><div class="row">'+fs.map(f=>field(...f)).join('')+'</div></div>').join('')+'</div>';
+  const upd=()=>{ $('#pmsgs').innerHTML=msgsHtml(); LANS.forEach(([k])=>{ const e=$('#calc_'+k), n=R.lans[k]; e.textContent=n?n.cidr+' · маска '+n.mask+' · '+n.size+' адр.':'—' }) };
+  m.querySelectorAll('[data-k]').forEach(el=>{
+    el.addEventListener(el.tagName==='SELECT'?'change':'input',()=>{
+      const k=el.dataset.k; C=Object.assign({},C,{[k]:el.value.trim()});
+      if(k==='addrMode'&&C.addrMode==='vlsm'&&!parseCidr(C.block)){ const p=String(C.srvBase).split('.'); C.block=p.slice(0,3).join('.')+'.0/24' }
+      if(k==='addrMode'&&C.addrMode==='given'&&R.ok) fillBases(C,R);
+      S.customOn=true; S.student=null; recompute(); save(); renderHead();
+      if(k==='addrMode') renderParams(m); else upd();
+    });
+  });
+  $('#resetP').addEventListener('click',()=>{ load(S.lv,S.num,S.mask); toast('Значения варианта '+codeOf(C)+' восстановлены') });
+  upd();
+}
+
+// ---------- settings tab ----------
+function renderSettings(m){
+  const f=(k,l)=>'<div class="f"><label for="s_'+k+'">'+l+'</label><input class="mono" id="s_'+k+'" data-s="'+k+'" value="'+esc(ST[k])+'"></div>';
+  m.innerHTML='<div class="bar"><p>Эти настройки относятся к вашему стенду и к оценке, а не к варианту. Они сохраняются в браузере и действуют для всех вариантов.</p><div class="acts"><button type="button" class="btn" id="resetS">Вернуть по умолчанию</button></div></div>'+
+    '<div class="form"><div class="fg"><h3>Операционные системы</h3><p class="sub">Серверы и клиент — всегда Альт</p><div class="f"><label for="s_rtrOs">ISP, HQ-RTR и BR-RTR</label><select id="s_rtrOs" data-s="rtrOs"><option value="astra"'+(ST.rtrOs==='astra'?' selected':'')+'>Astra Linux CE</option><option value="alt"'+(ST.rtrOs==='alt'?' selected':'')+'>Альт Сервер</option></select><span class="hint">Меняет скрипты, решение вручную и таблицу 1 в задании.</span></div>'+
+    '<div class="f"><label for="s_autoReboot">После шага «База»</label><select id="s_autoReboot" data-s="autoReboot"><option value="no"'+(ST.autoReboot==='no'?' selected':'')+'>Не перезагружать, reboot наберу сам</option><option value="yes"'+(ST.autoReboot==='yes'?' selected':'')+'>Сразу перезагрузить машину</option></select></div></div>'+
+    '<div class="fg"><h3>Имена интерфейсов</h3><p class="sub">Посмотрите на машинах командой ip -br a</p><div class="row">'+
+    f('ifIspWan','ISP → интернет')+f('ifIspHq','ISP → HQ')+f('ifIspBr','ISP → BR')+f('ifHqWan','HQ-RTR → ISP')+f('ifHqLan','HQ-RTR → офис')+f('ifBrWan','BR-RTR → ISP')+f('ifBrLan','BR-RTR → офис')+f('ifSrv','HQ-SRV и BR-SRV')+f('ifCli','HQ-CLI')+'</div></div>'+
+    '<div class="fg"><h3>Имена ВМ в VirtualBox</h3><p class="sub">Для команды VBoxManage, так же как в левом списке VirtualBox</p><div class="row">'+
+    f('vmIsp','ВМ ISP')+f('vmHqRtr','ВМ HQ-RTR')+f('vmBrRtr','ВМ BR-RTR')+f('vmHqSrv','ВМ HQ-SRV')+f('vmBrSrv','ВМ BR-SRV')+f('vmHqCli','ВМ HQ-CLI')+'</div></div>'+
+    '<div class="fg"><h3>Баллы за пункты</h3><p class="sub">Сейчас всего <b id="wTot">'+fmt(totalW())+'</b> б. Поставьте свои значения по критериям оценки.</p><div class="row">'+
+    ITEM_NAMES.map((n,i)=>'<div class="f"><label for="w'+i+'">'+(i+1)+'. '+n+'</label><input class="mono" id="w'+i+'" data-w="'+i+'" inputmode="decimal" value="'+fmt(ST.weights[i])+'"></div>').join('')+'</div></div></div>';
+  m.querySelectorAll('[data-s]').forEach(el=>el.addEventListener(el.tagName==='SELECT'?'change':'input',()=>{ ST[el.dataset.s]=el.value.trim(); store.set(KEY+'.stand',ST); recompute(); renderHead() }));
+  m.querySelectorAll('[data-w]').forEach(el=>el.addEventListener('input',()=>{ const v=parseFloat(el.value.replace(',','.')); ST.weights[+el.dataset.w]=isFinite(v)&&v>=0?v:0; store.set(KEY+'.stand',ST); $('#wTot').textContent=fmt(totalW()) }));
+  $('#resetS').addEventListener('click',()=>{ ST=Object.assign({},STAND_DEF,{weights:WEIGHTS_DEF.slice()}); store.set(KEY+'.stand',ST); recompute(); renderSettings(m); toast('Настройки по умолчанию') });
+}
+
+function recompute(){ R=compute(C); A=R.ok?addrs(C,R):null; G=R.ok?gen(C,ST,R):null; CK=R.ok?checks(C,R,A):null }
+function render(){ recompute(); save(); renderHead(); renderTabs(); renderMain() }
+J.subs.push(()=>{ if(S.tab==='journal'||(S.tab==='key'&&S.student)) renderMain() });
+onSaveReady(()=>{ if(DL) renderMain() });
+render();
+
+})();
+</script>
+</body>
+</html>
