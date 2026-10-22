@@ -1,12 +1,14 @@
 // ===== student page: task sheet only, no key and no scripts =====
 const KEY='degen.student.v1';
-let S=Object.assign({lv:'X',num:1,mask:ALLTRAPS,os:'astra',train:false},store.get(KEY,{}));
+let S=Object.assign({lv:'X',num:1,mask:ALLTRAPS,os:'astra',train:false,mod:1},store.get(KEY,{}));
+if(!MODS[S.mod]) S.mod=1;
 const GRP=parseGroup(location.hash);
 let ME = GRP ? store.get(KEY+'.g.'+GRP.seed,null) : null;
 const hc=parseCode(location.hash); if(hc){ S.lv=hc.lv; S.num=hc.num; S.mask=hc.mask }
 let C=null, R=null, manual=false;
 mountTheme($('#themeSeg'));
-mountTimer($('#timerBox'),60);
+let EX=null;
+function mountEx(){ if(EX) EX.stop(); EX=mountExam($('#timerBox'),{mod:S.mod,read:READ_MIN,work:MODS[S.mod].min,label:MODS[S.mod].name,onPhase:()=>renderSheet()}) }
 function load(lv,num,mask){ S.lv=lv; S.num=Math.max(1,Math.min(9999,parseInt(num,10)||1)); S.mask=lv==='H'?(mask==null?ALLTRAPS:mask):ALLTRAPS; store.set(KEY,S);
   if(!GRP){ try{ history.replaceState(null,'','#'+codeOf({lv:S.lv,num:S.num,mask:S.mask})) }catch(e){} } render() }
 const osPick=()=>'<div class="ef"><label for="osSel" style="font-weight:600;font-size:.8rem;color:var(--muted)">ОС роутеров</label><select id="osSel" style="width:auto"><option value="astra">Astra Linux CE</option><option value="alt">Альт Сервер</option></select></div>';
@@ -58,18 +60,33 @@ function render(){
   if(GRP){
     if(!ME){ C=makeVariant(GRP.lv,1,GRP.mask); R=compute(C); renderGroupEntry();
       $('#main').innerHTML='<div class="empty"><b>Задание появится после ввода ФИ</b>Вариант выдаётся каждому студенту отдельно и не меняется, если открыть ссылку снова.</div>'; return }
-    C=variantFromCode(codeForName(GRP,ME.name)); R=compute(C); renderGroupEntry();
-  } else { C=makeVariant(S.lv,S.num,S.mask); R=compute(C); renderEntry() }
-  const who = GRP&&ME ? ME.name : '';
-  const M=taskModel(C,R,S.os,who);
-  $('#main').innerHTML='<div class="bar"><p>'+(who?'Сообщите преподавателю код варианта <b>'+esc(codeOf(C))+'</b>. ':'')+'Выполните задание на стенде, адреса и настройки опишите в отчёте.</p><div class="acts">'+
-    '<button type="button" class="btn" id="cpTask">'+ICON.copy+'<span class="lbl">Скопировать для Word</span></button>'+
+    C=withM23(variantFromCode(codeForName(GRP,ME.name))); R=compute(C); renderGroupEntry();
+  } else { C=withM23(makeVariant(S.lv,S.num,S.mask)); R=compute(C); renderEntry() }
+  renderSheet();
+}
+const LOCK='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
+const durRu = m => m%60 ? (m>60?Math.floor(m/60)+' ч '+(m%60)+' мин':m+' мин') : (m/60)+' ч';
+function renderSheet(){
+  const main=$('#main'); if(!main||!C||!EX) return;
+  if(GRP&&!ME) return;
+  const who = GRP&&ME ? ME.name : '', mod=S.mod, ph=EX.phase(), open=ph!=='idle';
+  const M = mod===1 ? taskModel(C,R,S.os,who) : taskModel23(mod,C,R,who);
+  const seg='<div class="seg modseg" role="group" aria-label="Модуль">'+[1,2,3].map(k=>'<button type="button" data-mod="'+k+'" aria-pressed="'+(mod===k)+'">'+MODS[k].name+' <small>'+durRu(MODS[k].min)+'</small></button>').join('')+'</div>';
+  main.innerHTML='<div class="bar"><div class="l" style="display:flex;gap:10px 12px;align-items:center;flex-wrap:wrap">'+seg+'<p>'+(who?'Код варианта <b>'+esc(codeOf(C))+'</b>. ':'')+(open?'Выполните задание на стенде, настройки опишите в отчёте.':'Задание откроется после старта таймера.')+'</p></div>'+
+    (open?'<div class="acts"><button type="button" class="btn" id="cpTask">'+ICON.copy+'<span class="lbl">Скопировать для Word</span></button>'+
     (canSave()?'<button type="button" class="btn primary" id="dxTask">'+ICON.down+'<span class="lbl">.docx</span></button>':'')+
-    (framed?'':'<button type="button" class="btn" id="prTask">'+ICON.print+'<span class="lbl">Печать</span></button>')+'</div></div><article class="sheet" id="sheet">'+modelHtml(M)+'</article>';
-  const base='module1_'+codeOf(C).replace('.','_')+(who?'_'+who.replace(/\s+/g,'_'):'');
+    (framed?'':'<button type="button" class="btn" id="prTask">'+ICON.print+'<span class="lbl">Печать</span></button>')+'</div>':'')+'</div>'+
+    (open ? (ph==='read'?'<div class="readbanner">Идёт ознакомление: '+READ_MIN+' минут на чтение задания, затем '+durRu(MODS[mod].min)+' на выполнение. Нажмите «Приступить» на таймере, если готовы раньше.</div>':'')+'<article class="sheet" id="sheet">'+modelHtml(M)+'</article>'
+      : '<div class="locked"><div class="lk">'+LOCK+'</div><h2>'+MODS[mod].name+'. '+esc(MODS[mod].title)+'</h2><p>Задание скрыто до начала. После старта будет '+READ_MIN+' минут на ознакомление, затем таймер на выполнение запустится сам.</p>'+
+        '<div class="steps3"><span>Ознакомление <b>'+READ_MIN+' мин</b></span><span>Выполнение <b>'+durRu(MODS[mod].min)+'</b></span></div><button type="button" class="btn primary" id="startEx">Начать '+MODS[mod].name.toLowerCase().replace('модуль','модуль')+'</button></div>');
+  main.querySelectorAll('[data-mod]').forEach(b=>b.addEventListener('click',()=>{ const k=+b.dataset.mod; if(k===S.mod) return; S.mod=k; store.set(KEY,S); mountEx(); renderSheet() }));
+  const st=$('#startEx'); if(st) st.addEventListener('click',()=>EX.start());
+  if(!open) return;
+  const base='module'+mod+'_'+codeOf(C).replace('.','_')+(who?'_'+who.replace(/\s+/g,'_'):'');
   $('#cpTask').addEventListener('click',()=>copyRich($('#sheet').innerHTML,modelText(M),$('#sheet')));
   const dx=$('#dxTask'); if(dx) dx.addEventListener('click',async()=>{ try{ toast('Собираю документ…'); await saveFile(base+'.docx',await buildDocx([M])) }catch(e){ toast('Не удалось собрать документ') } });
   const pr=$('#prTask'); if(pr) pr.addEventListener('click',()=>printSheets([modelHtml(M)]));
 }
+mountEx();
 onSaveReady(()=>{ if(DL) render() });
 render();

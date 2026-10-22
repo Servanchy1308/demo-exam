@@ -17,6 +17,6 @@ def page(title, body, js):
     return '<!doctype html>\n<html lang="ru">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'+head+'</head>\n<body>\n'+tail+'</body>\n</html>\n'
 out_t, out_s, out_v = ('../teacher.html','../index.html','../solve.html') if pages else ('../de-generator.html','../de-student.html','../de-solve.html')
 open(out_t,'w',encoding='utf-8').write(page('Генератор вариантов ДЭ', r('teacher.body.html'), (r('teacher.logic.js')+r('teacher.ui.js')).replace('__STUDENT_URL__',student_url)))
-open(out_s,'w',encoding='utf-8').write(page('Задание Модуля 1', r('student.body.html'), r('student.js')))
-open(out_v,'w',encoding='utf-8').write(page('Решение Модуля 1 по тексту', r('solve.body.html'), (r('teacher.logic.js')+r('solve.js')).replace('__STUDENT_URL__',student_url)))
+open(out_s,'w',encoding='utf-8').write(page('Задания ДЭ 09.02.06', r('student.body.html'), r('m23.js')+r('student.js')))
+open(out_v,'w',encoding='utf-8').write(page('Решение ДЭ по параметрам', r('solve.body.html'), (r('m23.js')+r('teacher.logic.js')+r('m23.solve.js')+r('solve.js')).replace('__STUDENT_URL__',student_url)))
 print('built')

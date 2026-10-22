@@ -1,19 +1,10 @@
 <div class="wrap">
   <header class="top">
-    <div class="brandbar"><svg class="logo" viewBox="0 0 44 44" aria-hidden="true"><rect x="1" y="1" width="42" height="42" rx="12" class="lg-bg"/><path d="M10 12h24v16h-6v4H16v-4h-6z" class="lg-port"/><rect x="12.3" y="14" width="1.8" height="5.5" rx=".6" fill="#f3a35c"/><rect x="15.1" y="14" width="1.8" height="5.5" rx=".6" fill="#e2690f"/><rect x="17.9" y="14" width="1.8" height="5.5" rx=".6" fill="#8fd19b"/><rect x="20.7" y="14" width="1.8" height="5.5" rx=".6" fill="#2f6fdc"/><rect x="23.5" y="14" width="1.8" height="5.5" rx=".6" fill="#9dbcf2"/><rect x="26.3" y="14" width="1.8" height="5.5" rx=".6" fill="#2b9a4e"/><rect x="29.1" y="14" width="1.8" height="5.5" rx=".6" fill="#cfa47c"/><rect x="31.9" y="14" width="1.8" height="5.5" rx=".6" fill="#7a4a26"/></svg><div class="brand"><div class="wordmark">ДЭ<span>·</span>Лаб</div><h1>Решение задания Модуля 1 по тексту</h1></div></div>
-    <div class="topacts"><a class="btn ghost" href="teacher.html">← <span class="lbl">Генератор</span></a><div id="timerBox"></div><div class="seg theme" id="themeSeg" role="group" aria-label="Тема оформления"></div></div>
+    <div class="brandbar"><svg class="logo" viewBox="0 0 44 44" aria-hidden="true"><rect x="1" y="1" width="42" height="42" rx="12" class="lg-bg"/><path d="M10 12h24v16h-6v4H16v-4h-6z" class="lg-port"/><rect x="12.3" y="14" width="1.8" height="5.5" rx=".6" fill="#f3a35c"/><rect x="15.1" y="14" width="1.8" height="5.5" rx=".6" fill="#e2690f"/><rect x="17.9" y="14" width="1.8" height="5.5" rx=".6" fill="#8fd19b"/><rect x="20.7" y="14" width="1.8" height="5.5" rx=".6" fill="#2f6fdc"/><rect x="23.5" y="14" width="1.8" height="5.5" rx=".6" fill="#9dbcf2"/><rect x="26.3" y="14" width="1.8" height="5.5" rx=".6" fill="#2b9a4e"/><rect x="29.1" y="14" width="1.8" height="5.5" rx=".6" fill="#cfa47c"/><rect x="31.9" y="14" width="1.8" height="5.5" rx=".6" fill="#7a4a26"/></svg><div class="brand"><div class="wordmark">ДЭ<span>·</span>Лаб</div><h1>Решение ДЭ по параметрам</h1></div></div>
+    <div class="topacts"><a class="btn ghost" href="teacher.html">← <span class="lbl">Генератор</span></a><div class="seg theme" id="themeSeg" role="group" aria-label="Тема оформления"></div></div>
   </header>
   <div class="cable" aria-hidden="true"></div>
-  <section class="paste" aria-label="Текст задания">
-    <label for="taskIn" style="font-size:.9rem">Вставьте текст задания Модуля 1</label>
-    <textarea id="taskIn" spellcheck="false" placeholder="Скопируйте задание целиком: с этого сайта (кнопка «Скопировать для Word») или официальный текст ДЭ 09.02.06. Можно вписать и код варианта, например X-12."></textarea>
-    <div class="pa">
-      <button type="button" class="btn primary" id="parseBtn">Решить</button>
-      <button type="button" class="btn" id="sampleBtn">Вставить пример</button>
-      <button type="button" class="btn ghost" id="clearBtn">Очистить</button>
-      <span class="hint">Страница находит в тексте адреса, VLAN, логины, пароли, порт и часовой пояс. Чего нет в тексте, подставит по умолчанию и подсветит — проверьте во вкладке «Параметры».</span>
-    </div>
-  </section>
+  <section class="toolbar" id="toolbar" aria-label="Модуль и источник параметров"></section>
   <main id="main" class="panel"></main>
 </div>
 <div id="printArea"></div>
