@@ -6,6 +6,7 @@ let ME = GRP ? store.get(KEY+'.g.'+GRP.seed,null) : null;
 const hc=parseCode(location.hash); if(hc){ S.lv=hc.lv; S.num=hc.num; S.mask=hc.mask }
 let C=null, R=null, manual=false;
 mountTheme($('#themeSeg'));
+mountTimer($('#timerBox'),60);
 function load(lv,num,mask){ S.lv=lv; S.num=Math.max(1,Math.min(9999,parseInt(num,10)||1)); S.mask=lv==='H'?(mask==null?ALLTRAPS:mask):ALLTRAPS; store.set(KEY,S);
   if(!GRP){ try{ history.replaceState(null,'','#'+codeOf({lv:S.lv,num:S.num,mask:S.mask})) }catch(e){} } render() }
 const osPick=()=>'<div class="ef"><label for="osSel" style="font-weight:600;font-size:.8rem;color:var(--muted)">ОС роутеров</label><select id="osSel" style="width:auto"><option value="astra">Astra Linux CE</option><option value="alt">Альт Сервер</option></select></div>';

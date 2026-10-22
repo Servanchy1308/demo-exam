@@ -384,3 +384,35 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
 .badge .bc{display:flex;flex-direction:column;line-height:1.1}
 .badge small{font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .badge b{font-family:var(--display);font-size:1.4rem;color:var(--lv)}
+
+/* exam timer */
+.timer{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 5px 4px 10px;color:var(--muted)}
+.timer .tm{font-family:var(--mono);font-size:1.05rem;font-weight:600;color:var(--ink);min-width:4.2em;text-align:center;font-variant-numeric:tabular-nums}
+.timer .tb{border:1px solid var(--line);background:var(--raise);border-radius:8px;padding:4px 10px;font-size:.78rem;font-weight:600;color:var(--ink)}
+.timer .tb:hover{border-color:var(--accent);color:var(--accent)}
+.timer .tb.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.timer[data-st~="run"]{border-color:var(--accent)}
+.timer[data-st~="run"] svg{color:var(--accent)}
+.timer[data-st~="warn"]{background:var(--warn-bg);border-color:transparent}
+.timer[data-st~="warn"] .tm,.timer[data-st~="warn"] svg{color:var(--warn)}
+.timer[data-st~="over"]{background:var(--err-bg);border-color:transparent}
+.timer[data-st~="over"] .tm,.timer[data-st~="over"] svg{color:var(--err)}
+@media (prefers-reduced-motion:no-preference){.timer[data-st~="over"] .tm{animation:blink 1.2s ease-in-out infinite}}
+@media print{.timer{display:none}}
+
+/* solve page */
+.paste{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:10px}
+.paste textarea{min-height:170px;font-size:.84rem;background:var(--raise)}
+.paste .pa{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.paste .pa .hint{flex:1 1 260px}
+.pr{display:flex;flex-wrap:wrap;gap:6px}
+.pr .pill{cursor:pointer;font-weight:600}
+.pr .pill b{font-family:var(--mono);font-weight:600}
+.pr .pill.free{background:var(--raise)}
+.prsum{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.8rem;color:var(--muted)}
+.prsum span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--line-strong)}
+.prsum .k-ok::before{background:var(--ok)}.prsum .k-warn::before{background:var(--warn)}
+.flash{animation:flash 1.4s ease-out}
+@keyframes flash{0%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:0 0 0 0 transparent}}
+a.btn{text-decoration:none;color:var(--muted)}
+.topacts{flex-wrap:wrap}
