@@ -1,17 +1,16 @@
-// ===== solve page: paste a task text → parameters → scripts =====
-const SKEY='degen.solve.v1';
+// ===== solve page: parameters → commands for modules 1, 2 and 3 =====
+const SKEY='degen.solve.v2';
 const STAND_DEF={ifIspWan:'eth0',ifIspHq:'eth1',ifIspBr:'eth2',ifHqWan:'eth0',ifHqLan:'eth1',ifBrWan:'eth0',ifBrLan:'eth1',ifSrv:'enp0s3',ifCli:'enp0s3',
   vmIsp:'ISP',vmHqRtr:'HQ-RTR',vmBrRtr:'BR-RTR',vmHqSrv:'HQ-SRV',vmBrSrv:'BR-SRV',vmHqCli:'HQ-CLI',autoReboot:'no',rtrOs:'astra'};
-let S=Object.assign({text:'',c:null,rep:null,tab:'solve',sel:'isp',step:0,mode:'auto'},store.get(SKEY,{}));
+let S=Object.assign({mod:1,c:null,rep:null,text:'',paste:false,stand:false,mode:'manual',sel:'isp',step:0,view23:'items',sel23:{}},store.get(SKEY,{}));
+if(!MODS[S.mod]) S.mod=1; if(!S.sel23) S.sel23={};
 let ST=Object.assign({},STAND_DEF,store.get('degen.v3.stand',{}));
-let C=S.c, REP=S.rep, R=null, A=null, G=null;
+let C=null, REP=S.rep, R=null, A=null, G=null;
 const save=()=>{ S.c=C; S.rep=REP; store.set(SKEY,S) };
 const saveST=()=>{ const all=store.get('degen.v3.stand',{}); store.set('degen.v3.stand',Object.assign(all,ST)) };
 const B_=(id,icon,label,cls)=>'<button type="button" class="btn'+(cls?' '+cls:'')+'" id="'+id+'">'+(icon?ICON[icon]:'')+'<span class="lbl">'+label+'</span></button>';
-const fname = s => 'module1_solve'+s;
+const fname = s => 'module'+S.mod+'_'+(C&&C.num?codeOf(C):'demo')+s;
 mountTheme($('#themeSeg'));
-mountTimer($('#timerBox'),60);
-
 // ---------- defaults: official demo of 09.02.06 ----------
 const DEF={lv:'E',num:0,mask:ALLTRAPS,addrMode:'given',block:'',
   srvRule:'le',srvN:'32',cliRule:'ge',cliN:'16',mgmtRule:'le',mgmtN:'8',brRule:'le',brN:'16',
@@ -151,71 +150,107 @@ o Пароль пользователя net_admin с паролем P@ssw0rd
 Таблица: docker.au-team.irpo — A — ISP, адрес в сторону HQ-RTR; web.au-team.irpo — A — ISP, адрес в сторону BR-RTR
 11. Настройте часовой пояс на всех устройствах (согласно месту проведения экзамена)`;
 
-// ---------- parse report ----------
+// ---------- parse report (only after a pasted text) ----------
 function repHtml(){
-  if(!REP) return '';
-  if(REP.src==='code') return '<div class="msgs"><div class="msg" style="background:var(--ok-bg);color:var(--ok)">Открыт вариант '+esc(REP.code)+' этого сайта: все параметры взяты по коду.</div></div>';
+  if(!REP||S.mod!==1) return '';
+  if(REP.src==='code') return '';
   const show=k=>k==='tun'?(C.tun==='gre'?'GRE':'IP-in-IP'):k==='dockerTo'?'в сторону '+(C.dockerTo==='br'?'BR':'HQ'):k==='tz'?C.tz.split('/')[1]:/N$/.test(k)?(C[k.replace('N','Rule')]==='ge'?'≥ ':'≤ ')+C[k]:C[k];
   const keys=SHOWN.filter(k=>!(C.addrMode==='vlsm'&&/Base$/.test(k)));
   const f=keys.filter(k=>REP.found.includes(k)), free=REP.miss.filter(k=>FREE.has(k)), warn=REP.miss.filter(k=>!FREE.has(k));
   const pill=(k,cls,tip)=>'<button type="button" class="pill '+cls+'" data-goto="'+k+'" title="'+tip+'">'+esc(LBL[k])+': <b>'+esc(show(k))+'</b></button>';
-  return '<div class="card"><h3>Что найдено в тексте <small>'+f.length+' из '+keys.length+'</small></h3>'+
+  return '<div class="card"><h3>Что найдено в тексте <small>'+f.length+' из '+keys.length+' · <button type="button" class="lnk" id="hideRep">скрыть</button></small></h3>'+
     '<div class="prsum"><span class="k-ok">найдено в задании</span><span>не задано в задании — выбрано по умолчанию</span><span class="k-warn">не найдено — проверьте</span></div>'+
-    '<div class="pr">'+warn.map(k=>pill(k,'warn','Не нашёл в тексте. Нажмите, чтобы исправить')).join('')+f.map(k=>pill(k,'ok','Взято из текста')).join('')+free.map(k=>pill(k,'free','В задании не указано, значение на ваш выбор')).join('')+'</div></div>';
+    '<div class="pr">'+warn.map(k=>pill(k,'warn','Не нашёл в тексте')).join('')+f.map(k=>pill(k,'ok','Взято из текста')).join('')+free.map(k=>pill(k,'free','В задании не указано')).join('')+'</div></div>';
 }
 
-// ---------- parameters (same fields as the teacher page) ----------
+// ---------- parameter forms ----------
 const PF=[
   ['Провайдер и туннель','Пункты 2, 6 и 7',[['netIspHq','ISP ↔ HQ-RTR',1],['netIspBr','ISP ↔ BR-RTR',1],['netTun','Сеть туннеля',1],['tun','Технология туннеля',0,[['gre','GRE'],['ipip','IP-in-IP']]],['ospfPass','Пароль OSPF',1]]],
   ['Пользователи и SSH','Пункты 3 и 5',[['adm','Логин на роутерах',1],['admPass','Пароль на роутерах',1],['su','Логин на серверах',1],['suPass','Пароль на серверах',1],['uid','UID на серверах',1],['sshPort','Порт SSH',1],['maxTries','Попыток входа',1],['banner','Текст баннера',1,null,1]]],
   ['Домен, время и DNS','Пункты 9, 10 и 11',[['dom','Домен',1],['tz','Часовой пояс',0,Object.keys(TZ).map(k=>[k,k+' · '+TZ[k].replace(/^.*\(/,'(')])],['fwd1','Внешний DNS 1',1],['fwd2','Внешний DNS 2',1],['dockerTo','Куда указывает docker',0,[['hq','ISP в сторону HQ-RTR, web — в сторону BR'],['br','ISP в сторону BR-RTR, web — в сторону HQ']],1]]]
+];
+const PF2=[
+  ['Домен Samba','Пункт 1',[['usrN','Сколько пользователей',1],['grp','Группа',1],['usrPre','Имя: начало',1],['usrSuf','Имя: суффикс после точки',1],['usrPass','Пароль пользователей',1],['dcPass','Пароль administrator',1],['sudoCmds','Команды sudo для группы',1,null,1]]],
+  ['Хранилище','Пункт 2',[['raidLvl','Уровень RAID',0,[['0','RAID 0'],['1','RAID 1'],['5','RAID 5']]],['raidMnt','Куда монтировать RAID',1],['raidDisks','Диски',1,null,1],['nfsDir','Каталог NFS',1],['nfsMnt','Куда монтировать на HQ-CLI',1]]],
+  ['Время и Docker','Пункты 3 и 5',[['ntpStratum','Стратум ISP',1],['dockApp','Контейнер приложения',1],['dockPort','Порт приложения',1],['dockDb','База',1],['dockUser','Пользователь базы',1],['dockPass','Пароль базы',1]]],
+  ['Веб, порты и прокси','Пункты 6–9',[['webDb','База веб-приложения',1],['webUser','Пользователь базы',1],['webPass','Пароль базы',1,null,1],['hqFwd','Порт на HQ-RTR → HQ-SRV:80',1],['brFwd','Порт на BR-RTR → приложение',1],['authUser','Логин web-аутентификации',1],['authPass','Пароль web-аутентификации',1]]]
+];
+const PF3=[
+  ['Пользователи и сертификаты','Пункты 1 и 2',[['csv','Файл пользователей',1,null,1],['caName','Имя корневого ЦС',1],['certDays','Срок сертификатов, дней',1]]],
+  ['IPsec и экран','Пункты 3 и 4',[['psk','Ключ IPsec',1,null,1],['fwAllow','Разрешить снаружи',0,'fw',1]]],
+  ['Печать и журналы','Пункты 5 и 6',[['printer','Имя принтера',1],['logLvl','Уровень журналов и выше',0,LOGLV.map(([k])=>[k,k])],['logDir','Каталог журналов',1],['rotate','Ротация',0,[['daily','ежедневно'],['weekly','еженедельно'],['monthly','ежемесячно']]],['rotSize','Размер для ротации',1]]],
+  ['Мониторинг, Ansible, fail2ban','Пункты 7–9',[['monName','Имя Grafana (без домена)',1],['monUser','Логин Grafana',1],['monPass','Пароль Grafana',1],['pcDir','Каталог инвентаризации',1,null,1],['f2bTries','Попыток до блокировки',1],['f2bBan','Блокировка, секунд',1]]]
 ];
 function field(k,l,mono,opts,full){
   const v=C[k]??'';
   return '<div class="f'+(full?' full':'')+'"><label for="p_'+k+'">'+l+'</label>'+(opts?'<select id="p_'+k+'" data-k="'+k+'">'+opts.map(([a,b])=>'<option value="'+esc(a)+'"'+(a===v?' selected':'')+'>'+esc(b)+'</option>').join('')+'</select>'
     :'<input id="p_'+k+'" data-k="'+k+'"'+(mono?' class="mono"':'')+' value="'+esc(v)+'" spellcheck="false">')+'</div>';
 }
+function field2(mk,k,l,mono,opts,full){
+  const v=C[mk][k]??'', id='p_'+mk+'_'+k;
+  if(opts==='fw'){ const on=v.split(/[,\s]+/);
+    return '<div class="f full"><span style="font-size:.78rem;font-weight:600">'+l+'</span><div class="pr">'+FW_ALL.map(x=>'<label class="pill" style="cursor:pointer"><input type="checkbox" data-fw="'+x+'"'+(on.includes(x)?' checked':'')+' style="width:auto;margin:0"> '+x+'</label>').join('')+'</div><span class="hint">Туннель, IPsec и проброшенные порты открыты всегда.</span></div>' }
+  return '<div class="f'+(full?' full':'')+'"><label for="'+id+'">'+l+'</label>'+(opts?'<select id="'+id+'" data-m="'+mk+'" data-k="'+k+'">'+opts.map(([a,b])=>'<option value="'+esc(a)+'"'+(a===v?' selected':'')+'>'+esc(b)+'</option>').join('')+'</select>'
+    :'<input id="'+id+'" data-m="'+mk+'" data-k="'+k+'"'+(mono?' class="mono"':'')+' value="'+esc(v)+'" spellcheck="false">')+'</div>';
+}
 function msgsHtml(){ if(!R) return ''; let h='';
   R.E.forEach(t=>h+='<div class="msg err">'+esc(t)+'</div>'); R.W.forEach(t=>h+='<div class="msg warn">'+esc(t)+'</div>');
   return h?'<div class="msgs">'+h+'</div>':'' }
-function renderParams(m){
-  const lanBox=([k,n])=>'<div class="lan"><div class="lt"><b>'+(k==='mgmt'?'Сеть управления':'Сеть '+n)+'</b><span class="calc" id="calc_'+k+'"></span></div><div class="sentence">'+
-    (C.addrMode==='given'?'Адрес <input class="mono w-ip" id="p_'+k+'Base" data-k="'+k+'Base" aria-label="Адрес сети '+n+'" value="'+esc(C[k+'Base'])+'">,':'')+' вмещать '+
-    '<select id="p_'+k+'Rule" data-k="'+k+'Rule" aria-label="Правило '+n+'"><option value="le"'+(C[k+'Rule']==='le'?' selected':'')+'>не более</option><option value="ge"'+(C[k+'Rule']==='ge'?' selected':'')+'>не менее</option></select> '+
-    '<input class="mono w-n" id="p_'+k+'N" data-k="'+k+'N" aria-label="Число адресов '+n+'" inputmode="numeric" value="'+esc(C[k+'N'])+'"> адресов'+
-    (k==='br'?'':', VLAN <input class="mono w-v" id="p_'+k+'Vid" data-k="'+k+'Vid" aria-label="VLAN '+n+'" inputmode="numeric" value="'+esc(C[k+'Vid'])+'">')+'</div></div>';
-  m.innerHTML='<div id="pmsgs"></div><div class="form"><div class="card"><h3>Локальные сети <small>пункты 1 и 4</small></h3>'+
+const lanBox=([k,n])=>'<div class="lan"><div class="lt"><b>'+(k==='mgmt'?'Сеть управления':'Сеть '+n)+'</b><span class="calc" id="calc_'+k+'"></span></div><div class="sentence">'+
+  (C.addrMode==='given'?'Адрес <input class="mono w-ip" id="p_'+k+'Base" data-k="'+k+'Base" aria-label="Адрес сети '+n+'" value="'+esc(C[k+'Base'])+'">,':'')+' вмещать '+
+  '<select id="p_'+k+'Rule" data-k="'+k+'Rule" aria-label="Правило '+n+'"><option value="le"'+(C[k+'Rule']==='le'?' selected':'')+'>не более</option><option value="ge"'+(C[k+'Rule']==='ge'?' selected':'')+'>не менее</option></select> '+
+  '<input class="mono w-n" id="p_'+k+'N" data-k="'+k+'N" aria-label="Число адресов '+n+'" inputmode="numeric" value="'+esc(C[k+'N'])+'"> адресов'+
+  (k==='br'?'':', VLAN <input class="mono w-v" id="p_'+k+'Vid" data-k="'+k+'Vid" aria-label="VLAN '+n+'" inputmode="numeric" value="'+esc(C[k+'Vid'])+'">')+'</div></div>';
+function fromM1(){
+  if(!R||!R.ok) return '<div class="msg err">Параметры Модуля 1 с ошибкой — откройте вкладку «Модуль 1» и исправьте.</div>';
+  const a=A, row=(k,v)=>'<span class="pill">'+k+': <b class="mono">'+esc(v)+'</b></span>';
+  return '<div class="card"><h3>Из Модуля 1 <small><button type="button" class="lnk" data-go1>изменить</button></small></h3><div class="pr">'+
+    row('Домен',C.dom)+row('HQ-SRV',a.hqSrv)+row('BR-SRV',a.brSrv)+row('HQ-CLI',a.hqCli)+row('HQ-RTR внешний',a.hqWan)+row('BR-RTR внешний',a.brWan)+row('SSH',C.su+' : '+C.sshPort)+row('Роутеры',C.adm)+'</div></div>';
+}
+function paramsHtml(){
+  if(S.mod===1) return '<div class="form"><div class="card"><h3>Локальные сети <small>пункты 1 и 4</small></h3>'+
     field('addrMode','Как заданы адреса',0,[['given','Адрес каждой сети указан или выбран вручную'],['vlsm','Нарезать из общего блока (VLSM)']],1)+
     (C.addrMode==='vlsm'?field('block','Общий блок',1):'')+LANS.map(lanBox).join('')+'</div>'+
     PF.map(([t,sub,fs])=>'<div class="card"><h3>'+t+' <small>'+sub.toLowerCase()+'</small></h3><div class="row">'+fs.map(f=>field(...f)).join('')+'</div></div>').join('')+'</div>';
-  const upd=()=>{ $('#pmsgs').innerHTML=msgsHtml(); LANS.forEach(([k])=>{ const e=$('#calc_'+k), n=R.lans[k]; e.textContent=n?n.cidr+' · маска '+n.mask+' · '+n.size+' адр.':'—' }) };
-  m.querySelectorAll('[data-k]').forEach(el=>{
-    el.addEventListener(el.tagName==='SELECT'?'change':'input',()=>{
-      const k=el.dataset.k; C=Object.assign({},C,{[k]:el.value.trim()});
-      if(REP&&REP.miss.includes(k)){ REP.miss=REP.miss.filter(x=>x!==k); REP.found.push(k) }
+  const mk='m'+S.mod, list=S.mod===2?PF2:PF3;
+  return fromM1()+'<div class="form" style="margin-top:14px">'+list.map(([t,sub,fs])=>'<div class="card"><h3>'+t+' <small>'+sub.toLowerCase()+'</small></h3><div class="row">'+fs.map(f=>field2(mk,...f)).join('')+'</div></div>').join('')+'</div>';
+}
+function updCalc(){ const pm=$('#pmsgs'); if(pm) pm.innerHTML=S.mod===1?msgsHtml():'';
+  if(S.mod===1&&R) LANS.forEach(([k])=>{ const e=$('#calc_'+k), n=R.lans[k]; if(e) e.textContent=n?n.cidr+' · маска '+n.mask+' · '+n.size+' адр.':'—' }) }
+let solT=null;
+function changed(){ recompute(); save(); updCalc(); clearTimeout(solT); solT=setTimeout(renderSol,250) }
+function wireParams(root){
+  root.querySelectorAll('[data-k]').forEach(el=>el.addEventListener(el.tagName==='SELECT'?'change':'input',()=>{
+    const k=el.dataset.k, mk=el.dataset.m, v=el.value.trim();
+    if(mk){ C=Object.assign({},C,{[mk]:Object.assign({},C[mk],{[k]:v})});
+      if(mk==='m2'&&k==='raidLvl'){ const d=v==='1'?'/dev/sdb /dev/sdc':'/dev/sdb /dev/sdc /dev/sdd'; C.m2.raidDisks=d; const i=$('#p_m2_raidDisks'); if(i) i.value=d } }
+    else { C=Object.assign({},C,{[k]:v});
+      if(REP&&REP.miss&&REP.miss.includes(k)){ REP.miss=REP.miss.filter(x=>x!==k); REP.found.push(k) }
       if(k==='addrMode'&&C.addrMode==='vlsm'&&!parseCidr(C.block)){ const p=String(C.srvBase).split('.'); C.block=p.slice(0,3).join('.')+'.0/24' }
-      if(k==='addrMode'&&C.addrMode==='given'&&R.ok) fillBases(C,R);
-      recompute(); save(); renderTabs();
-      if(k==='addrMode') renderParams(m); else upd();
-    });
-  });
-  upd();
+      if(k==='addrMode'&&C.addrMode==='given'&&R&&R.ok) fillBases(C,R) }
+    changed(); if(k==='addrMode') renderMain() }));
+  root.querySelectorAll('[data-fw]').forEach(el=>el.addEventListener('change',()=>{
+    const on=[...root.querySelectorAll('[data-fw]')].filter(x=>x.checked).map(x=>x.dataset.fw);
+    C=Object.assign({},C,{m3:Object.assign({},C.m3,{fwAllow:on.join(', ')})}); changed() }));
+  root.querySelectorAll('[data-go1]').forEach(b=>b.addEventListener('click',()=>{ S.mod=1; save(); render() }));
 }
 
 // ---------- stand ----------
-function renderStand(m){
+function standHtml(){
   const f=(k,l)=>'<div class="f"><label for="s_'+k+'">'+l+'</label><input class="mono" id="s_'+k+'" data-s="'+k+'" value="'+esc(ST[k])+'" spellcheck="false"></div>';
-  m.innerHTML='<div class="form"><div class="card"><h3>Стенд</h3><div class="f"><label for="s_rtrOs">ОС на ISP, HQ-RTR и BR-RTR</label><select id="s_rtrOs" data-s="rtrOs"><option value="astra"'+(ST.rtrOs==='astra'?' selected':'')+'>Astra Linux CE</option><option value="alt"'+(ST.rtrOs==='alt'?' selected':'')+'>Альт Сервер</option></select><span class="hint">Серверы и клиент — Альт. Настройки общие со страницей преподавателя.</span></div>'+
+  return '<div class="form"><div class="card"><h3>Стенд</h3><div class="f"><label for="s_rtrOs">ОС на ISP, HQ-RTR и BR-RTR</label><select id="s_rtrOs" data-s="rtrOs"><option value="astra"'+(ST.rtrOs==='astra'?' selected':'')+'>Astra Linux CE</option><option value="alt"'+(ST.rtrOs==='alt'?' selected':'')+'>Альт Сервер</option></select><span class="hint">Серверы и клиент — Альт. Настройки общие со страницей преподавателя.</span></div>'+
     '<div class="f"><label for="s_autoReboot">После шага «База»</label><select id="s_autoReboot" data-s="autoReboot"><option value="no"'+(ST.autoReboot==='no'?' selected':'')+'>Не перезагружать, reboot наберу сам</option><option value="yes"'+(ST.autoReboot==='yes'?' selected':'')+'>Сразу перезагрузить машину</option></select></div></div>'+
     '<div class="card"><h3>Имена интерфейсов <small>смотрите командой ip -br a</small></h3><div class="row">'+
     f('ifIspWan','ISP → интернет')+f('ifIspHq','ISP → HQ')+f('ifIspBr','ISP → BR')+f('ifHqWan','HQ-RTR → ISP')+f('ifHqLan','HQ-RTR → офис')+f('ifBrWan','BR-RTR → ISP')+f('ifBrLan','BR-RTR → офис')+f('ifSrv','HQ-SRV и BR-SRV')+f('ifCli','HQ-CLI')+'</div></div>'+
     '<div class="card"><h3>Имена ВМ в VirtualBox</h3><div class="row">'+f('vmIsp','ISP')+f('vmHqRtr','HQ-RTR')+f('vmBrRtr','BR-RTR')+f('vmHqSrv','HQ-SRV')+f('vmBrSrv','BR-SRV')+f('vmHqCli','HQ-CLI')+'</div>'+
     '<button type="button" class="btn ghost" id="resetS" style="align-self:flex-start">Сбросить стенд</button></div></div>';
-  m.querySelectorAll('[data-s]').forEach(el=>el.addEventListener(el.tagName==='SELECT'?'change':'input',()=>{ ST[el.dataset.s]=el.value.trim(); saveST(); recompute() }));
-  $('#resetS').addEventListener('click',()=>{ ST=Object.assign({},STAND_DEF); saveST(); recompute(); renderStand(m); toast('Стенд сброшен') });
+}
+function wireStand(root){
+  root.querySelectorAll('[data-s]').forEach(el=>el.addEventListener(el.tagName==='SELECT'?'change':'input',()=>{ ST[el.dataset.s]=el.value.trim(); saveST(); changed() }));
+  const r=$('#resetS'); if(r) r.addEventListener('click',()=>{ ST=Object.assign({},STAND_DEF); saveST(); recompute(); renderMain(); toast('Стенд сброшен') });
 }
 
-// ---------- solution (same scripts as the teacher page) ----------
+// ---------- solution views ----------
 const MACH=[
   {key:'isp',name:'ISP',role:'router',steps:['isp']},
   {key:'hqrtr',name:'HQ-RTR',role:'router',steps:['hqrtr','hqrtr2']},
@@ -224,6 +259,7 @@ const MACH=[
   {key:'brsrv',name:'BR-SRV',os:'Альт Сервер',role:'server',steps:['brsrv']},
   {key:'hqcli',name:'HQ-CLI',os:'Альт РС',role:'client',steps:['hqcli']}
 ];
+const ROLE={'ISP':'router','HQ-RTR':'router','BR-RTR':'router','HQ-SRV':'server','BR-SRV':'server','HQ-CLI':'client'};
 const STEPNAME={isp:'База',hqrtr:'База',hqrtr2:'OSPF и DHCP',brrtr:'База',brrtr2:'OSPF',hqsrv:'База',hqsrv2:'DNS',brsrv:'База',hqcli:'Сеть и имя'};
 function hl(t){ return esc(t).split('\n').map(l=>/^\s*#/.test(l)?'<span class="cm">'+l+'</span>':/(EOF_FINAL|&lt;&lt;\s*'?EOF'?|^EOF$)/.test(l)?'<span class="hd">'+l+'</span>':l).join('\n') }
 function termHtml(fn,text,id){ id=id||'t';
@@ -232,93 +268,118 @@ function termHtml(fn,text,id){ id=id||'t';
 function wireTerm(id,text,file){ const c=$('#'+id+'Copy'); if(c) c.addEventListener('click',()=>copyText(text,$('#'+id+'Code'))); const d=$('#'+id+'Dl'); if(d) d.addEventListener('click',()=>saveFile(file,text)) }
 function mainIp(key){ const L=R.lans;
   return {isp:A.ispHq+' · '+A.ispBr, hqrtr:A.hqWan, brrtr:A.brWan, hqsrv:A.hqSrv+'/'+L.srv.p, brsrv:A.brSrv+'/'+L.br.p, hqcli:A.hqCli+' DHCP'}[key] }
-function renderSolve(m){
-  if(!G){ m.innerHTML=msgsHtml()+'<div class="empty"><b>По этим параметрам решение не собирается</b>Исправьте ошибки во вкладке «Параметры».<button type="button" class="btn" id="fixBtn">'+ICON.edit+'Открыть параметры</button></div>';
-    $('#fixBtn').addEventListener('click',()=>{ S.tab='params'; save(); renderTabs(); renderBody() }); return }
-  const modes=[['auto','Скрипты'],['manual','Команды по пунктам'],['check','Проверка']];
-  const descr={auto:'Готовые скрипты для каждой машины. Запускайте по номерам шагов, повторный запуск безопасен.',
-    check:'Скрипты ничего не меняют: проверяют машину и печатают [ OK ] или [FAIL] с номером пункта.',
-    manual:'Те же команды, разложенные по пунктам задания, с пояснениями. Удобно вводить руками.'};
-  m.innerHTML='<div class="bar"><div class="l"><div class="seg" role="group" aria-label="Вид решения">'+modes.map(([k,n])=>'<button type="button" data-m="'+k+'" aria-pressed="'+(S.mode===k)+'">'+n+'</button>').join('')+'</div><p>'+descr[S.mode]+'</p></div><div class="acts" id="solveActs"></div></div>'+(R.W.length?msgsHtml():'')+'<div id="solveBody" class="panel"></div>';
-  m.querySelectorAll('[data-m]').forEach(b=>b.addEventListener('click',()=>{ S.mode=b.dataset.m; save(); renderSolve(m) }));
-  if(S.mode==='manual') return renderManual($('#solveBody'));
-  const isChk=S.mode==='check', list=isChk?checkScripts(C,ST,R):G.out;
-  if(canSave()){ $('#solveActs').innerHTML=B_('zipBtn','down','Все скрипты .zip'); $('#zipBtn').addEventListener('click',()=>downloadZip(isChk)) }
+const ipOf = m => ({'ISP':A.ispHq+' · '+A.ispBr,'HQ-RTR':A.hqWan,'BR-RTR':A.brWan,'HQ-SRV':A.hqSrv,'BR-SRV':A.brSrv,'HQ-CLI':A.hqCli}[m]);
+function sendBox(x){ const cmd='VBoxManage controlvm "'+x.vm+'" keyboardputfile C:\\1.txt';
+  return {cmd,html:'<div class="send"><span>Сохраните скрипт в C:\\1.txt и выполните в cmd в папке VirtualBox:</span><code id="vbCmd">'+esc(cmd)+'</code><button type="button" class="lnk" id="vbCopy">Скопировать</button>'+
+    '<details><summary>Как это работает</summary><ol><li>В виртуалке войдите под root и включите английскую раскладку.</li><li>Откройте C:\\Program Files\\Oracle\\VirtualBox, в адресной строке проводника наберите cmd.</li><li>Выполните команду выше. VirtualBox «напечатает» скрипт, он сохранится в /root/'+esc(x.sh)+' и сразу запустится.</li><li>Перезапустить вручную: bash /root/'+esc(x.sh)+'</li></ol></details></div>'} }
+function viewsFor(){ return S.mod===1?[['manual','Команды по пунктам'],['auto','Скрипты'],['check','Проверка'],['report','Отчёт']]:[['items','Команды по пунктам'],['scripts','Скрипты по машинам']] }
+const DESCR={manual:'Команды, разложенные по пунктам задания, с пояснениями. Копируйте блок и вставляйте на нужной машине.',
+  auto:'Готовые скрипты для каждой машины. Запускайте по номерам шагов, повторный запуск безопасен.',
+  check:'Скрипты ничего не меняют: проверяют машину и печатают [ OK ] или [FAIL] с номером пункта.',
+  report:'Таблица адресов и описание настроек для отчёта.',
+  items:'Команды по пунктам задания. Адреса, домен и логины берутся из Модуля 1.',
+  scripts:'Все команды модуля, собранные в один скрипт на машину, в порядке запуска.'};
+function curView(){ const v=S.mod===1?S.mode:S.view23; return viewsFor().some(x=>x[0]===v)?v:viewsFor()[0][0] }
+function renderSol(){
+  const m=$('#sol'); if(!m) return;
+  if(!R||!R.ok){ m.innerHTML=msgsHtml()+'<div class="empty"><b>По этим параметрам решение не собирается</b>Исправьте ошибки в параметрах'+(S.mod!==1?' Модуля 1':'')+'.</div>'; return }
+  const v=curView();
+  m.innerHTML='<div class="bar"><div class="l"><div class="seg" role="group" aria-label="Вид решения">'+viewsFor().map(([k,n])=>'<button type="button" data-v="'+k+'" aria-pressed="'+(v===k)+'">'+n+'</button>').join('')+'</div><p>'+DESCR[v]+'</p></div><div class="acts" id="solveActs"></div></div>'+(S.mod===1&&R.W.length?msgsHtml():'')+'<div id="solveBody" class="panel"></div>';
+  m.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',()=>{ if(S.mod===1) S.mode=b.dataset.v; else S.view23=b.dataset.v; save(); renderSol() }));
+  const body=$('#solveBody');
+  if(v==='manual') return renderItems(body,manualItems(C,ST,R));
+  if(v==='items') return renderItems(body,items23(S.mod,C,ST,R));
+  if(v==='scripts') return renderScripts23(body);
+  if(v==='report'){ const txt=reportText(C,ST,R,A); body.innerHTML=termHtml('Отчёт · Модуль 1',txt,'rp'); wireTerm('rp',txt,fname('_report.txt')); return }
+  renderScripts1(body,v==='check');
+}
+function renderItems(body,items){
+  const plain=items.map(it=>'=== '+it.n+'. '+it.title+' ===\n'+it.why+'\n\n'+it.blocks.map(([mm,code])=>'# '+mm.replace('#2','')+'\n'+code).join('\n\n')).join('\n\n\n');
+  $('#solveActs').innerHTML=B_('cpAll','copy','Скопировать всё')+(canSave()?B_('dlMan','down','.txt'):'');
+  $('#cpAll').addEventListener('click',()=>copyText(plain)); const d=$('#dlMan'); if(d) d.addEventListener('click',()=>saveFile(fname('_solution.txt'),plain));
+  body.innerHTML='<div class="manual">'+items.map((it,i)=>'<details class="mi"'+(i===0?' open':'')+'><summary><span class="num">'+it.n+'</span><b>'+esc(it.title)+'</b>'+ICON.chev+'</summary><div class="fb"><p>'+esc(it.why)+'</p>'+
+    it.blocks.map(([mm,code],j)=>'<div class="blk"><div class="mh"><span>'+esc(mm.replace('#2',''))+'</span><button type="button" class="lnk" data-c="'+i+'_'+j+'">Копировать</button></div><pre id="mc'+i+'_'+j+'" tabindex="0">'+hl(code)+'</pre></div>').join('')+
+    '<div class="chk">Проверка: '+it.check.map(([cmd])=>'<code>'+esc(cmd)+'</code>').join('')+'</div></div></details>').join('')+'</div>';
+  body.querySelectorAll('[data-c]').forEach(b=>b.addEventListener('click',()=>{ const [i,j]=b.dataset.c.split('_').map(Number); copyText(items[i].blocks[j][1],$('#mc'+b.dataset.c)) }));
+}
+function renderScripts1(body,isChk){
+  const list=isChk?checkScripts(C,ST,R):G.out;
+  if(canSave()){ $('#solveActs').innerHTML=B_('zipBtn','down','Все скрипты .zip'); $('#zipBtn').addEventListener('click',()=>downloadZip(list,isChk)) }
   if(!MACH.find(x=>x.key===S.sel)) S.sel='isp';
   const orderOf = id => list.findIndex(x=>x.id===id)+1;
-  const body=$('#solveBody');
   body.innerHTML='<div class="mlist" role="group" aria-label="Машина">'+MACH.map(mm=>{ const os = mm.os || (ST.rtrOs==='alt'?'Альт':'Astra');
       const chips = isChk ? '<span class="chip">'+list.find(x=>x.id===mm.key).count+' проверок</span>' : mm.steps.map(s=>'<span class="chip">шаг '+orderOf(s)+'</span>').join('');
       return '<button type="button" class="mc '+mm.role+'" data-mc="'+mm.key+'" aria-pressed="'+(S.sel===mm.key)+'"><span class="top2"><span class="ic">'+ICON[mm.role]+'</span><span class="nm">'+mm.name+'</span></span><span class="ip">'+os+' · '+esc(mainIp(mm.key))+'</span><span class="steps">'+chips+'</span></button>' }).join('')+'</div>'+
-    (isChk?'':'<details class="fold"><summary>Порядок запуска<small>9 шагов на 6 машинах</small>'+ICON.chev+'</summary><div class="fb"><ol class="order">'+G.out.map(x=>'<li><b>'+x.machine+'</b> · '+esc(x.title)+' <span>— '+esc(x.when)+'</span></li>').join('')+'</ol></div></details>')+
+    (isChk?'':'<details class="fold"><summary>Порядок запуска<small>'+list.length+' шагов на 6 машинах</small>'+ICON.chev+'</summary><div class="fb"><ol class="order">'+list.map(x=>'<li><b>'+x.machine+'</b> · '+esc(x.title)+' <span>— '+esc(x.when)+'</span></li>').join('')+'</ol></div></details>')+
     '<section class="viewer" id="viewer"></section>';
-  body.querySelectorAll('[data-mc]').forEach(b=>b.addEventListener('click',()=>{ S.sel=b.dataset.mc; S.step=0; save(); renderSolve(m) }));
+  body.querySelectorAll('[data-mc]').forEach(b=>b.addEventListener('click',()=>{ S.sel=b.dataset.mc; S.step=0; save(); renderScripts1(body,isChk) }));
   const mm=MACH.find(x=>x.key===S.sel); let x, seg='', sub;
   if(isChk){ x=list.find(o=>o.id===mm.key); sub=x.count+' проверок · запускать после выполнения задания' }
   else { const sid=mm.steps[Math.min(S.step,mm.steps.length-1)]; x=list.find(o=>o.id===sid); sub='Шаг '+orderOf(sid)+' из '+list.length+' · '+x.when;
     if(mm.steps.length>1) seg='<div class="seg" role="group" aria-label="Шаг">'+mm.steps.map((s,i)=>'<button type="button" data-i="'+i+'" aria-pressed="'+(s===sid)+'"><span class="n">'+orderOf(s)+'</span>'+STEPNAME[s]+'</button>').join('')+'</div>' }
-  const cmd='VBoxManage controlvm "'+x.vm+'" keyboardputfile C:\\1.txt';
-  $('#viewer').innerHTML='<div class="vh"><div><h2>'+esc(x.title)+'</h2><p>'+esc(sub)+'</p></div>'+seg+'</div>'+
-    '<div class="send"><span>Сохраните скрипт в C:\\1.txt и выполните в cmd в папке VirtualBox:</span><code id="vbCmd">'+esc(cmd)+'</code><button type="button" class="lnk" id="vbCopy">Скопировать</button>'+
-    '<details><summary>Как это работает</summary><ol><li>В виртуалке войдите под root и включите английскую раскладку.</li><li>Откройте C:\\Program Files\\Oracle\\VirtualBox, в адресной строке проводника наберите cmd.</li><li>Выполните команду выше. VirtualBox «напечатает» скрипт в консоль, он сохранится в /root/'+esc(x.sh)+' и сразу запустится.</li><li>Перезапустить вручную: bash /root/'+esc(x.sh)+'</li></ol></details></div>'+
-    termHtml('/root/'+x.sh+' · '+x.text.split('\n').length+' строк', x.text);
-  $('#viewer').querySelectorAll('.vh .seg button').forEach(b=>b.addEventListener('click',()=>{ S.step=+b.dataset.i; save(); renderSolve(m) }));
-  $('#vbCopy').addEventListener('click',()=>copyText(cmd,$('#vbCmd')));
+  const sb=sendBox(x);
+  $('#viewer').innerHTML='<div class="vh"><div><h2>'+esc(x.title)+'</h2><p>'+esc(sub)+'</p></div>'+seg+'</div>'+sb.html+termHtml('/root/'+x.sh+' · '+x.text.split('\n').length+' строк', x.text);
+  $('#viewer').querySelectorAll('.vh .seg button').forEach(b=>b.addEventListener('click',()=>{ S.step=+b.dataset.i; save(); renderScripts1(body,isChk) }));
+  $('#vbCopy').addEventListener('click',()=>copyText(sb.cmd,$('#vbCmd')));
   wireTerm('t',x.text,(isChk?'':String(orderOf(x.id)).padStart(2,'0')+'_')+x.sh.replace('.sh','')+'.txt');
 }
-function renderManual(body){
-  const items=manualItems(C,ST,R);
-  const plain=items.map(it=>'=== '+it.n+'. '+it.title+' ===\n'+it.why+'\n\n'+it.blocks.map(([mm,code])=>'# '+mm+'\n'+code).join('\n\n')).join('\n\n\n');
-  if(canSave()){ $('#solveActs').innerHTML=B_('dlMan','down','Решение .txt'); $('#dlMan').addEventListener('click',()=>saveFile(fname('_solution.txt'),plain)) }
-  body.innerHTML='<div class="manual">'+items.map((it,i)=>'<details class="mi"'+(i===0?' open':'')+'><summary><span class="num">'+it.n+'</span><b>'+esc(it.title)+'</b>'+ICON.chev+'</summary><div class="fb"><p>'+esc(it.why)+'</p>'+
-    it.blocks.map(([mm,code],j)=>'<div class="blk"><div class="mh"><span>'+esc(mm)+'</span><button type="button" class="lnk" data-c="'+i+'_'+j+'">Копировать</button></div><pre id="mc'+i+'_'+j+'" tabindex="0">'+hl(code)+'</pre></div>').join('')+
-    '<div class="chk">Проверка: '+it.check.map(([cmd])=>'<code>'+esc(cmd)+'</code>').join('')+'</div></div></details>').join('')+'</div>';
-  body.querySelectorAll('[data-c]').forEach(b=>b.addEventListener('click',()=>{ const [i,j]=b.dataset.c.split('_').map(Number); copyText(items[i].blocks[j][1],$('#mc'+b.dataset.c)) }));
+function renderScripts23(body){
+  const list=scripts23(S.mod,C,ST,R); let sel=S.sel23[S.mod]; if(!list.find(x=>x.id===sel)) sel=list[0].id;
+  if(canSave()){ $('#solveActs').innerHTML=B_('zipBtn','down','Все скрипты .zip'); $('#zipBtn').addEventListener('click',()=>downloadZip(list,false)) }
+  body.innerHTML='<div class="mlist" role="group" aria-label="Скрипт">'+list.map((x,i)=>'<button type="button" class="mc '+ROLE[x.machine]+'" data-s23="'+esc(x.id)+'" aria-pressed="'+(x.id===sel)+'"><span class="top2"><span class="ic">'+ICON[ROLE[x.machine]]+'</span><span class="nm">'+x.machine+'</span></span><span class="ip">'+esc(ipOf(x.machine))+'</span><span class="steps"><span class="chip">шаг '+(i+1)+'</span></span></button>').join('')+'</div>'+
+    '<details class="fold"><summary>Порядок запуска<small>'+list.length+' шагов</small>'+ICON.chev+'</summary><div class="fb"><ol class="order">'+list.map(x=>'<li><b>'+x.machine+'</b> · '+esc(x.title)+' <span>— '+esc(x.when)+'</span></li>').join('')+'</ol></div></details><section class="viewer" id="viewer"></section>';
+  body.querySelectorAll('[data-s23]').forEach(b=>b.addEventListener('click',()=>{ S.sel23[S.mod]=b.dataset.s23; save(); renderScripts23(body) }));
+  const i=list.findIndex(x=>x.id===sel), x=list[i], sb=sendBox(x);
+  $('#viewer').innerHTML='<div class="vh"><div><h2>'+esc(x.title)+'</h2><p>Шаг '+(i+1)+' из '+list.length+' · '+esc(x.when)+'</p></div></div>'+sb.html+termHtml('/root/'+x.sh+' · '+x.text.split('\n').length+' строк',x.text);
+  $('#vbCopy').addEventListener('click',()=>copyText(sb.cmd,$('#vbCmd')));
+  wireTerm('t',x.text,String(i+1).padStart(2,'0')+'_'+x.sh.replace('.sh','')+'.txt');
 }
-function downloadZip(isChk){
+function downloadZip(list,isChk){
   if(!window.JSZip){ toast('Архиватор не загрузился'); return }
   const z=new JSZip();
-  if(isChk) checkScripts(C,ST,R).forEach(x=>z.file(x.sh.replace('.sh','')+'.txt',x.text));
-  else { G.out.forEach((x,i)=>z.file(String(i+1).padStart(2,'0')+'_'+x.sh.replace('.sh','')+'.txt',x.text)); z.file('00_order.txt',orderText(G.out)); z.file('report.txt',reportText(C,ST,R,A)) }
+  if(isChk) list.forEach(x=>z.file(x.sh.replace('.sh','')+'.txt',x.text));
+  else { list.forEach((x,i)=>z.file(String(i+1).padStart(2,'0')+'_'+x.sh.replace('.sh','')+'.txt',x.text)); z.file('00_order.txt',orderText(list)); if(S.mod===1) z.file('report.txt',reportText(C,ST,R,A)) }
   z.generateAsync({type:'blob'}).then(bl=>saveFile(fname(isChk?'_check.zip':'_scripts.zip'),bl));
 }
-function renderReport(m){
-  const txt=reportText(C,ST,R,A);
-  m.innerHTML='<div class="bar"><p>Таблица адресов и описание настроек для отчёта по заданию.</p></div>'+termHtml('Отчёт',txt,'rp');
-  wireTerm('rp',txt,fname('_report.txt'));
+
+// ---------- toolbar: module, fill from code / demo / pasted text ----------
+function renderToolbar(){
+  const t=$('#toolbar');
+  t.innerHTML='<div class="seg modseg" role="group" aria-label="Модуль">'+[1,2,3].map(k=>'<button type="button" data-mod="'+k+'" aria-pressed="'+(S.mod===k)+'">'+MODS[k].name+'</button>').join('')+'</div>'+
+    '<div class="codef lv-X" title="Подставить параметры варианта с сайта"><input id="codeIn" placeholder="X-12" value="'+(C.num?esc(codeOf(C)):'')+'" spellcheck="false" autocomplete="off" aria-label="Код варианта"><button type="button" id="codeGo" aria-label="Подставить параметры варианта" style="width:auto;padding:0 10px;font-size:.8rem;font-weight:700">Подставить</button></div>'+
+    '<button type="button" class="btn ghost" id="demoBtn" title="Значения официальной демоверсии">Демоверсия</button>'+
+    '<button type="button" class="btn ghost" id="pasteBtn" aria-expanded="'+!!S.paste+'">'+(S.paste?'Скрыть текст':'Вставить текст задания')+'</button>'+
+    '<span class="grow"></span><button type="button" class="btn'+(S.stand?'" aria-pressed="true':'')+'" id="standBtn">'+ICON.gear+'<span class="lbl">Стенд</span></button>'+
+    (S.paste?'<div class="paste" style="width:100%;box-shadow:none;padding:0;border:0"><textarea id="taskIn" spellcheck="false" placeholder="Вставьте текст Модуля 1 — с этого сайта или официальный. Параметры подставятся в форму.">'+esc(S.text||'')+'</textarea><div class="pa"><button type="button" class="btn primary" id="parseBtn">Разобрать</button><button type="button" class="btn" id="sampleBtn">Пример</button><span class="hint">Разбор заполняет параметры Модуля 1. Модули 2 и 3 используют его адреса.</span></div></div>':'');
+  t.querySelectorAll('[data-mod]').forEach(b=>b.addEventListener('click',()=>{ S.mod=+b.dataset.mod; save(); render() }));
+  const ci=$('#codeIn'), go=()=>{ const p=parseCode(ci.value.replace(/^.*#/,'')); if(!p){ toast('Код выглядит так: X-12, E-3 или H-7'); ci.focus(); return }
+    C=withM23(makeVariant(p.lv,p.num,p.mask)); REP=null; save(); render(); toast('Подставлены параметры варианта '+codeOf(C)) };
+  $('#codeGo').addEventListener('click',go); ci.addEventListener('keydown',e=>{ if(e.key==='Enter') go() });
+  $('#demoBtn').addEventListener('click',()=>{ C=withM23(Object.assign({},DEF)); REP=null; save(); render(); toast('Значения демоверсии') });
+  $('#pasteBtn').addEventListener('click',()=>{ S.paste=!S.paste; save(); renderToolbar(); const ta=$('#taskIn'); if(ta) ta.focus() });
+  $('#standBtn').addEventListener('click',()=>{ S.stand=!S.stand; save(); render() });
+  if(S.paste){ const ta=$('#taskIn');
+    ta.addEventListener('input',()=>{ S.text=ta.value; save() });
+    $('#sampleBtn').addEventListener('click',()=>{ ta.value=SAMPLE; S.text=SAMPLE; save() });
+    $('#parseBtn').addEventListener('click',()=>{ const v=ta.value.trim(); if(!v){ toast('Сначала вставьте текст'); ta.focus(); return }
+      const p=parseTask(v); C=withM23(p.c); REP=p.rep; S.mod=1; S.paste=false; save(); render();
+      const w=REP.miss.filter(k=>!FREE.has(k)).length; toast(REP.src==='code'?'Подставлен вариант '+REP.code:w?'Проверьте '+w+' параметр(а), которых не было в тексте':'Все параметры найдены') });
+  }
 }
 
 // ---------- page ----------
-function recompute(){ if(!C){ R=A=G=null; return } R=compute(C); A=R.ok?addrs(C,R):null; G=R.ok?gen(C,ST,R):null }
-const TABS=[['solve','Решение'],['params','Параметры'],['report','Отчёт'],['stand','Стенд']];
-function renderTabs(){
-  const t=$('#tabs'); if(!t) return;
-  const w=REP?REP.miss.filter(k=>!FREE.has(k)).length:0, e=R&&R.E.length;
-  t.innerHTML=TABS.map(([k,n])=>'<button type="button" data-t="'+k+'" aria-pressed="'+(S.tab===k)+'">'+n+(k==='params'&&(w||e)?' <span class="pill warn" style="padding:0 7px">'+(e?'ошибка':w)+'</span>':'')+'</button>').join('');
-  t.querySelectorAll('[data-t]').forEach(b=>b.addEventListener('click',()=>{ S.tab=b.dataset.t; save(); renderTabs(); renderBody() }));
+function recompute(){ R=compute(C); A=R.ok?addrs(C,R):null; G=R.ok?gen(C,ST,R):null }
+function renderMain(){
+  const m=$('#main');
+  m.innerHTML=(S.stand?'<details class="mi" open id="standBox"><summary><b>Стенд: ОС, интерфейсы, имена ВМ</b>'+ICON.chev+'</summary><div class="fb">'+standHtml()+'</div></details>':'')+repHtml()+
+    '<details class="mi" open id="pbox"><summary><span class="num">'+S.mod+'</span><b>Параметры '+MODS[S.mod].name.replace('Модуль','Модуля')+'</b><span class="hint" style="margin-left:8px">правки сразу меняют команды ниже</span>'+ICON.chev+'</summary><div class="fb"><div id="pmsgs"></div>'+paramsHtml()+'</div></details>'+
+    '<section id="sol" class="panel" aria-label="Решение"></section>';
+  wireParams($('#pbox')); if(S.stand) wireStand($('#standBox'));
+  const h=$('#hideRep'); if(h) h.addEventListener('click',()=>{ REP=null; save(); renderMain() });
+  m.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>{ const el=$('#p_'+b.dataset.goto); if(el){ el.scrollIntoView({block:'center',behavior:'smooth'}); el.focus({preventScroll:true}); el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1500) } }));
+  updCalc(); renderSol();
 }
-function renderBody(){
-  const b=$('#tabBody');
-  if(S.tab==='params') renderParams(b); else if(S.tab==='stand') renderStand(b);
-  else if(S.tab==='report'){ if(G) renderReport(b); else { S.tab='solve'; renderSolve(b) } }
-  else renderSolve(b);
-}
-function render(){
-  recompute(); const m=$('#main');
-  if(!C){ m.innerHTML='<div class="empty"><b>Здесь появится решение</b>Вставьте текст задания выше и нажмите «Решить». Получите скрипты для каждой машины, команды по пунктам и текст для отчёта.</div>'; return }
-  m.innerHTML=repHtml()+'<div class="bar"><div class="seg" id="tabs" role="group" aria-label="Раздел"></div></div><div id="tabBody" class="panel"></div>';
-  m.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>{ const k=b.dataset.goto; S.tab='params'; save(); renderTabs(); renderBody();
-    const el=$('#p_'+k)||$('#p_'+k.replace(/N$/,'N')); if(el){ el.scrollIntoView({block:'center',behavior:'smooth'}); el.focus({preventScroll:true}); el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1500) } }));
-  renderTabs(); renderBody();
-}
-const ta=$('#taskIn'); ta.value=S.text||'';
-$('#parseBtn').addEventListener('click',()=>{ const v=ta.value.trim(); if(!v){ toast('Сначала вставьте текст задания'); ta.focus(); return }
-  const p=parseTask(v); C=p.c; REP=p.rep; S.text=ta.value; S.tab='solve'; S.sel='isp'; S.step=0; save(); render();
-  const w=REP.miss.filter(k=>!FREE.has(k)).length;
-  toast(REP.src==='code'?'Открыт вариант '+REP.code:w?'Готово. Проверьте '+w+' параметр(а), которых не было в тексте':'Готово: все параметры найдены');
-  $('#main').scrollIntoView({behavior:'smooth',block:'start'}) });
-$('#sampleBtn').addEventListener('click',()=>{ ta.value=SAMPLE; S.text=SAMPLE; save(); ta.focus(); toast('Вставлен пример. Нажмите «Решить»') });
-$('#clearBtn').addEventListener('click',()=>{ ta.value=''; S.text=''; C=null; REP=null; save(); render(); ta.focus() });
-ta.addEventListener('input',()=>{ S.text=ta.value; store.set(SKEY,Object.assign({},S,{c:C,rep:REP})) });
-onSaveReady(()=>{ if(DL&&C) renderBody() });
+function render(){ recompute(); renderToolbar(); renderMain() }
+C = S.c ? withM23(S.c) : withM23(Object.assign({},DEF));
+onSaveReady(()=>{ if(DL) renderSol() });
 render();

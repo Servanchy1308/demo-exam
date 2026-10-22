@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Решение Модуля 1 по тексту</title>
+<title>Решение ДЭ по параметрам</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600;700&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -398,6 +398,9 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
 
 /* exam timer */
 .timer{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 5px 4px 10px;color:var(--muted)}
+.timer .tph{font-size:.74rem;font-weight:700;color:var(--accent)}
+.timer[data-st~="pause"] .tph{color:var(--muted)}.timer[data-st~="done"] .tph{color:var(--err)}
+.timer[data-st~="idle"] .tm{font-family:var(--sans);font-size:.84rem;font-weight:600;color:var(--muted);min-width:0}
 .timer .tm{font-family:var(--mono);font-size:1.05rem;font-weight:600;color:var(--ink);min-width:4.2em;text-align:center;font-variant-numeric:tabular-nums}
 .timer .tb{border:1px solid var(--line);background:var(--raise);border-radius:8px;padding:4px 10px;font-size:.78rem;font-weight:600;color:var(--ink)}
 .timer .tb:hover{border-color:var(--accent);color:var(--accent)}
@@ -406,9 +409,9 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
 .timer[data-st~="run"] svg{color:var(--accent)}
 .timer[data-st~="warn"]{background:var(--warn-bg);border-color:transparent}
 .timer[data-st~="warn"] .tm,.timer[data-st~="warn"] svg{color:var(--warn)}
-.timer[data-st~="over"]{background:var(--err-bg);border-color:transparent}
-.timer[data-st~="over"] .tm,.timer[data-st~="over"] svg{color:var(--err)}
-@media (prefers-reduced-motion:no-preference){.timer[data-st~="over"] .tm{animation:blink 1.2s ease-in-out infinite}}
+.timer[data-st~="done"]{background:var(--err-bg);border-color:transparent}
+.timer[data-st~="done"] .tm,.timer[data-st~="done"] svg{color:var(--err)}
+@media (prefers-reduced-motion:no-preference){.timer[data-st~="done"] .tm{animation:blink 1.2s ease-in-out infinite}}
 @media print{.timer{display:none}}
 
 /* solve page */
@@ -427,25 +430,33 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
 @keyframes flash{0%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:0 0 0 0 transparent}}
 a.btn{text-decoration:none;color:var(--muted)}
 .topacts{flex-wrap:wrap}
+
+/* modules + locked task */
+.modseg button{font-weight:700}
+.modseg button small{font-weight:600;color:var(--faint);font-size:.72rem}
+.locked{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:48px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;box-shadow:var(--shadow)}
+.locked .lk{width:52px;height:52px;border-radius:16px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.locked .lk svg{width:26px;height:26px}
+.locked h2{margin:0;font-family:var(--display);font-size:1.25rem}
+.locked p{margin:0;color:var(--muted);max-width:52ch}
+.locked .steps3{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;font-size:.82rem}
+.locked .steps3 span{background:var(--raise);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-weight:600}
+.locked .steps3 b{font-family:var(--mono);color:var(--accent)}
+.sheet.reading{position:relative}
+.readbanner{display:flex;gap:8px;align-items:center;background:var(--accent-soft);color:var(--accent);border-radius:12px;padding:9px 14px;font-size:.86rem;font-weight:600}
+.bar>.l{min-width:0;max-width:100%}
+.bar>.l>.seg{max-width:100%}
+@media (max-width:560px){.modseg button small{display:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <div class="brandbar"><svg class="logo" viewBox="0 0 44 44" aria-hidden="true"><rect x="1" y="1" width="42" height="42" rx="12" class="lg-bg"/><path d="M10 12h24v16h-6v4H16v-4h-6z" class="lg-port"/><rect x="12.3" y="14" width="1.8" height="5.5" rx=".6" fill="#f3a35c"/><rect x="15.1" y="14" width="1.8" height="5.5" rx=".6" fill="#e2690f"/><rect x="17.9" y="14" width="1.8" height="5.5" rx=".6" fill="#8fd19b"/><rect x="20.7" y="14" width="1.8" height="5.5" rx=".6" fill="#2f6fdc"/><rect x="23.5" y="14" width="1.8" height="5.5" rx=".6" fill="#9dbcf2"/><rect x="26.3" y="14" width="1.8" height="5.5" rx=".6" fill="#2b9a4e"/><rect x="29.1" y="14" width="1.8" height="5.5" rx=".6" fill="#cfa47c"/><rect x="31.9" y="14" width="1.8" height="5.5" rx=".6" fill="#7a4a26"/></svg><div class="brand"><div class="wordmark">ДЭ<span>·</span>Лаб</div><h1>Решение задания Модуля 1 по тексту</h1></div></div>
-    <div class="topacts"><a class="btn ghost" href="teacher.html">← <span class="lbl">Генератор</span></a><div id="timerBox"></div><div class="seg theme" id="themeSeg" role="group" aria-label="Тема оформления"></div></div>
+    <div class="brandbar"><svg class="logo" viewBox="0 0 44 44" aria-hidden="true"><rect x="1" y="1" width="42" height="42" rx="12" class="lg-bg"/><path d="M10 12h24v16h-6v4H16v-4h-6z" class="lg-port"/><rect x="12.3" y="14" width="1.8" height="5.5" rx=".6" fill="#f3a35c"/><rect x="15.1" y="14" width="1.8" height="5.5" rx=".6" fill="#e2690f"/><rect x="17.9" y="14" width="1.8" height="5.5" rx=".6" fill="#8fd19b"/><rect x="20.7" y="14" width="1.8" height="5.5" rx=".6" fill="#2f6fdc"/><rect x="23.5" y="14" width="1.8" height="5.5" rx=".6" fill="#9dbcf2"/><rect x="26.3" y="14" width="1.8" height="5.5" rx=".6" fill="#2b9a4e"/><rect x="29.1" y="14" width="1.8" height="5.5" rx=".6" fill="#cfa47c"/><rect x="31.9" y="14" width="1.8" height="5.5" rx=".6" fill="#7a4a26"/></svg><div class="brand"><div class="wordmark">ДЭ<span>·</span>Лаб</div><h1>Решение ДЭ по параметрам</h1></div></div>
+    <div class="topacts"><a class="btn ghost" href="teacher.html">← <span class="lbl">Генератор</span></a><div class="seg theme" id="themeSeg" role="group" aria-label="Тема оформления"></div></div>
   </header>
   <div class="cable" aria-hidden="true"></div>
-  <section class="paste" aria-label="Текст задания">
-    <label for="taskIn" style="font-size:.9rem">Вставьте текст задания Модуля 1</label>
-    <textarea id="taskIn" spellcheck="false" placeholder="Скопируйте задание целиком: с этого сайта (кнопка «Скопировать для Word») или официальный текст ДЭ 09.02.06. Можно вписать и код варианта, например X-12."></textarea>
-    <div class="pa">
-      <button type="button" class="btn primary" id="parseBtn">Решить</button>
-      <button type="button" class="btn" id="sampleBtn">Вставить пример</button>
-      <button type="button" class="btn ghost" id="clearBtn">Очистить</button>
-      <span class="hint">Страница находит в тексте адреса, VLAN, логины, пароли, порт и часовой пояс. Чего нет в тексте, подставит по умолчанию и подсветит — проверьте во вкладке «Параметры».</span>
-    </div>
-  </section>
+  <section class="toolbar" id="toolbar" aria-label="Модуль и источник параметров"></section>
   <main id="main" class="panel"></main>
 </div>
 <div id="printArea"></div>
@@ -851,41 +862,132 @@ function trapsDD(mask,onChange){
   return {html,wire};
 }
 
-// ---------- exam timer: 1 hour, start / pause / reset, survives reload ----------
-function mountTimer(el,mins){
-  const K='degen.timer.v1', DUR=(mins||60)*60000;
-  let T=Object.assign({left:DUR,endAt:null,warned:false,done:false},store.get(K,{}));
-  let iv=null, armed=0, ac=null;
+// ---------- exam timer: hidden → 15 min reading → module time; survives reload ----------
+// phases: idle (task hidden), read, work, pause, done
+function mountExam(el,o){
+  const K='degen.exam.v1.m'+o.mod, RD=o.read*60000, WD=o.work*60000;
+  const fresh=()=>({phase:'idle',endAt:null,left:WD,warned:false});
+  let T=Object.assign(fresh(),store.get(K,{})), iv=null, armed=0, ac=null;
   const left=()=>T.endAt?Math.max(0,T.endAt-Date.now()):T.left;
   const fmtT=ms=>{ const s=Math.ceil(ms/1000), h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60; return (h?h+':'+String(m).padStart(2,'0'):String(m).padStart(2,'0'))+':'+String(x).padStart(2,'0') };
-  const beep=n=>{ try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); for(let i=0;i<n;i++){ const o=ac.createOscillator(), g=ac.createGain(), t0=ac.currentTime+i*.45;
-    o.frequency.value=880; g.gain.setValueAtTime(.0001,t0); g.gain.exponentialRampToValueAtTime(.25,t0+.02); g.gain.exponentialRampToValueAtTime(.0001,t0+.35); o.connect(g).connect(ac.destination); o.start(t0); o.stop(t0+.4) } }catch(e){} };
-  const baseTitle=document.title;
-  el.innerHTML='<div class="timer" id="tmBox" role="timer" aria-label="Таймер на выполнение модуля"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="9" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 6v3l2 1.5M6.5 1.8h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'+
-    '<b class="tm" id="tmT">'+fmtT(DUR)+'</b><button type="button" class="tb primary" id="tmGo">Старт</button><button type="button" class="tb" id="tmRs" title="Сбросить на '+(mins||60)+' мин">Сброс</button></div>';
-  const box=$('#tmBox'), tEl=$('#tmT'), go=$('#tmGo'), rs=$('#tmRs');
-  const save=()=>store.set(K,T);
-  function draw(){ const l=left(), run=!!T.endAt;
-    if(run&&l<=0){ T.left=0; T.endAt=null; T.done=true; save(); stop(); beep(3); toast('Время вышло: 1 час прошёл') }
-    if(run&&!T.warned&&l<=600000&&l>0){ T.warned=true; save(); beep(1); toast('Осталось 10 минут') }
-    tEl.textContent=T.done?'00:00':fmtT(l);
-    box.dataset.st=T.done?'over':(l<=600000&&l<DUR?'warn':'')+(T.endAt?' run':'');
-    go.textContent=T.done?'Заново':T.endAt?'Пауза':(l<DUR?'Дальше':'Старт');
-    rs.hidden=!T.done&&!T.endAt&&l>=DUR;
-    document.title=T.endAt?'⏱ '+fmtT(l)+' · '+baseTitle:(T.done?'Время вышло · '+baseTitle:baseTitle) }
+  const durTxt=ms=>{ const m=Math.round(ms/60000); return m%60?(m>=60?Math.floor(m/60)+' ч '+m%60+' мин':m+' мин'):(m/60)+' ч' };
+  const beep=n=>{ try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); for(let i=0;i<n;i++){ const os=ac.createOscillator(), g=ac.createGain(), t0=ac.currentTime+i*.45;
+    os.frequency.value=880; g.gain.setValueAtTime(.0001,t0); g.gain.exponentialRampToValueAtTime(.25,t0+.02); g.gain.exponentialRampToValueAtTime(.0001,t0+.35); os.connect(g).connect(ac.destination); os.start(t0); os.stop(t0+.4) } }catch(e){} };
+  const baseTitle=document.title.replace(/^(⏱ [^·]+· |Время вышло · )/,'');
+  el.innerHTML='<div class="timer" id="tmBox" role="timer" aria-label="Таймер экзамена"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="9" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 6v3l2 1.5M6.5 1.8h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'+
+    '<span class="tph" id="tmP"></span><b class="tm" id="tmT"></b><button type="button" class="tb primary" id="tmGo"></button><button type="button" class="tb" id="tmRs">Сброс</button></div>';
+  const box=el.querySelector('#tmBox'), pEl=el.querySelector('#tmP'), tEl=el.querySelector('#tmT'), go=el.querySelector('#tmGo'), rs=el.querySelector('#tmRs');
+  const save=()=>store.set(K,T); let last=null;
+  const emit=()=>{ if(last!==T.phase){ last=T.phase; o.onPhase&&o.onPhase(T.phase) } };
+  function toWork(){ T.phase='work'; T.left=WD; T.endAt=Date.now()+WD; T.warned=false; save(); beep(2); toast('Ознакомление окончено. На '+o.label+' — '+durTxt(WD)) }
+  function draw(){ let l=left();
+    if(T.phase==='read'&&l<=0){ toWork(); l=left() }
+    if(T.phase==='work'&&l<=0){ T.phase='done'; T.left=0; T.endAt=null; save(); stop(); beep(3); toast('Время на '+o.label+' вышло') }
+    if(T.phase==='work'&&!T.warned&&l<=600000&&WD>600000){ T.warned=true; save(); beep(1); toast('Осталось 10 минут') }
+    const ph=T.phase;
+    pEl.textContent={idle:'',read:'Ознакомление',work:'',pause:'Пауза',done:'Время вышло'}[ph];
+    tEl.textContent=ph==='idle'?durTxt(RD)+' + '+durTxt(WD):ph==='done'?'00:00':fmtT(l);
+    box.dataset.st=ph+(ph==='work'&&l<=600000?' warn':'')+(ph==='read'||ph==='work'?' run':'');
+    go.textContent={idle:'Начать',read:'Приступить',work:'Пауза',pause:'Дальше',done:'Заново'}[ph];
+    go.title=ph==='read'?'Закончить ознакомление и запустить '+durTxt(WD):'';
+    rs.hidden=ph==='idle';
+    document.title=(ph==='read'||ph==='work')?'⏱ '+fmtT(l)+' · '+baseTitle:(ph==='done'?'Время вышло · '+baseTitle:baseTitle);
+    emit() }
   function stop(){ clearInterval(iv); iv=null }
-  function start(){ stop(); iv=setInterval(draw,500) }
-  go.addEventListener('click',()=>{
-    if(T.done){ T={left:DUR,endAt:null,warned:false,done:false} }
-    if(T.endAt){ T.left=left(); T.endAt=null; stop() } else { T.endAt=Date.now()+T.left; start(); if(T.left===DUR) toast('Таймер запущен: '+(mins||60)+' минут') }
+  function tick(){ stop(); iv=setInterval(draw,500) }
+  go.addEventListener('click',()=>{ const ph=T.phase;
+    if(ph==='idle'||ph==='done'){ T=fresh(); T.phase='read'; T.endAt=Date.now()+RD; tick(); toast('Ознакомление: '+durTxt(RD)+', затем '+durTxt(WD)+' на выполнение') }
+    else if(ph==='read'){ toWork(); tick() }
+    else if(ph==='work'){ T.left=left(); T.endAt=null; T.phase='pause'; stop() }
+    else if(ph==='pause'){ T.endAt=Date.now()+T.left; T.phase='work'; tick() }
     save(); draw() });
   rs.addEventListener('click',()=>{
-    if(T.endAt&&Date.now()-armed>3000){ armed=Date.now(); toast('Нажмите «Сброс» ещё раз, чтобы обнулить таймер'); return }
-    stop(); T={left:DUR,endAt:null,warned:false,done:false}; save(); draw(); toast('Таймер сброшен') });
-  if(T.endAt) start(); draw();
+    if(T.phase!=='done'&&Date.now()-armed>3000){ armed=Date.now(); toast('Нажмите «Сброс» ещё раз: таймер обнулится, задание скроется'); return }
+    stop(); T=fresh(); save(); draw(); toast('Таймер сброшен') });
+  if(T.phase==='read'||T.phase==='work') tick(); draw();
+  return { start(){ if(T.phase==='idle'||T.phase==='done') go.click() }, phase:()=>T.phase, stop };
 }
 // ===== end shared =====
 
+// ===== modules 2 and 3: parameters from the variant code + task sheets =====
+// Network, domain, logins and SSH port come from module 1; the rest is seeded by the same code.
+const MODS={1:{name:'Модуль 1',title:'Настройка сетевой инфраструктуры',min:60},2:{name:'Модуль 2',title:'Организация сетевого администрирования',min:90},3:{name:'Модуль 3',title:'Эксплуатация объектов сетевой инфраструктуры',min:90}};
+const READ_MIN=15;
+const M2DEF={usrN:'5',usrPre:'user',usrSuf:'hq',grp:'hq',usrPass:'P@ssw0rd',dcPass:'P@ssw0rd',sudoCmds:'cat, grep, id',
+  raidLvl:'5',raidDisks:'/dev/sdb /dev/sdc /dev/sdd',raidMnt:'/raid5',nfsDir:'/raid5/nfs',nfsMnt:'/mnt/nfs',ntpStratum:'5',
+  dockApp:'testapp',dockPort:'8080',dockDb:'testdb',dockUser:'test',dockPass:'P@ssw0rd',
+  webDb:'webdb',webUser:'webc',webPass:'P@ssw0rd',hqFwd:'8080',brFwd:'8080',authUser:'WEB',authPass:'P@ssw0rd',cliUser:'user'};
+const M3DEF={csv:'/opt/users.csv',caName:'AU-TEAM Root CA',certDays:'30',psk:'P@ssw0rd',fwAllow:'http, https, dns, ntp, icmp',
+  printer:'Virtual_PDF',logLvl:'warning',logDir:'/opt',rotate:'weekly',rotSize:'10M',monName:'mon',monUser:'admin',monPass:'P@ssw0rd',
+  f2bTries:'3',f2bBan:'60',pcDir:'/etc/ansible/PC_INFO'};
+const FW_ALL=['http','https','dns','ntp','icmp','ssh'];
+const LOGLV=[['emerg',0],['alert',1],['crit',2],['err',3],['warning',4],['notice',5],['info',6]];
+function m23Params(c){
+  const m2=Object.assign({},M2DEF), m3=Object.assign({},M3DEF);
+  if(c.lv==='E'||!c.num) return {m2,m3};
+  const rnd=rngFor(c.lv+'-'+c.num+'/m23'), int=(a,b)=>a+Math.floor(rnd()*(b-a+1)), pick=a=>a[Math.floor(rnd()*a.length)];
+  const shuffle=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a };
+  const lvl=pick(['0','1','5']);
+  Object.assign(m2,{usrN:String(int(3,6)),usrPre:pick(['user','staff','emp','worker']),usrSuf:pick(['hq','office']),grp:pick(['hq','office','hq_staff']),
+    usrPass:pick(PASS),dcPass:pick(PASS),sudoCmds:shuffle(['cat','grep','id','ls','whoami','tail']).slice(0,3).join(', '),
+    raidLvl:lvl,raidDisks:lvl==='1'?'/dev/sdb /dev/sdc':'/dev/sdb /dev/sdc /dev/sdd',raidMnt:'/raid'+lvl,ntpStratum:String(int(3,6)),
+    dockApp:pick(['testapp','webapp','siteapp']),dockPort:String(pick([8080,8081,8088,8888])),dockDb:pick(['testdb','appdb','sitedb']),dockUser:pick(['test','app','site']),dockPass:pick(PASS),
+    webDb:pick(['webdb','sitedb','portaldb']),webUser:pick(['webc','web','portal']),webPass:pick(PASS),hqFwd:String(pick([8080,8081,8090])),brFwd:String(pick([8080,8082,8091])),
+    authUser:pick(['WEB','webuser','proxy']),authPass:pick(PASS)});
+  m2.nfsDir=m2.raidMnt+pick(['/nfs','/share']); m2.nfsMnt=pick(['/mnt/nfs','/mnt/share','/srv/nfs']);
+  Object.assign(m3,{certDays:String(pick([30,60,90,180])),psk:pick(PASS),fwAllow:['http','https','dns','ntp','icmp'].concat(rnd()<.5?['ssh']:[]).join(', '),
+    printer:pick(['Virtual_PDF','PDF','Office_PDF']),logLvl:pick(['warning','err','notice']),rotate:pick(['weekly','daily']),rotSize:pick(['10M','5M','20M']),
+    monName:pick(['mon','monitor','grafana']),monPass:pick(PASS),f2bTries:String(int(2,5)),f2bBan:String(pick([60,120,300])),caName:pick(['AU-TEAM Root CA','Office CA','Demo Root CA'])});
+  if(c.dom!=='au-team.irpo') m3.caName=c.dom.split('.')[0].toUpperCase()+' Root CA';
+  return {m2,m3};
+}
+function withM23(c){ if(!c) return c; if(!c.m2||!c.m3){ const p=m23Params(c); c=Object.assign({},c,{m2:Object.assign(p.m2,c.m2||{}),m3:Object.assign(p.m3,c.m3||{})}) } return c }
+const usersOf = m2 => Array.from({length:Math.max(1,Math.min(20,+m2.usrN||1))},(_,i)=>m2.usrPre+(i+1)+(m2.usrSuf?'.'+m2.usrSuf:''));
+const workgroup = dom => dom.split('.')[0].toUpperCase().slice(0,15);
+const rotRu = r => r==='daily'?'ежедневно':r==='monthly'?'ежемесячно':'еженедельно';
+const lvlRu = l => ({emerg:'emerg',alert:'alert',crit:'crit',err:'err (ошибки)',warning:'warning (предупреждения)',notice:'notice',info:'info'}[l]||l);
+
+function taskModel23(mod,c,r,student){
+  c=withM23(c); const m2=c.m2, m3=c.m3, D=c.dom, U=usersOf(m2);
+  const head=[{t:'meta',l:'Тренировочный вариант · ДЭ 09.02.06 · '+MODS[mod].name,r:'Вариант **'+codeOf(c)+'** · '+LEVELS[c.lv].name},
+    ...(student?[{t:'p',x:'Студент: **'+student+'**'}]:[]),
+    {t:'h1',x:MODS[mod].name+'. '+MODS[mod].title},
+    {t:'p',x:'Работа ведётся на стенде, настроенном в Модуле 1: те же устройства, адреса и домен '+V(D)+'. Дополнительные файлы лежат на диске '+V('Additional.iso')+'.'}];
+  if(mod===2) return head.concat([{t:'h2',x:'Задания'},{t:'ol',items:[
+    {x:'**Настройте доменный контроллер Samba на BR-SRV.**',sub:['Домен '+V(D)+', NetBIOS-имя '+V(workgroup(D))+', пароль администратора '+V(m2.dcPass)+'.',
+      'Создайте '+V(m2.usrN)+' пользователей: '+V(U[0])+' … '+V(U[U.length-1])+' с паролем '+V(m2.usrPass)+'.',
+      'Создайте группу '+V(m2.grp)+' и добавьте в неё всех этих пользователей.','Введите машину HQ-CLI в домен.',
+      'Пользователи группы '+V(m2.grp)+' могут выполнять через sudo только команды '+V(m2.sudoCmds)+'.']},
+    {x:'**Сконфигурируйте файловое хранилище на HQ-SRV.**',sub:['Соберите RAID '+V(m2.raidLvl)+' из дисков '+V(m2.raidDisks)+', устройство '+V('/dev/md0')+', конфигурация в '+V('/etc/mdadm.conf')+'.',
+      'Создайте файловую систему ext4 и настройте автомонтирование в '+V(m2.raidMnt)+'.',
+      'Настройте NFS-сервер: каталог '+V(m2.nfsDir)+' доступен сети HQ-CLI на чтение и запись.','На HQ-CLI настройте автомонтирование этого каталога в '+V(m2.nfsMnt)+'.']},
+    {x:'**Настройте службу времени chrony.** Сервер — ISP, стратум '+V(m2.ntpStratum)+'. Клиенты — HQ-RTR, BR-RTR, HQ-SRV, HQ-CLI, BR-SRV.'},
+    {x:'**Сконфигурируйте Ansible на BR-SRV.**',sub:['Инвентарь '+V('/etc/ansible/hosts')+': HQ-SRV, HQ-CLI, HQ-RTR, BR-RTR.','Команда '+V('ansible all -m ping')+' отвечает pong от всех машин без предупреждений.']},
+    {x:'**Разверните приложение в Docker на BR-SRV.**',sub:['Используйте образы из каталога '+V('docker')+' на диске Additional.iso.','Контейнер приложения называется '+V(m2.dockApp)+' и доступен на порту '+V(m2.dockPort)+'.',
+      'Контейнер базы MariaDB: база '+V(m2.dockDb)+', пользователь '+V(m2.dockUser)+' с паролем '+V(m2.dockPass)+'.','Файл compose сохраните в домашнем каталоге root.']},
+    {x:'**Разверните веб-приложение на HQ-SRV.**',sub:['Apache, PHP и MariaDB; файлы приложения возьмите из каталога '+V('web')+' на диске Additional.iso.',
+      'База '+V(m2.webDb)+', пользователь '+V(m2.webUser)+' с паролем '+V(m2.webPass)+'. Загрузите в неё дамп из комплекта.']},
+    {x:'**Настройте статическую трансляцию портов.**',sub:['На HQ-RTR порт '+V(m2.hqFwd)+' пробрасывается на порт 80 HQ-SRV, порт '+V(c.sshPort)+' — на порт '+V(c.sshPort)+' HQ-SRV.',
+      'На BR-RTR порт '+V(m2.brFwd)+' пробрасывается на порт '+V(m2.dockPort)+' BR-SRV, порт '+V(c.sshPort)+' — на порт '+V(c.sshPort)+' BR-SRV.']},
+    {x:'**Настройте обратный прокси nginx на ISP.**',sub:['Имя '+V('web.'+D)+' ведёт на веб-приложение HQ-SRV через HQ-RTR.','Имя '+V('docker.'+D)+' ведёт на приложение '+V(m2.dockApp)+' через BR-RTR.']},
+    {x:'**Настройте web-аутентификацию на ISP** для '+V('web.'+D)+': логин '+V(m2.authUser)+', пароль '+V(m2.authPass)+'.'},
+    {x:'**Установите Яндекс Браузер на HQ-CLI.**'}]},
+    {t:'note',x:'Сведения о настройке каждого пункта занесите в отчёт.'}]);
+  return head.concat([{t:'h2',x:'Задания'},{t:'ol',items:[
+    {x:'**Импортируйте пользователей в домен.** Файл '+V(m3.csv)+' с диска Additional.iso загрузите в Samba на BR-SRV скриптом.'},
+    {x:'**Разверните центр сертификации на HQ-SRV.**',sub:['Корневой сертификат '+V(m3.caName)+'.','Выпустите сертификаты для '+V('web.'+D)+' и '+V('docker.'+D)+' сроком на '+V(m3.certDays)+' дней.',
+      'Подключите их к nginx на ISP: доступ только по HTTPS, HTTP перенаправляется.','HQ-CLI доверяет корневому сертификату, браузер открывает сайты без предупреждений.']},
+    {x:'**Защитите туннель между HQ-RTR и BR-RTR с помощью IPsec** (strongSwan). Шифруется трафик GRE/IP-in-IP, ключ '+V(m3.psk)+'. OSPF продолжает работать.'},
+    {x:'**Настройте межсетевой экран на HQ-RTR и BR-RTR.** Снаружи разрешены только: '+V(m3.fwAllow)+', туннель и проброшенные порты; остальной входящий трафик запрещён.'},
+    {x:'**Настройте принт-сервер CUPS на HQ-SRV.**',sub:['Виртуальный PDF-принтер '+V(m3.printer)+'.','На HQ-CLI он подключён и выбран по умолчанию.']},
+    {x:'**Настройте централизованное журналирование на HQ-SRV (rsyslog).**',sub:['Принимаются журналы HQ-RTR, BR-RTR и BR-SRV уровня '+V(lvlRu(m3.logLvl))+' и выше.',
+      'Журналы складываются в '+V(m3.logDir+'/<имя_машины>/<имя_машины>.log')+'.','Ротация '+rotRu(m3.rotate)+' или при размере больше '+V(m3.rotSize)+', старые файлы сжимаются.']},
+    {x:'**Настройте мониторинг на HQ-SRV.**',sub:['Prometheus собирает метрики HQ-SRV и BR-SRV (node_exporter), Grafana их показывает.',
+      'Grafana открывается по имени '+V(m3.monName+'.'+D)+' на порту '+V('3000')+', вход '+V(m3.monUser)+' / '+V(m3.monPass)+'.']},
+    {x:'**Соберите инвентаризацию через Ansible на BR-SRV.** Плейбук пишет имя и IP-адрес HQ-SRV и HQ-CLI в файлы каталога '+V(m3.pcDir)+'.'},
+    {x:'**Настройте fail2ban на HQ-SRV.** После '+V(m3.f2bTries)+' неудачных попыток входа по SSH адрес блокируется на '+V(m3.f2bBan)+' секунд.'}]},
+    {t:'note',x:'Сведения о настройке каждого пункта занесите в отчёт.'}]);
+}
 // ===== teacher page =====
 const KEY='degen.v3';
 const STUDENT_URL='https://servanchy1308.github.io/demo-exam/';
@@ -1435,20 +1537,494 @@ const J={rows:[],mode:'loading',col:null,subs:[],
     J.col.onSnapshot(s=>{ J.rows=s.docs.map(d=>Object.assign({id:d.id},d.data())); J.emit() }, e=>{ J.err=e&&e.message; J.emit() }) }
   else { J.mode='local'; J.rows=store.get(KEY+'.journal',[]); J.emit() } })();
 
-// ===== solve page: paste a task text → parameters → scripts =====
-const SKEY='degen.solve.v1';
+// ===== modules 2 and 3: solution commands =====
+// Each item: {n,title,why,blocks:[[machines,code]],check:[[cmd]]}. "machines" is a list like "HQ-RTR и BR-RTR";
+// a "#2" suffix puts the block into a later script for that machine.
+// escape for double quotes / unquoted heredocs, and for compose files ($ → $$)
+const dq = v => String(v).replace(/[$`"\\]/g,'\\$&');
+const cz = v => String(v).replace(/\$/g,'$$$$');
+const SUDO_PATH = cmds => cmds.split(/[,\s]+/).filter(Boolean).map(x=>'$(command -v '+x+')').join(', ');
+function persistFw(alt){ return alt ? 'iptables-save > /etc/sysconfig/iptables\nsystemctl enable iptables'
+  : 'DEBIAN_FRONTEND=noninteractive apt install -y iptables-persistent\nnetfilter-persistent save' }
+const chronyCfg = (lines,svc) => `CONF=/etc/chrony.conf; [ -d /etc/chrony ] && CONF=/etc/chrony/chrony.conf
+cat > $CONF <<EOF
+${lines}
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+EOF
+systemctl enable chronyd 2>/dev/null || systemctl enable chrony
+systemctl restart chronyd 2>/dev/null || systemctl restart chrony`;
+const mountAdd = `mkdir -p /mnt/add
+mountpoint -q /mnt/add || mount /dev/sr0 /mnt/add 2>/dev/null || mount /dev/cdrom /mnt/add
+ls /mnt/add`;
+const dockerInst = `apt-get update
+apt-get install -y docker-engine
+apt-get install -y docker-compose-v2 2>/dev/null || apt-get install -y docker-compose
+systemctl enable --now docker
+DC="docker compose"; docker compose version >/dev/null 2>&1 || DC=docker-compose`;
+function nginxConf(c,A,o){
+  const ssl=!!o.ssl;
+  const m2=c.m2, D=c.dom, auth=`  auth_basic "Restricted";\n  auth_basic_user_file /etc/nginx/.htpasswd;\n`;
+  const site=(name,to,withAuth)=>ssl?`server {
+  listen 80;
+  server_name ${name};
+  return 301 https://$host$request_uri;
+}
+server {
+  listen 443 ssl;
+  server_name ${name};
+  ssl_certificate /etc/nginx/ssl/${name.split('.')[0]}.crt;
+  ssl_certificate_key /etc/nginx/ssl/${name.split('.')[0]}.key;
+${withAuth?auth:''}  location / {
+    proxy_pass http://${to};
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+  }
+}`:`server {
+  listen 80;
+  server_name ${name};
+${withAuth?auth:''}  location / {
+    proxy_pass http://${to};
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+  }
+}`;
+  return `CONF=/etc/nginx/conf.d/proxy.conf; [ -d /etc/nginx/sites-enabled.d ] && CONF=/etc/nginx/sites-enabled.d/proxy.conf
+rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled.d/default.conf
+cat > $CONF <<'EOF'
+${site('web.'+D,A.hqWan+':'+m2.hqFwd,!!o.auth)}
+
+${site('docker.'+D,A.brWan+':'+m2.brFwd,false)}
+EOF
+nginx -t && systemctl enable nginx && systemctl restart nginx`;
+}
+function items23(mod,c,st,r){
+  c=withM23(c); const m2=c.m2, m3=c.m3, A=addrs(c,r), L=r.lans, D=c.dom, alt=st.rtrOs==='alt', WG=workgroup(D), U=usersOf(m2);
+  const P=alt?'apt-get update\napt-get install -y':'apt update\napt install -y';
+  const it=(n,title,why,blocks,check)=>({n,title,why,blocks,check:check.map(x=>[x])});
+  const wanHq='WAN='+st.ifHqWan+'\n', wanBr='WAN='+st.ifBrWan+'\n';
+  if(mod===2){
+    const dnat=(wan,rules)=>wan+rules.map(([p,to])=>`iptables -t nat -C PREROUTING -i $WAN -p tcp --dport ${p} -j DNAT --to-destination ${to} 2>/dev/null || iptables -t nat -A PREROUTING -i $WAN -p tcp --dport ${p} -j DNAT --to-destination ${to}`).join('\n')+'\n'+persistFw(alt);
+    const raidN=m2.raidDisks.trim().split(/\s+/).length;
+    return [
+      it(1,'Samba DC и домен','BR-SRV становится контроллером домена со встроенным DNS. HQ-SRV отвечает за записи зоны '+D+', а остальное по домену (SRV-записи Kerberos и LDAP) пересылает на BR-SRV. После этого HQ-CLI можно ввести в домен.',[
+        ['BR-SRV','IF='+st.ifSrv+`
+apt-get update
+apt-get install -y task-samba-dc
+for s in smb nmb krb5kdc slapd bind; do systemctl disable --now $s 2>/dev/null; done
+rm -f /etc/samba/smb.conf
+rm -rf /var/lib/samba /var/cache/samba
+mkdir -p /var/lib/samba/sysvol
+samba-tool domain provision --realm=${D.toUpperCase()} --domain=${WG} --adminpass='${m2.dcPass}' --dns-backend=SAMBA_INTERNAL --server-role=dc --use-rfc2307 --option="dns forwarder = ${A.hqSrv}"
+cp -f /var/lib/samba/private/krb5.conf /etc/krb5.conf
+systemctl enable --now samba
+sleep 5
+
+samba-tool group add ${m2.grp}
+for u in ${U.join(' ')}; do
+  samba-tool user add $u '${m2.usrPass}'
+  samba-tool group addmembers ${m2.grp} $u
+done
+samba-tool user list`],
+        ['HQ-SRV',`grep -q '^server=/${D}/' /etc/dnsmasq.conf || echo 'server=/${D}/${A.brSrv}' >> /etc/dnsmasq.conf
+systemctl restart dnsmasq`],
+        ['HQ-CLI',`apt-get update
+apt-get install -y task-auth-ad-sssd
+system-auth write ad ${D} hq-cli ${WG} 'administrator' '${m2.dcPass}'
+control sudo public
+cat > /etc/sudoers.d/${m2.grp} <<EOF
+%${m2.grp} ALL=(ALL) NOPASSWD: ${SUDO_PATH(m2.sudoCmds)}
+EOF
+chmod 440 /etc/sudoers.d/${m2.grp}
+echo "Перезагрузите HQ-CLI и войдите как ${U[0]}"`]],
+        ['samba-tool domain info 127.0.0.1','samba-tool group listmembers '+m2.grp,'id '+U[0]+'   # на HQ-CLI','sudo -l   # под '+U[0]+' на HQ-CLI']),
+      it(2,'RAID и NFS','mdadm собирает массив, его описание сохраняется в /etc/mdadm.conf, а строка в /etc/fstab монтирует его после перезагрузки. NFS открывает каталог только для сети HQ-CLI '+L.cli.cidr+'.',[
+        ['HQ-SRV',`apt-get update
+apt-get install -y mdadm nfs-server
+lsblk
+mdadm --zero-superblock --force ${m2.raidDisks} 2>/dev/null
+yes | mdadm --create /dev/md0 --level=${m2.raidLvl} --raid-devices=${raidN} ${m2.raidDisks}
+mkfs.ext4 -F /dev/md0
+mdadm --detail --scan > /etc/mdadm.conf
+mkdir -p ${m2.raidMnt}
+grep -q '^/dev/md0 ' /etc/fstab || echo '/dev/md0 ${m2.raidMnt} ext4 defaults 0 0' >> /etc/fstab
+mount -a
+
+mkdir -p ${m2.nfsDir}
+chmod 777 ${m2.nfsDir}
+grep -q '^${m2.nfsDir} ' /etc/exports || echo '${m2.nfsDir} ${L.cli.cidr}(rw,sync,no_subtree_check,no_root_squash)' >> /etc/exports
+systemctl enable --now nfs
+exportfs -ra`],
+        ['HQ-CLI',`apt-get install -y nfs-clients
+mkdir -p ${m2.nfsMnt}
+grep -q ' ${m2.nfsMnt} ' /etc/fstab || echo '${A.hqSrv}:${m2.nfsDir} ${m2.nfsMnt} nfs defaults,_netdev 0 0' >> /etc/fstab
+mount -a`]],
+        ['cat /proc/mdstat','df -h '+m2.raidMnt,'exportfs -v','df -h '+m2.nfsMnt+'   # на HQ-CLI']),
+      it(3,'Сервер времени chrony','ISP раздаёт время со стратумом '+m2.ntpStratum+'. Клиенты HQ обращаются к адресу ISP в сторону HQ, клиенты BR — в сторону BR.',[
+        ['ISP',P+' chrony\n'+chronyCfg('local stratum '+m2.ntpStratum+'\nallow 0.0.0.0/0')],
+        ['HQ-RTR, HQ-SRV и HQ-CLI',(alt?'':'apt install -y chrony 2>/dev/null || apt-get install -y chrony\n')+chronyCfg('server '+A.ispHq+' iburst')],
+        ['BR-RTR и BR-SRV',(alt?'':'apt install -y chrony 2>/dev/null || apt-get install -y chrony\n')+chronyCfg('server '+A.ispBr+' iburst')]],
+        ['chronyc clients   # на ISP','chronyc sources   # на клиентах','timedatectl']),
+      it(4,'Ansible','Ansible ходит по SSH ключом root с BR-SRV. На серверах это пользователь '+c.su+' на порту '+c.sshPort+', на роутерах '+c.adm+', на HQ-CLI заводим того же '+c.su+'. interpreter_python=auto_silent убирает предупреждения.',[
+        ['HQ-CLI',users(c.su,c.uid,c.suPass,true)+'\nsystemctl enable --now sshd'],
+        ['HQ-RTR и BR-RTR','systemctl enable --now ssh 2>/dev/null || systemctl enable --now sshd'],
+        ['BR-SRV#2',`apt-get update
+apt-get install -y ansible sshpass
+mkdir -p /etc/ansible
+cat > /etc/ansible/ansible.cfg <<EOF
+[defaults]
+inventory = /etc/ansible/hosts
+host_key_checking = False
+interpreter_python = auto_silent
+EOF
+cat > /etc/ansible/hosts <<EOF
+[servers]
+hq-srv ansible_host=${A.hqSrv} ansible_port=${c.sshPort} ansible_user=${c.su}
+
+[clients]
+hq-cli ansible_host=${A.hqCli} ansible_user=${c.su}
+
+[routers]
+hq-rtr ansible_host=${A.hqSrvGw} ansible_user=${c.adm}
+br-rtr ansible_host=${A.brGw} ansible_user=${c.adm}
+
+[all:vars]
+ansible_become=true
+EOF
+[ -f /root/.ssh/id_rsa ] || ssh-keygen -t rsa -N '' -f /root/.ssh/id_rsa
+sshpass -p '${c.suPass}' ssh-copy-id -o StrictHostKeyChecking=no -p ${c.sshPort} ${c.su}@${A.hqSrv}
+sshpass -p '${c.suPass}' ssh-copy-id -o StrictHostKeyChecking=no ${c.su}@${A.hqCli}
+sshpass -p '${c.admPass}' ssh-copy-id -o StrictHostKeyChecking=no ${c.adm}@${A.hqSrvGw}
+sshpass -p '${c.admPass}' ssh-copy-id -o StrictHostKeyChecking=no ${c.adm}@${A.brGw}
+ansible all -m ping`]],
+        ['ansible all -m ping']),
+      it(5,'Docker на BR-SRV','Образы загружаются с диска Additional.iso, compose-файл поднимает базу и приложение. Порт внутри образа приложения проверьте командой docker inspect, если он не 8000.',[
+        ['BR-SRV',dockerInst+'\n'+mountAdd+`
+for f in /mnt/add/docker/*.tar; do docker load -i "$f"; done
+docker images
+IMG_DB=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep -m1 -i mariadb)
+IMG_APP=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep -v -i mariadb | head -1)
+APP_PORT=$(docker inspect -f '{{range $p, $c := .Config.ExposedPorts}}{{$p}} {{end}}' $IMG_APP | grep -o '[0-9]*' | head -1); APP_PORT=\${APP_PORT:-8000}
+cat > /root/${m2.dockApp}.yml <<EOF
+services:
+  db:
+    image: $IMG_DB
+    container_name: db
+    restart: always
+    environment:
+      MARIADB_DATABASE: ${m2.dockDb}
+      MARIADB_USER: ${m2.dockUser}
+      MARIADB_PASSWORD: ${dq(cz(m2.dockPass))}
+      MARIADB_ROOT_PASSWORD: ${dq(cz(m2.dockPass))}
+    volumes:
+      - db_data:/var/lib/mysql
+  ${m2.dockApp}:
+    image: $IMG_APP
+    container_name: ${m2.dockApp}
+    restart: always
+    ports:
+      - "${m2.dockPort}:$APP_PORT"
+    environment:
+      DB_TYPE: maria
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${m2.dockDb}
+      DB_USER: ${m2.dockUser}
+      DB_PASS: ${dq(cz(m2.dockPass))}
+    depends_on:
+      - db
+volumes:
+  db_data:
+EOF
+$DC -f /root/${m2.dockApp}.yml up -d
+docker ps`]],
+        ['docker ps','curl -sI http://localhost:'+m2.dockPort]),
+      it(6,'Веб-приложение на HQ-SRV','lamp-server ставит Apache, PHP и MariaDB одним пакетом. Файлы и дамп берутся с диска, в index.php вписываются данные базы.',[
+        ['HQ-SRV',`apt-get update
+apt-get install -y lamp-server
+systemctl enable --now httpd2 mariadb
+`+mountAdd+`
+ls /mnt/add/web
+cp -r /mnt/add/web/* /var/www/html/
+rm -f /var/www/html/index.html
+mariadb -e "CREATE DATABASE IF NOT EXISTS ${m2.webDb}; CREATE USER IF NOT EXISTS '${m2.webUser}'@'localhost' IDENTIFIED BY '${dq(m2.webPass)}'; GRANT ALL ON ${m2.webDb}.* TO '${m2.webUser}'@'localhost'; FLUSH PRIVILEGES;"
+DUMP=$(ls /mnt/add/web/*.sql 2>/dev/null | head -1); [ -n "$DUMP" ] && mariadb ${m2.webDb} < "$DUMP"
+sed -i -E 's/^(\\$(servername|host|dbhost)[[:space:]]*=).*/\\1 "localhost";/; s/^(\\$(username|user|dbuser)[[:space:]]*=).*/\\1 "${m2.webUser}";/; s/^(\\$(password|pass|dbpass)[[:space:]]*=).*/\\1 "${m2.webPass}";/; s/^(\\$(dbname|database|db)[[:space:]]*=).*/\\1 "${m2.webDb}";/' /var/www/html/index.php
+grep -n -E '^\\$' /var/www/html/index.php
+systemctl restart httpd2`]],
+        ['curl -s http://localhost | head','mariadb -e "SHOW DATABASES"']),
+      it(7,'Проброс портов','DNAT на внешнем интерфейсе роутера отправляет входящие подключения на сервер офиса.',[
+        ['HQ-RTR',dnat(wanHq,[[m2.hqFwd,A.hqSrv+':80'],[c.sshPort,A.hqSrv+':'+c.sshPort]])],
+        ['BR-RTR',dnat(wanBr,[[m2.brFwd,A.brSrv+':'+m2.dockPort],[c.sshPort,A.brSrv+':'+c.sshPort]])]],
+        ['iptables -t nat -S PREROUTING','curl -sI http://'+A.hqWan+':'+m2.hqFwd+'   # с ISP','curl -sI http://'+A.brWan+':'+m2.brFwd+'   # с ISP']),
+      it(8,'Обратный прокси nginx','ISP принимает запросы по имени и передаёт их на проброшенные порты HQ-RTR и BR-RTR.',[
+        ['ISP',P+' nginx\n'+nginxConf(c,A,{ssl:false,auth:false})]],
+        ['nginx -t','curl -sI -H "Host: web.'+D+'" http://localhost','curl -sI -H "Host: docker.'+D+'" http://localhost']),
+      it(9,'Web-аутентификация','Файл паролей создаётся через openssl, отдельный пакет htpasswd не нужен. Конфигурация nginx перезаписывается уже с auth_basic для web.'+D+'.',[
+        ['ISP',`printf '%s:%s\\n' '${m2.authUser}' "$(openssl passwd -apr1 '${m2.authPass}')" > /etc/nginx/.htpasswd
+chmod 644 /etc/nginx/.htpasswd
+`+nginxConf(c,A,{ssl:false,auth:true})]],
+        ['curl -sI -H "Host: web.'+D+'" http://localhost   # 401','curl -sI -u '+m2.authUser+':'+m2.authPass+' -H "Host: web.'+D+'" http://localhost   # 200']),
+      it(10,'Яндекс Браузер','Пакет есть в репозитории Альт.',[['HQ-CLI','apt-get update\napt-get install -y yandex-browser-stable']],['rpm -q yandex-browser-stable'])
+    ];
+  }
+  const lv=(LOGLV.find(x=>x[0]===m3.logLvl)||['warning',4])[1];
+  const proto=c.tun==='gre'?'47':'4', fwPorts=m3.fwAllow.split(/[,\s]+/).filter(Boolean);
+  const fwRules=[]; if(fwPorts.includes('http')||fwPorts.includes('https')){ const p=[fwPorts.includes('http')?'80':'',fwPorts.includes('https')?'443':''].filter(Boolean).join(','); fwRules.push('iptables -A FW_IN -p tcp -m multiport --dports '+p+' -j ACCEPT') }
+  if(fwPorts.includes('dns')) fwRules.push('iptables -A FW_IN -p udp --dport 53 -j ACCEPT','iptables -A FW_IN -p tcp --dport 53 -j ACCEPT');
+  if(fwPorts.includes('ntp')) fwRules.push('iptables -A FW_IN -p udp --dport 123 -j ACCEPT');
+  if(fwPorts.includes('icmp')) fwRules.push('iptables -A FW_IN -p icmp -j ACCEPT');
+  if(fwPorts.includes('ssh')) fwRules.push('iptables -A FW_IN -p tcp --dport 22 -j ACCEPT');
+  const fw=wan=>wan+`iptables -N FW_IN 2>/dev/null
+iptables -F FW_IN
+iptables -A FW_IN -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables -A FW_IN -m conntrack --ctstate DNAT -j ACCEPT
+iptables -A FW_IN -p ${proto} -j ACCEPT
+iptables -A FW_IN -p esp -j ACCEPT
+iptables -A FW_IN -p udp -m multiport --dports 500,4500 -j ACCEPT
+${fwRules.join('\n')}
+iptables -A FW_IN -j DROP
+iptables -C INPUT -i $WAN -j FW_IN 2>/dev/null || iptables -I INPUT -i $WAN -j FW_IN
+iptables -C FORWARD -i $WAN -j FW_IN 2>/dev/null || iptables -I FORWARD -i $WAN -j FW_IN
+`+persistFw(alt);
+  const ipsec=(me,peer)=>P+` strongswan
+cat > /etc/ipsec.conf <<EOF
+config setup
+
+conn tunnel
+  auto=start
+  type=transport
+  authby=secret
+  keyexchange=ikev2
+  left=${me}
+  right=${peer}
+  leftprotoport=${proto}
+  rightprotoport=${proto}
+  ike=aes256-sha256-modp2048
+  esp=aes256-sha256
+EOF
+echo '${me} ${peer} : PSK "${m3.psk}"' > /etc/ipsec.secrets
+chmod 600 /etc/ipsec.secrets
+systemctl enable ipsec 2>/dev/null || systemctl enable strongswan-starter 2>/dev/null
+ipsec restart
+sleep 3
+ipsec status`;
+  const rsCli=(inst)=>inst+`
+echo '*.${m3.logLvl} @@${A.hqSrv}:514' > /etc/rsyslog.d/90-remote.conf
+systemctl enable rsyslog
+systemctl restart rsyslog
+logger -p user.${m3.logLvl} "test from $(hostname)"`;
+  return [
+    it(1,'Импорт пользователей из CSV','Скрипт читает файл построчно и создаёт пользователей в Samba. Сначала посмотрите первую строку файла и при необходимости поправьте порядок столбцов в строке read.',[
+      ['BR-SRV',mountAdd+`
+F=$(ls /mnt/add/*.csv /mnt/add/*/*.csv 2>/dev/null | head -1); [ -n "$F" ] && cp -f "$F" ${m3.csv}
+head -2 ${m3.csv}
+samba-tool domain passwordsettings set --complexity=off --min-pwd-length=1
+cat > /root/import_users.sh <<'EOF'
+#!/bin/bash
+# columns: First Name;Last Name;Role;Phone;OU;Street;ZIP;City;Country;Password
+tail -n +2 "$1" | tr -d '\\r' | while IFS=';' read -r fn ln role phone ou street zip city country pass; do
+  [ -z "$fn" ] && continue
+  login=$(echo "$fn.$ln" | tr '[:upper:]' '[:lower:]' | tr -d ' ')
+  if [ -n "$ou" ]; then
+    samba-tool ou add "OU=$ou" >/dev/null 2>&1 || samba-tool ou create "OU=$ou" >/dev/null 2>&1
+    samba-tool user add "$login" "\${pass:-P@ssw0rd}" --given-name="$fn" --surname="$ln" --job-title="$role" --telephone-number="$phone" --userou="OU=$ou"
+  else
+    samba-tool user add "$login" "\${pass:-P@ssw0rd}" --given-name="$fn" --surname="$ln"
+  fi
+done
+EOF
+chmod +x /root/import_users.sh
+/root/import_users.sh ${m3.csv}
+samba-tool user list | wc -l`]],
+      ['samba-tool user list','samba-tool ou list']),
+    it(2,'Центр сертификации и HTTPS','ЦС — это ключ и самоподписанный сертификат на HQ-SRV. Им подписываются сертификаты сайтов, nginx на ISP забирает их по SSH через проброшенный порт HQ-RTR, HQ-CLI добавляет корневой сертификат в доверенные.',[
+      ['HQ-SRV',`mkdir -p /root/ca && cd /root/ca
+[ -f ca.key ] || openssl genrsa -out ca.key 4096
+openssl req -x509 -new -key ca.key -days 3650 -subj "/CN=${m3.caName}" -out ca.crt
+for n in web docker; do
+  openssl genrsa -out $n.key 2048
+  openssl req -new -key $n.key -subj "/CN=$n.${D}" -out $n.csr
+  printf "subjectAltName=DNS:$n.${D}\\nbasicConstraints=CA:FALSE\\nkeyUsage=digitalSignature,keyEncipherment\\nextendedKeyUsage=serverAuth\\n" > $n.ext
+  openssl x509 -req -in $n.csr -CA ca.crt -CAkey ca.key -CAcreateserial -days ${m3.certDays} -extfile $n.ext -out $n.crt
+done
+mkdir -p /home/${c.su}/certs
+cp ca.crt web.crt web.key docker.crt docker.key /home/${c.su}/certs/
+chown -R ${c.su} /home/${c.su}/certs
+openssl x509 -in web.crt -noout -subject -enddate`],
+      ['ISP',`mkdir -p /etc/nginx/ssl
+scp -P ${c.sshPort} -o StrictHostKeyChecking=no ${c.su}@${A.hqWan}:certs/{web,docker}.{crt,key} /etc/nginx/ssl/
+chmod 600 /etc/nginx/ssl/*.key
+`+nginxConf(c,A,{ssl:true,auth:true})],
+      ['HQ-CLI',`scp -P ${c.sshPort} -o StrictHostKeyChecking=no ${c.su}@${A.hqSrv}:certs/ca.crt /etc/pki/ca-trust/source/anchors/${D}-ca.crt
+update-ca-trust
+# если браузер всё равно ругается: Настройки → Сертификаты → Импорт /etc/pki/ca-trust/source/anchors/${D}-ca.crt`]],
+      ['curl -sI https://web.'+D+'   # на HQ-CLI, без -k','openssl s_client -connect web.'+D+':443 -servername web.'+D+' </dev/null | grep -i verify']),
+    it(3,'IPsec поверх туннеля','Режим transport шифрует только пакеты туннеля (протокол '+proto+') между внешними адресами роутеров. Туннель и OSPF остаются как в Модуле 1.',[
+      ['HQ-RTR',ipsec(A.hqWan,A.brWan)],['BR-RTR',ipsec(A.brWan,A.hqWan)]],
+      ['ipsec status','ip xfrm state','ping -c3 '+A.tBr+'   # с HQ-RTR']),
+    it(4,'Межсетевой экран','Своя цепочка FW_IN проверяет всё, что приходит снаружи на внешний интерфейс: разрешены ответы, проброшенные порты, туннель с IPsec и выбранные службы, остальное отбрасывается. Внутренние сети и туннель не ограничены.',[
+      ['HQ-RTR',fw(wanHq)],['BR-RTR',fw(wanBr)]],
+      ['iptables -S FW_IN','ping -c2 '+c.fwd1,'vtysh -c "show ip ospf neighbor"']),
+    it(5,'Принт-сервер CUPS','cups-pdf создаёт виртуальный принтер, который сохраняет задания в PDF. HQ-CLI подключается к нему по IPP.',[
+      ['HQ-SRV',`apt-get update
+apt-get install -y cups cups-pdf
+systemctl enable --now cups
+cupsctl --remote-admin --remote-any --share-printers
+PPD=$(lpinfo -m | grep -i -m1 pdf | cut -d' ' -f1)
+lpadmin -p ${m3.printer} -E -v cups-pdf:/ -m "$PPD" -o printer-is-shared=true
+lpoptions -d ${m3.printer}
+systemctl restart cups`],
+      ['HQ-CLI',`apt-get install -y cups
+systemctl enable --now cups
+lpadmin -p ${m3.printer} -E -v ipp://${A.hqSrv}:631/printers/${m3.printer} -m everywhere
+lpoptions -d ${m3.printer}`]],
+      ['lpstat -p -d','echo test | lp   # на HQ-CLI']),
+    it(6,'Журналирование rsyslog','HQ-SRV слушает порт 514 и раскладывает сообщения с других машин по каталогам с их именами. Клиенты отправляют всё уровня '+m3.logLvl+' и выше. logrotate сжимает старые журналы.',[
+      ['HQ-SRV',`apt-get update
+apt-get install -y rsyslog-classic
+cat > /etc/rsyslog.d/10-remote.conf <<'EOF'
+module(load="imtcp")
+input(type="imtcp" port="514")
+module(load="imudp")
+input(type="imudp" port="514")
+template(name="RemoteLogs" type="string" string="${m3.logDir}/%HOSTNAME%/%HOSTNAME%.log")
+if $fromhost-ip != "127.0.0.1" and $syslogseverity <= ${lv} then {
+  action(type="omfile" dynaFile="RemoteLogs")
+  stop
+}
+EOF
+systemctl enable rsyslog
+systemctl restart rsyslog
+cat > /etc/logrotate.d/remote-logs <<'EOF'
+${m3.logDir}/*/*.log {
+  ${m3.rotate}
+  maxsize ${m3.rotSize}
+  rotate 4
+  compress
+  missingok
+  notifempty
+  copytruncate
+}
+EOF
+logrotate -d /etc/logrotate.d/remote-logs 2>&1 | tail -3`],
+      ['HQ-RTR и BR-RTR',rsCli(alt?'apt-get install -y rsyslog-classic 2>/dev/null':'apt install -y rsyslog')],
+      ['BR-SRV',rsCli('apt-get install -y rsyslog-classic')]],
+      ['ls '+m3.logDir+'/*/   # на HQ-SRV','tail '+m3.logDir+'/br-srv/br-srv.log']),
+    it(7,'Мониторинг Prometheus и Grafana','Всё запускается в Docker на HQ-SRV, источник данных Prometheus подключается к Grafana автоматически. На BR-SRV работает node_exporter. Имя '+m3.monName+'.'+D+' добавляется в DNS на HQ-SRV.',[
+      ['HQ-SRV',dockerInst+`
+mkdir -p /root/monitoring/provisioning/datasources
+cat > /root/monitoring/prometheus.yml <<'EOF'
+global:
+  scrape_interval: 15s
+scrape_configs:
+  - job_name: node
+    static_configs:
+      - targets: ['${A.hqSrv}:9100', '${A.brSrv}:9100']
+EOF
+cat > /root/monitoring/provisioning/datasources/prometheus.yml <<'EOF'
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    type: prometheus
+    url: http://prometheus:9090
+    isDefault: true
+EOF
+cat > /root/monitoring/compose.yml <<'EOF'
+services:
+  prometheus:
+    image: prom/prometheus
+    restart: always
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+  grafana:
+    image: grafana/grafana
+    restart: always
+    environment:
+      GF_SECURITY_ADMIN_USER: ${m3.monUser}
+      GF_SECURITY_ADMIN_PASSWORD: ${cz(m3.monPass)}
+    volumes:
+      - ./provisioning:/etc/grafana/provisioning
+    ports:
+      - "3000:3000"
+  node-exporter:
+    image: prom/node-exporter
+    restart: always
+    network_mode: host
+    pid: host
+EOF
+cd /root/monitoring && $DC -f compose.yml up -d
+grep -q '/${m3.monName}.${D}/' /etc/dnsmasq.conf || echo 'address=/${m3.monName}.${D}/${A.hqSrv}' >> /etc/dnsmasq.conf
+systemctl restart dnsmasq`],
+      ['BR-SRV','docker rm -f node-exporter 2>/dev/null\ndocker run -d --name node-exporter --restart always --net host --pid host prom/node-exporter']],
+      ['curl -s http://localhost:9090/api/v1/targets | grep -o \'"health":"[a-z]*"\'','http://'+m3.monName+'.'+D+':3000   # в браузере HQ-CLI']),
+    it(8,'Инвентаризация Ansible','Плейбук собирает факты с HQ-SRV и HQ-CLI и записывает имя и адрес каждой машины в отдельный файл на BR-SRV.',[
+      ['BR-SRV',`mkdir -p ${m3.pcDir}
+cat > /etc/ansible/get_hostname_address.yml <<'EOF'
+- hosts: hq-srv,hq-cli
+  gather_facts: yes
+  tasks:
+    - name: save hostname and address
+      copy:
+        dest: "${m3.pcDir}/{{ ansible_hostname }}.yml"
+        content: |
+          hostname: {{ ansible_fqdn }}
+          address: {{ ansible_default_ipv4.address }}
+      delegate_to: localhost
+      become: false
+EOF
+ansible-playbook /etc/ansible/get_hostname_address.yml
+cat ${m3.pcDir}/*.yml`]],
+      ['ls '+m3.pcDir,'cat '+m3.pcDir+'/*.yml']),
+    it(9,'fail2ban','Джейл sshd читает журнал systemd и блокирует адрес после '+m3.f2bTries+' ошибок на '+m3.f2bBan+' секунд.',[
+      ['HQ-SRV',`apt-get update
+apt-get install -y fail2ban python3-module-systemd 2>/dev/null || apt-get install -y fail2ban
+cat > /etc/fail2ban/jail.d/sshd.local <<EOF
+[sshd]
+enabled = true
+port = ${c.sshPort}
+filter = sshd
+backend = systemd
+maxretry = ${m3.f2bTries}
+findtime = 600
+bantime = ${m3.f2bBan}
+EOF
+systemctl enable fail2ban
+systemctl restart fail2ban
+sleep 2
+fail2ban-client status sshd`]],
+      ['fail2ban-client status sshd'])
+  ];
+}
+// group item blocks into one script per machine, in run order
+const ORDER23={2:[['HQ-RTR','Пробросы портов, chrony'],['BR-RTR','Пробросы портов, chrony'],['ISP','chrony и nginx'],['BR-SRV','Samba DC, chrony, Docker'],['HQ-SRV','RAID, NFS, веб, DNS'],['HQ-CLI','Домен, NFS, браузер'],['BR-SRV#2','Ansible, когда HQ-CLI в сети']],
+  3:[['BR-SRV','Импорт, журналы, мониторинг, Ansible'],['HQ-SRV','ЦС, CUPS, rsyslog, мониторинг, fail2ban'],['ISP','HTTPS на nginx'],['HQ-RTR','IPsec, экран, журналы'],['BR-RTR','IPsec, экран, журналы'],['HQ-CLI','Доверие к ЦС, принтер']]};
+const VMKEY={'ISP':'vmIsp','HQ-RTR':'vmHqRtr','BR-RTR':'vmBrRtr','HQ-SRV':'vmHqSrv','BR-SRV':'vmBrSrv','HQ-CLI':'vmHqCli'};
+function scripts23(mod,c,st,r){
+  const items=items23(mod,c,st,r), by={};
+  items.forEach(it=>it.blocks.forEach(([who,code])=>{ const step=/#2$/.test(who)?'#2':''; who.replace(/#2$/,'').replace(/^Оба роутера/,'HQ-RTR и BR-RTR').split(/\s*(?:,| и )\s*/).forEach(m=>{
+    m=m.replace(/\s*\(.*\)$/,'').trim(); if(!VMKEY[m]) return; (by[m+step]=by[m+step]||[]).push('# ----- '+it.n+'. '+it.title+' -----\n'+code) }) }));
+  const out=ORDER23[mod].filter(([k])=>by[k]).map(([k,when],i)=>{ const m=k.replace('#2',''), sh=m.toLowerCase()+'-m'+mod+(k.endsWith('#2')?'-2':'')+'.sh';
+    return {id:k,vm:st[VMKEY[m]],machine:m,sh,title:MODS[mod].name+' на '+m+(k.endsWith('#2')?' (шаг 2)':''),when,
+      text:'#!/bin/bash\n# '+m+' · '+MODS[mod].name+'\n\n'+by[k].join('\n\n')+'\n\necho DONE\n'} });
+  return wrap(out,st);
+}
+// ===== solve page: parameters → commands for modules 1, 2 and 3 =====
+const SKEY='degen.solve.v2';
 const STAND_DEF={ifIspWan:'eth0',ifIspHq:'eth1',ifIspBr:'eth2',ifHqWan:'eth0',ifHqLan:'eth1',ifBrWan:'eth0',ifBrLan:'eth1',ifSrv:'enp0s3',ifCli:'enp0s3',
   vmIsp:'ISP',vmHqRtr:'HQ-RTR',vmBrRtr:'BR-RTR',vmHqSrv:'HQ-SRV',vmBrSrv:'BR-SRV',vmHqCli:'HQ-CLI',autoReboot:'no',rtrOs:'astra'};
-let S=Object.assign({text:'',c:null,rep:null,tab:'solve',sel:'isp',step:0,mode:'auto'},store.get(SKEY,{}));
+let S=Object.assign({mod:1,c:null,rep:null,text:'',paste:false,stand:false,mode:'manual',sel:'isp',step:0,view23:'items',sel23:{}},store.get(SKEY,{}));
+if(!MODS[S.mod]) S.mod=1; if(!S.sel23) S.sel23={};
 let ST=Object.assign({},STAND_DEF,store.get('degen.v3.stand',{}));
-let C=S.c, REP=S.rep, R=null, A=null, G=null;
+let C=null, REP=S.rep, R=null, A=null, G=null;
 const save=()=>{ S.c=C; S.rep=REP; store.set(SKEY,S) };
 const saveST=()=>{ const all=store.get('degen.v3.stand',{}); store.set('degen.v3.stand',Object.assign(all,ST)) };
 const B_=(id,icon,label,cls)=>'<button type="button" class="btn'+(cls?' '+cls:'')+'" id="'+id+'">'+(icon?ICON[icon]:'')+'<span class="lbl">'+label+'</span></button>';
-const fname = s => 'module1_solve'+s;
+const fname = s => 'module'+S.mod+'_'+(C&&C.num?codeOf(C):'demo')+s;
 mountTheme($('#themeSeg'));
-mountTimer($('#timerBox'),60);
-
 // ---------- defaults: official demo of 09.02.06 ----------
 const DEF={lv:'E',num:0,mask:ALLTRAPS,addrMode:'given',block:'',
   srvRule:'le',srvN:'32',cliRule:'ge',cliN:'16',mgmtRule:'le',mgmtN:'8',brRule:'le',brN:'16',
@@ -1588,71 +2164,107 @@ o Пароль пользователя net_admin с паролем P@ssw0rd
 Таблица: docker.au-team.irpo — A — ISP, адрес в сторону HQ-RTR; web.au-team.irpo — A — ISP, адрес в сторону BR-RTR
 11. Настройте часовой пояс на всех устройствах (согласно месту проведения экзамена)`;
 
-// ---------- parse report ----------
+// ---------- parse report (only after a pasted text) ----------
 function repHtml(){
-  if(!REP) return '';
-  if(REP.src==='code') return '<div class="msgs"><div class="msg" style="background:var(--ok-bg);color:var(--ok)">Открыт вариант '+esc(REP.code)+' этого сайта: все параметры взяты по коду.</div></div>';
+  if(!REP||S.mod!==1) return '';
+  if(REP.src==='code') return '';
   const show=k=>k==='tun'?(C.tun==='gre'?'GRE':'IP-in-IP'):k==='dockerTo'?'в сторону '+(C.dockerTo==='br'?'BR':'HQ'):k==='tz'?C.tz.split('/')[1]:/N$/.test(k)?(C[k.replace('N','Rule')]==='ge'?'≥ ':'≤ ')+C[k]:C[k];
   const keys=SHOWN.filter(k=>!(C.addrMode==='vlsm'&&/Base$/.test(k)));
   const f=keys.filter(k=>REP.found.includes(k)), free=REP.miss.filter(k=>FREE.has(k)), warn=REP.miss.filter(k=>!FREE.has(k));
   const pill=(k,cls,tip)=>'<button type="button" class="pill '+cls+'" data-goto="'+k+'" title="'+tip+'">'+esc(LBL[k])+': <b>'+esc(show(k))+'</b></button>';
-  return '<div class="card"><h3>Что найдено в тексте <small>'+f.length+' из '+keys.length+'</small></h3>'+
+  return '<div class="card"><h3>Что найдено в тексте <small>'+f.length+' из '+keys.length+' · <button type="button" class="lnk" id="hideRep">скрыть</button></small></h3>'+
     '<div class="prsum"><span class="k-ok">найдено в задании</span><span>не задано в задании — выбрано по умолчанию</span><span class="k-warn">не найдено — проверьте</span></div>'+
-    '<div class="pr">'+warn.map(k=>pill(k,'warn','Не нашёл в тексте. Нажмите, чтобы исправить')).join('')+f.map(k=>pill(k,'ok','Взято из текста')).join('')+free.map(k=>pill(k,'free','В задании не указано, значение на ваш выбор')).join('')+'</div></div>';
+    '<div class="pr">'+warn.map(k=>pill(k,'warn','Не нашёл в тексте')).join('')+f.map(k=>pill(k,'ok','Взято из текста')).join('')+free.map(k=>pill(k,'free','В задании не указано')).join('')+'</div></div>';
 }
 
-// ---------- parameters (same fields as the teacher page) ----------
+// ---------- parameter forms ----------
 const PF=[
   ['Провайдер и туннель','Пункты 2, 6 и 7',[['netIspHq','ISP ↔ HQ-RTR',1],['netIspBr','ISP ↔ BR-RTR',1],['netTun','Сеть туннеля',1],['tun','Технология туннеля',0,[['gre','GRE'],['ipip','IP-in-IP']]],['ospfPass','Пароль OSPF',1]]],
   ['Пользователи и SSH','Пункты 3 и 5',[['adm','Логин на роутерах',1],['admPass','Пароль на роутерах',1],['su','Логин на серверах',1],['suPass','Пароль на серверах',1],['uid','UID на серверах',1],['sshPort','Порт SSH',1],['maxTries','Попыток входа',1],['banner','Текст баннера',1,null,1]]],
   ['Домен, время и DNS','Пункты 9, 10 и 11',[['dom','Домен',1],['tz','Часовой пояс',0,Object.keys(TZ).map(k=>[k,k+' · '+TZ[k].replace(/^.*\(/,'(')])],['fwd1','Внешний DNS 1',1],['fwd2','Внешний DNS 2',1],['dockerTo','Куда указывает docker',0,[['hq','ISP в сторону HQ-RTR, web — в сторону BR'],['br','ISP в сторону BR-RTR, web — в сторону HQ']],1]]]
+];
+const PF2=[
+  ['Домен Samba','Пункт 1',[['usrN','Сколько пользователей',1],['grp','Группа',1],['usrPre','Имя: начало',1],['usrSuf','Имя: суффикс после точки',1],['usrPass','Пароль пользователей',1],['dcPass','Пароль administrator',1],['sudoCmds','Команды sudo для группы',1,null,1]]],
+  ['Хранилище','Пункт 2',[['raidLvl','Уровень RAID',0,[['0','RAID 0'],['1','RAID 1'],['5','RAID 5']]],['raidMnt','Куда монтировать RAID',1],['raidDisks','Диски',1,null,1],['nfsDir','Каталог NFS',1],['nfsMnt','Куда монтировать на HQ-CLI',1]]],
+  ['Время и Docker','Пункты 3 и 5',[['ntpStratum','Стратум ISP',1],['dockApp','Контейнер приложения',1],['dockPort','Порт приложения',1],['dockDb','База',1],['dockUser','Пользователь базы',1],['dockPass','Пароль базы',1]]],
+  ['Веб, порты и прокси','Пункты 6–9',[['webDb','База веб-приложения',1],['webUser','Пользователь базы',1],['webPass','Пароль базы',1,null,1],['hqFwd','Порт на HQ-RTR → HQ-SRV:80',1],['brFwd','Порт на BR-RTR → приложение',1],['authUser','Логин web-аутентификации',1],['authPass','Пароль web-аутентификации',1]]]
+];
+const PF3=[
+  ['Пользователи и сертификаты','Пункты 1 и 2',[['csv','Файл пользователей',1,null,1],['caName','Имя корневого ЦС',1],['certDays','Срок сертификатов, дней',1]]],
+  ['IPsec и экран','Пункты 3 и 4',[['psk','Ключ IPsec',1,null,1],['fwAllow','Разрешить снаружи',0,'fw',1]]],
+  ['Печать и журналы','Пункты 5 и 6',[['printer','Имя принтера',1],['logLvl','Уровень журналов и выше',0,LOGLV.map(([k])=>[k,k])],['logDir','Каталог журналов',1],['rotate','Ротация',0,[['daily','ежедневно'],['weekly','еженедельно'],['monthly','ежемесячно']]],['rotSize','Размер для ротации',1]]],
+  ['Мониторинг, Ansible, fail2ban','Пункты 7–9',[['monName','Имя Grafana (без домена)',1],['monUser','Логин Grafana',1],['monPass','Пароль Grafana',1],['pcDir','Каталог инвентаризации',1,null,1],['f2bTries','Попыток до блокировки',1],['f2bBan','Блокировка, секунд',1]]]
 ];
 function field(k,l,mono,opts,full){
   const v=C[k]??'';
   return '<div class="f'+(full?' full':'')+'"><label for="p_'+k+'">'+l+'</label>'+(opts?'<select id="p_'+k+'" data-k="'+k+'">'+opts.map(([a,b])=>'<option value="'+esc(a)+'"'+(a===v?' selected':'')+'>'+esc(b)+'</option>').join('')+'</select>'
     :'<input id="p_'+k+'" data-k="'+k+'"'+(mono?' class="mono"':'')+' value="'+esc(v)+'" spellcheck="false">')+'</div>';
 }
+function field2(mk,k,l,mono,opts,full){
+  const v=C[mk][k]??'', id='p_'+mk+'_'+k;
+  if(opts==='fw'){ const on=v.split(/[,\s]+/);
+    return '<div class="f full"><span style="font-size:.78rem;font-weight:600">'+l+'</span><div class="pr">'+FW_ALL.map(x=>'<label class="pill" style="cursor:pointer"><input type="checkbox" data-fw="'+x+'"'+(on.includes(x)?' checked':'')+' style="width:auto;margin:0"> '+x+'</label>').join('')+'</div><span class="hint">Туннель, IPsec и проброшенные порты открыты всегда.</span></div>' }
+  return '<div class="f'+(full?' full':'')+'"><label for="'+id+'">'+l+'</label>'+(opts?'<select id="'+id+'" data-m="'+mk+'" data-k="'+k+'">'+opts.map(([a,b])=>'<option value="'+esc(a)+'"'+(a===v?' selected':'')+'>'+esc(b)+'</option>').join('')+'</select>'
+    :'<input id="'+id+'" data-m="'+mk+'" data-k="'+k+'"'+(mono?' class="mono"':'')+' value="'+esc(v)+'" spellcheck="false">')+'</div>';
+}
 function msgsHtml(){ if(!R) return ''; let h='';
   R.E.forEach(t=>h+='<div class="msg err">'+esc(t)+'</div>'); R.W.forEach(t=>h+='<div class="msg warn">'+esc(t)+'</div>');
   return h?'<div class="msgs">'+h+'</div>':'' }
-function renderParams(m){
-  const lanBox=([k,n])=>'<div class="lan"><div class="lt"><b>'+(k==='mgmt'?'Сеть управления':'Сеть '+n)+'</b><span class="calc" id="calc_'+k+'"></span></div><div class="sentence">'+
-    (C.addrMode==='given'?'Адрес <input class="mono w-ip" id="p_'+k+'Base" data-k="'+k+'Base" aria-label="Адрес сети '+n+'" value="'+esc(C[k+'Base'])+'">,':'')+' вмещать '+
-    '<select id="p_'+k+'Rule" data-k="'+k+'Rule" aria-label="Правило '+n+'"><option value="le"'+(C[k+'Rule']==='le'?' selected':'')+'>не более</option><option value="ge"'+(C[k+'Rule']==='ge'?' selected':'')+'>не менее</option></select> '+
-    '<input class="mono w-n" id="p_'+k+'N" data-k="'+k+'N" aria-label="Число адресов '+n+'" inputmode="numeric" value="'+esc(C[k+'N'])+'"> адресов'+
-    (k==='br'?'':', VLAN <input class="mono w-v" id="p_'+k+'Vid" data-k="'+k+'Vid" aria-label="VLAN '+n+'" inputmode="numeric" value="'+esc(C[k+'Vid'])+'">')+'</div></div>';
-  m.innerHTML='<div id="pmsgs"></div><div class="form"><div class="card"><h3>Локальные сети <small>пункты 1 и 4</small></h3>'+
+const lanBox=([k,n])=>'<div class="lan"><div class="lt"><b>'+(k==='mgmt'?'Сеть управления':'Сеть '+n)+'</b><span class="calc" id="calc_'+k+'"></span></div><div class="sentence">'+
+  (C.addrMode==='given'?'Адрес <input class="mono w-ip" id="p_'+k+'Base" data-k="'+k+'Base" aria-label="Адрес сети '+n+'" value="'+esc(C[k+'Base'])+'">,':'')+' вмещать '+
+  '<select id="p_'+k+'Rule" data-k="'+k+'Rule" aria-label="Правило '+n+'"><option value="le"'+(C[k+'Rule']==='le'?' selected':'')+'>не более</option><option value="ge"'+(C[k+'Rule']==='ge'?' selected':'')+'>не менее</option></select> '+
+  '<input class="mono w-n" id="p_'+k+'N" data-k="'+k+'N" aria-label="Число адресов '+n+'" inputmode="numeric" value="'+esc(C[k+'N'])+'"> адресов'+
+  (k==='br'?'':', VLAN <input class="mono w-v" id="p_'+k+'Vid" data-k="'+k+'Vid" aria-label="VLAN '+n+'" inputmode="numeric" value="'+esc(C[k+'Vid'])+'">')+'</div></div>';
+function fromM1(){
+  if(!R||!R.ok) return '<div class="msg err">Параметры Модуля 1 с ошибкой — откройте вкладку «Модуль 1» и исправьте.</div>';
+  const a=A, row=(k,v)=>'<span class="pill">'+k+': <b class="mono">'+esc(v)+'</b></span>';
+  return '<div class="card"><h3>Из Модуля 1 <small><button type="button" class="lnk" data-go1>изменить</button></small></h3><div class="pr">'+
+    row('Домен',C.dom)+row('HQ-SRV',a.hqSrv)+row('BR-SRV',a.brSrv)+row('HQ-CLI',a.hqCli)+row('HQ-RTR внешний',a.hqWan)+row('BR-RTR внешний',a.brWan)+row('SSH',C.su+' : '+C.sshPort)+row('Роутеры',C.adm)+'</div></div>';
+}
+function paramsHtml(){
+  if(S.mod===1) return '<div class="form"><div class="card"><h3>Локальные сети <small>пункты 1 и 4</small></h3>'+
     field('addrMode','Как заданы адреса',0,[['given','Адрес каждой сети указан или выбран вручную'],['vlsm','Нарезать из общего блока (VLSM)']],1)+
     (C.addrMode==='vlsm'?field('block','Общий блок',1):'')+LANS.map(lanBox).join('')+'</div>'+
     PF.map(([t,sub,fs])=>'<div class="card"><h3>'+t+' <small>'+sub.toLowerCase()+'</small></h3><div class="row">'+fs.map(f=>field(...f)).join('')+'</div></div>').join('')+'</div>';
-  const upd=()=>{ $('#pmsgs').innerHTML=msgsHtml(); LANS.forEach(([k])=>{ const e=$('#calc_'+k), n=R.lans[k]; e.textContent=n?n.cidr+' · маска '+n.mask+' · '+n.size+' адр.':'—' }) };
-  m.querySelectorAll('[data-k]').forEach(el=>{
-    el.addEventListener(el.tagName==='SELECT'?'change':'input',()=>{
-      const k=el.dataset.k; C=Object.assign({},C,{[k]:el.value.trim()});
-      if(REP&&REP.miss.includes(k)){ REP.miss=REP.miss.filter(x=>x!==k); REP.found.push(k) }
+  const mk='m'+S.mod, list=S.mod===2?PF2:PF3;
+  return fromM1()+'<div class="form" style="margin-top:14px">'+list.map(([t,sub,fs])=>'<div class="card"><h3>'+t+' <small>'+sub.toLowerCase()+'</small></h3><div class="row">'+fs.map(f=>field2(mk,...f)).join('')+'</div></div>').join('')+'</div>';
+}
+function updCalc(){ const pm=$('#pmsgs'); if(pm) pm.innerHTML=S.mod===1?msgsHtml():'';
+  if(S.mod===1&&R) LANS.forEach(([k])=>{ const e=$('#calc_'+k), n=R.lans[k]; if(e) e.textContent=n?n.cidr+' · маска '+n.mask+' · '+n.size+' адр.':'—' }) }
+let solT=null;
+function changed(){ recompute(); save(); updCalc(); clearTimeout(solT); solT=setTimeout(renderSol,250) }
+function wireParams(root){
+  root.querySelectorAll('[data-k]').forEach(el=>el.addEventListener(el.tagName==='SELECT'?'change':'input',()=>{
+    const k=el.dataset.k, mk=el.dataset.m, v=el.value.trim();
+    if(mk){ C=Object.assign({},C,{[mk]:Object.assign({},C[mk],{[k]:v})});
+      if(mk==='m2'&&k==='raidLvl'){ const d=v==='1'?'/dev/sdb /dev/sdc':'/dev/sdb /dev/sdc /dev/sdd'; C.m2.raidDisks=d; const i=$('#p_m2_raidDisks'); if(i) i.value=d } }
+    else { C=Object.assign({},C,{[k]:v});
+      if(REP&&REP.miss&&REP.miss.includes(k)){ REP.miss=REP.miss.filter(x=>x!==k); REP.found.push(k) }
       if(k==='addrMode'&&C.addrMode==='vlsm'&&!parseCidr(C.block)){ const p=String(C.srvBase).split('.'); C.block=p.slice(0,3).join('.')+'.0/24' }
-      if(k==='addrMode'&&C.addrMode==='given'&&R.ok) fillBases(C,R);
-      recompute(); save(); renderTabs();
-      if(k==='addrMode') renderParams(m); else upd();
-    });
-  });
-  upd();
+      if(k==='addrMode'&&C.addrMode==='given'&&R&&R.ok) fillBases(C,R) }
+    changed(); if(k==='addrMode') renderMain() }));
+  root.querySelectorAll('[data-fw]').forEach(el=>el.addEventListener('change',()=>{
+    const on=[...root.querySelectorAll('[data-fw]')].filter(x=>x.checked).map(x=>x.dataset.fw);
+    C=Object.assign({},C,{m3:Object.assign({},C.m3,{fwAllow:on.join(', ')})}); changed() }));
+  root.querySelectorAll('[data-go1]').forEach(b=>b.addEventListener('click',()=>{ S.mod=1; save(); render() }));
 }
 
 // ---------- stand ----------
-function renderStand(m){
+function standHtml(){
   const f=(k,l)=>'<div class="f"><label for="s_'+k+'">'+l+'</label><input class="mono" id="s_'+k+'" data-s="'+k+'" value="'+esc(ST[k])+'" spellcheck="false"></div>';
-  m.innerHTML='<div class="form"><div class="card"><h3>Стенд</h3><div class="f"><label for="s_rtrOs">ОС на ISP, HQ-RTR и BR-RTR</label><select id="s_rtrOs" data-s="rtrOs"><option value="astra"'+(ST.rtrOs==='astra'?' selected':'')+'>Astra Linux CE</option><option value="alt"'+(ST.rtrOs==='alt'?' selected':'')+'>Альт Сервер</option></select><span class="hint">Серверы и клиент — Альт. Настройки общие со страницей преподавателя.</span></div>'+
+  return '<div class="form"><div class="card"><h3>Стенд</h3><div class="f"><label for="s_rtrOs">ОС на ISP, HQ-RTR и BR-RTR</label><select id="s_rtrOs" data-s="rtrOs"><option value="astra"'+(ST.rtrOs==='astra'?' selected':'')+'>Astra Linux CE</option><option value="alt"'+(ST.rtrOs==='alt'?' selected':'')+'>Альт Сервер</option></select><span class="hint">Серверы и клиент — Альт. Настройки общие со страницей преподавателя.</span></div>'+
     '<div class="f"><label for="s_autoReboot">После шага «База»</label><select id="s_autoReboot" data-s="autoReboot"><option value="no"'+(ST.autoReboot==='no'?' selected':'')+'>Не перезагружать, reboot наберу сам</option><option value="yes"'+(ST.autoReboot==='yes'?' selected':'')+'>Сразу перезагрузить машину</option></select></div></div>'+
     '<div class="card"><h3>Имена интерфейсов <small>смотрите командой ip -br a</small></h3><div class="row">'+
     f('ifIspWan','ISP → интернет')+f('ifIspHq','ISP → HQ')+f('ifIspBr','ISP → BR')+f('ifHqWan','HQ-RTR → ISP')+f('ifHqLan','HQ-RTR → офис')+f('ifBrWan','BR-RTR → ISP')+f('ifBrLan','BR-RTR → офис')+f('ifSrv','HQ-SRV и BR-SRV')+f('ifCli','HQ-CLI')+'</div></div>'+
     '<div class="card"><h3>Имена ВМ в VirtualBox</h3><div class="row">'+f('vmIsp','ISP')+f('vmHqRtr','HQ-RTR')+f('vmBrRtr','BR-RTR')+f('vmHqSrv','HQ-SRV')+f('vmBrSrv','BR-SRV')+f('vmHqCli','HQ-CLI')+'</div>'+
     '<button type="button" class="btn ghost" id="resetS" style="align-self:flex-start">Сбросить стенд</button></div></div>';
-  m.querySelectorAll('[data-s]').forEach(el=>el.addEventListener(el.tagName==='SELECT'?'change':'input',()=>{ ST[el.dataset.s]=el.value.trim(); saveST(); recompute() }));
-  $('#resetS').addEventListener('click',()=>{ ST=Object.assign({},STAND_DEF); saveST(); recompute(); renderStand(m); toast('Стенд сброшен') });
+}
+function wireStand(root){
+  root.querySelectorAll('[data-s]').forEach(el=>el.addEventListener(el.tagName==='SELECT'?'change':'input',()=>{ ST[el.dataset.s]=el.value.trim(); saveST(); changed() }));
+  const r=$('#resetS'); if(r) r.addEventListener('click',()=>{ ST=Object.assign({},STAND_DEF); saveST(); recompute(); renderMain(); toast('Стенд сброшен') });
 }
 
-// ---------- solution (same scripts as the teacher page) ----------
+// ---------- solution views ----------
 const MACH=[
   {key:'isp',name:'ISP',role:'router',steps:['isp']},
   {key:'hqrtr',name:'HQ-RTR',role:'router',steps:['hqrtr','hqrtr2']},
@@ -1661,6 +2273,7 @@ const MACH=[
   {key:'brsrv',name:'BR-SRV',os:'Альт Сервер',role:'server',steps:['brsrv']},
   {key:'hqcli',name:'HQ-CLI',os:'Альт РС',role:'client',steps:['hqcli']}
 ];
+const ROLE={'ISP':'router','HQ-RTR':'router','BR-RTR':'router','HQ-SRV':'server','BR-SRV':'server','HQ-CLI':'client'};
 const STEPNAME={isp:'База',hqrtr:'База',hqrtr2:'OSPF и DHCP',brrtr:'База',brrtr2:'OSPF',hqsrv:'База',hqsrv2:'DNS',brsrv:'База',hqcli:'Сеть и имя'};
 function hl(t){ return esc(t).split('\n').map(l=>/^\s*#/.test(l)?'<span class="cm">'+l+'</span>':/(EOF_FINAL|&lt;&lt;\s*'?EOF'?|^EOF$)/.test(l)?'<span class="hd">'+l+'</span>':l).join('\n') }
 function termHtml(fn,text,id){ id=id||'t';
@@ -1669,95 +2282,120 @@ function termHtml(fn,text,id){ id=id||'t';
 function wireTerm(id,text,file){ const c=$('#'+id+'Copy'); if(c) c.addEventListener('click',()=>copyText(text,$('#'+id+'Code'))); const d=$('#'+id+'Dl'); if(d) d.addEventListener('click',()=>saveFile(file,text)) }
 function mainIp(key){ const L=R.lans;
   return {isp:A.ispHq+' · '+A.ispBr, hqrtr:A.hqWan, brrtr:A.brWan, hqsrv:A.hqSrv+'/'+L.srv.p, brsrv:A.brSrv+'/'+L.br.p, hqcli:A.hqCli+' DHCP'}[key] }
-function renderSolve(m){
-  if(!G){ m.innerHTML=msgsHtml()+'<div class="empty"><b>По этим параметрам решение не собирается</b>Исправьте ошибки во вкладке «Параметры».<button type="button" class="btn" id="fixBtn">'+ICON.edit+'Открыть параметры</button></div>';
-    $('#fixBtn').addEventListener('click',()=>{ S.tab='params'; save(); renderTabs(); renderBody() }); return }
-  const modes=[['auto','Скрипты'],['manual','Команды по пунктам'],['check','Проверка']];
-  const descr={auto:'Готовые скрипты для каждой машины. Запускайте по номерам шагов, повторный запуск безопасен.',
-    check:'Скрипты ничего не меняют: проверяют машину и печатают [ OK ] или [FAIL] с номером пункта.',
-    manual:'Те же команды, разложенные по пунктам задания, с пояснениями. Удобно вводить руками.'};
-  m.innerHTML='<div class="bar"><div class="l"><div class="seg" role="group" aria-label="Вид решения">'+modes.map(([k,n])=>'<button type="button" data-m="'+k+'" aria-pressed="'+(S.mode===k)+'">'+n+'</button>').join('')+'</div><p>'+descr[S.mode]+'</p></div><div class="acts" id="solveActs"></div></div>'+(R.W.length?msgsHtml():'')+'<div id="solveBody" class="panel"></div>';
-  m.querySelectorAll('[data-m]').forEach(b=>b.addEventListener('click',()=>{ S.mode=b.dataset.m; save(); renderSolve(m) }));
-  if(S.mode==='manual') return renderManual($('#solveBody'));
-  const isChk=S.mode==='check', list=isChk?checkScripts(C,ST,R):G.out;
-  if(canSave()){ $('#solveActs').innerHTML=B_('zipBtn','down','Все скрипты .zip'); $('#zipBtn').addEventListener('click',()=>downloadZip(isChk)) }
+const ipOf = m => ({'ISP':A.ispHq+' · '+A.ispBr,'HQ-RTR':A.hqWan,'BR-RTR':A.brWan,'HQ-SRV':A.hqSrv,'BR-SRV':A.brSrv,'HQ-CLI':A.hqCli}[m]);
+function sendBox(x){ const cmd='VBoxManage controlvm "'+x.vm+'" keyboardputfile C:\\1.txt';
+  return {cmd,html:'<div class="send"><span>Сохраните скрипт в C:\\1.txt и выполните в cmd в папке VirtualBox:</span><code id="vbCmd">'+esc(cmd)+'</code><button type="button" class="lnk" id="vbCopy">Скопировать</button>'+
+    '<details><summary>Как это работает</summary><ol><li>В виртуалке войдите под root и включите английскую раскладку.</li><li>Откройте C:\\Program Files\\Oracle\\VirtualBox, в адресной строке проводника наберите cmd.</li><li>Выполните команду выше. VirtualBox «напечатает» скрипт, он сохранится в /root/'+esc(x.sh)+' и сразу запустится.</li><li>Перезапустить вручную: bash /root/'+esc(x.sh)+'</li></ol></details></div>'} }
+function viewsFor(){ return S.mod===1?[['manual','Команды по пунктам'],['auto','Скрипты'],['check','Проверка'],['report','Отчёт']]:[['items','Команды по пунктам'],['scripts','Скрипты по машинам']] }
+const DESCR={manual:'Команды, разложенные по пунктам задания, с пояснениями. Копируйте блок и вставляйте на нужной машине.',
+  auto:'Готовые скрипты для каждой машины. Запускайте по номерам шагов, повторный запуск безопасен.',
+  check:'Скрипты ничего не меняют: проверяют машину и печатают [ OK ] или [FAIL] с номером пункта.',
+  report:'Таблица адресов и описание настроек для отчёта.',
+  items:'Команды по пунктам задания. Адреса, домен и логины берутся из Модуля 1.',
+  scripts:'Все команды модуля, собранные в один скрипт на машину, в порядке запуска.'};
+function curView(){ const v=S.mod===1?S.mode:S.view23; return viewsFor().some(x=>x[0]===v)?v:viewsFor()[0][0] }
+function renderSol(){
+  const m=$('#sol'); if(!m) return;
+  if(!R||!R.ok){ m.innerHTML=msgsHtml()+'<div class="empty"><b>По этим параметрам решение не собирается</b>Исправьте ошибки в параметрах'+(S.mod!==1?' Модуля 1':'')+'.</div>'; return }
+  const v=curView();
+  m.innerHTML='<div class="bar"><div class="l"><div class="seg" role="group" aria-label="Вид решения">'+viewsFor().map(([k,n])=>'<button type="button" data-v="'+k+'" aria-pressed="'+(v===k)+'">'+n+'</button>').join('')+'</div><p>'+DESCR[v]+'</p></div><div class="acts" id="solveActs"></div></div>'+(S.mod===1&&R.W.length?msgsHtml():'')+'<div id="solveBody" class="panel"></div>';
+  m.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',()=>{ if(S.mod===1) S.mode=b.dataset.v; else S.view23=b.dataset.v; save(); renderSol() }));
+  const body=$('#solveBody');
+  if(v==='manual') return renderItems(body,manualItems(C,ST,R));
+  if(v==='items') return renderItems(body,items23(S.mod,C,ST,R));
+  if(v==='scripts') return renderScripts23(body);
+  if(v==='report'){ const txt=reportText(C,ST,R,A); body.innerHTML=termHtml('Отчёт · Модуль 1',txt,'rp'); wireTerm('rp',txt,fname('_report.txt')); return }
+  renderScripts1(body,v==='check');
+}
+function renderItems(body,items){
+  const plain=items.map(it=>'=== '+it.n+'. '+it.title+' ===\n'+it.why+'\n\n'+it.blocks.map(([mm,code])=>'# '+mm.replace('#2','')+'\n'+code).join('\n\n')).join('\n\n\n');
+  $('#solveActs').innerHTML=B_('cpAll','copy','Скопировать всё')+(canSave()?B_('dlMan','down','.txt'):'');
+  $('#cpAll').addEventListener('click',()=>copyText(plain)); const d=$('#dlMan'); if(d) d.addEventListener('click',()=>saveFile(fname('_solution.txt'),plain));
+  body.innerHTML='<div class="manual">'+items.map((it,i)=>'<details class="mi"'+(i===0?' open':'')+'><summary><span class="num">'+it.n+'</span><b>'+esc(it.title)+'</b>'+ICON.chev+'</summary><div class="fb"><p>'+esc(it.why)+'</p>'+
+    it.blocks.map(([mm,code],j)=>'<div class="blk"><div class="mh"><span>'+esc(mm.replace('#2',''))+'</span><button type="button" class="lnk" data-c="'+i+'_'+j+'">Копировать</button></div><pre id="mc'+i+'_'+j+'" tabindex="0">'+hl(code)+'</pre></div>').join('')+
+    '<div class="chk">Проверка: '+it.check.map(([cmd])=>'<code>'+esc(cmd)+'</code>').join('')+'</div></div></details>').join('')+'</div>';
+  body.querySelectorAll('[data-c]').forEach(b=>b.addEventListener('click',()=>{ const [i,j]=b.dataset.c.split('_').map(Number); copyText(items[i].blocks[j][1],$('#mc'+b.dataset.c)) }));
+}
+function renderScripts1(body,isChk){
+  const list=isChk?checkScripts(C,ST,R):G.out;
+  if(canSave()){ $('#solveActs').innerHTML=B_('zipBtn','down','Все скрипты .zip'); $('#zipBtn').addEventListener('click',()=>downloadZip(list,isChk)) }
   if(!MACH.find(x=>x.key===S.sel)) S.sel='isp';
   const orderOf = id => list.findIndex(x=>x.id===id)+1;
-  const body=$('#solveBody');
   body.innerHTML='<div class="mlist" role="group" aria-label="Машина">'+MACH.map(mm=>{ const os = mm.os || (ST.rtrOs==='alt'?'Альт':'Astra');
       const chips = isChk ? '<span class="chip">'+list.find(x=>x.id===mm.key).count+' проверок</span>' : mm.steps.map(s=>'<span class="chip">шаг '+orderOf(s)+'</span>').join('');
       return '<button type="button" class="mc '+mm.role+'" data-mc="'+mm.key+'" aria-pressed="'+(S.sel===mm.key)+'"><span class="top2"><span class="ic">'+ICON[mm.role]+'</span><span class="nm">'+mm.name+'</span></span><span class="ip">'+os+' · '+esc(mainIp(mm.key))+'</span><span class="steps">'+chips+'</span></button>' }).join('')+'</div>'+
-    (isChk?'':'<details class="fold"><summary>Порядок запуска<small>9 шагов на 6 машинах</small>'+ICON.chev+'</summary><div class="fb"><ol class="order">'+G.out.map(x=>'<li><b>'+x.machine+'</b> · '+esc(x.title)+' <span>— '+esc(x.when)+'</span></li>').join('')+'</ol></div></details>')+
+    (isChk?'':'<details class="fold"><summary>Порядок запуска<small>'+list.length+' шагов на 6 машинах</small>'+ICON.chev+'</summary><div class="fb"><ol class="order">'+list.map(x=>'<li><b>'+x.machine+'</b> · '+esc(x.title)+' <span>— '+esc(x.when)+'</span></li>').join('')+'</ol></div></details>')+
     '<section class="viewer" id="viewer"></section>';
-  body.querySelectorAll('[data-mc]').forEach(b=>b.addEventListener('click',()=>{ S.sel=b.dataset.mc; S.step=0; save(); renderSolve(m) }));
+  body.querySelectorAll('[data-mc]').forEach(b=>b.addEventListener('click',()=>{ S.sel=b.dataset.mc; S.step=0; save(); renderScripts1(body,isChk) }));
   const mm=MACH.find(x=>x.key===S.sel); let x, seg='', sub;
   if(isChk){ x=list.find(o=>o.id===mm.key); sub=x.count+' проверок · запускать после выполнения задания' }
   else { const sid=mm.steps[Math.min(S.step,mm.steps.length-1)]; x=list.find(o=>o.id===sid); sub='Шаг '+orderOf(sid)+' из '+list.length+' · '+x.when;
     if(mm.steps.length>1) seg='<div class="seg" role="group" aria-label="Шаг">'+mm.steps.map((s,i)=>'<button type="button" data-i="'+i+'" aria-pressed="'+(s===sid)+'"><span class="n">'+orderOf(s)+'</span>'+STEPNAME[s]+'</button>').join('')+'</div>' }
-  const cmd='VBoxManage controlvm "'+x.vm+'" keyboardputfile C:\\1.txt';
-  $('#viewer').innerHTML='<div class="vh"><div><h2>'+esc(x.title)+'</h2><p>'+esc(sub)+'</p></div>'+seg+'</div>'+
-    '<div class="send"><span>Сохраните скрипт в C:\\1.txt и выполните в cmd в папке VirtualBox:</span><code id="vbCmd">'+esc(cmd)+'</code><button type="button" class="lnk" id="vbCopy">Скопировать</button>'+
-    '<details><summary>Как это работает</summary><ol><li>В виртуалке войдите под root и включите английскую раскладку.</li><li>Откройте C:\\Program Files\\Oracle\\VirtualBox, в адресной строке проводника наберите cmd.</li><li>Выполните команду выше. VirtualBox «напечатает» скрипт в консоль, он сохранится в /root/'+esc(x.sh)+' и сразу запустится.</li><li>Перезапустить вручную: bash /root/'+esc(x.sh)+'</li></ol></details></div>'+
-    termHtml('/root/'+x.sh+' · '+x.text.split('\n').length+' строк', x.text);
-  $('#viewer').querySelectorAll('.vh .seg button').forEach(b=>b.addEventListener('click',()=>{ S.step=+b.dataset.i; save(); renderSolve(m) }));
-  $('#vbCopy').addEventListener('click',()=>copyText(cmd,$('#vbCmd')));
+  const sb=sendBox(x);
+  $('#viewer').innerHTML='<div class="vh"><div><h2>'+esc(x.title)+'</h2><p>'+esc(sub)+'</p></div>'+seg+'</div>'+sb.html+termHtml('/root/'+x.sh+' · '+x.text.split('\n').length+' строк', x.text);
+  $('#viewer').querySelectorAll('.vh .seg button').forEach(b=>b.addEventListener('click',()=>{ S.step=+b.dataset.i; save(); renderScripts1(body,isChk) }));
+  $('#vbCopy').addEventListener('click',()=>copyText(sb.cmd,$('#vbCmd')));
   wireTerm('t',x.text,(isChk?'':String(orderOf(x.id)).padStart(2,'0')+'_')+x.sh.replace('.sh','')+'.txt');
 }
-function renderManual(body){
-  const items=manualItems(C,ST,R);
-  const plain=items.map(it=>'=== '+it.n+'. '+it.title+' ===\n'+it.why+'\n\n'+it.blocks.map(([mm,code])=>'# '+mm+'\n'+code).join('\n\n')).join('\n\n\n');
-  if(canSave()){ $('#solveActs').innerHTML=B_('dlMan','down','Решение .txt'); $('#dlMan').addEventListener('click',()=>saveFile(fname('_solution.txt'),plain)) }
-  body.innerHTML='<div class="manual">'+items.map((it,i)=>'<details class="mi"'+(i===0?' open':'')+'><summary><span class="num">'+it.n+'</span><b>'+esc(it.title)+'</b>'+ICON.chev+'</summary><div class="fb"><p>'+esc(it.why)+'</p>'+
-    it.blocks.map(([mm,code],j)=>'<div class="blk"><div class="mh"><span>'+esc(mm)+'</span><button type="button" class="lnk" data-c="'+i+'_'+j+'">Копировать</button></div><pre id="mc'+i+'_'+j+'" tabindex="0">'+hl(code)+'</pre></div>').join('')+
-    '<div class="chk">Проверка: '+it.check.map(([cmd])=>'<code>'+esc(cmd)+'</code>').join('')+'</div></div></details>').join('')+'</div>';
-  body.querySelectorAll('[data-c]').forEach(b=>b.addEventListener('click',()=>{ const [i,j]=b.dataset.c.split('_').map(Number); copyText(items[i].blocks[j][1],$('#mc'+b.dataset.c)) }));
+function renderScripts23(body){
+  const list=scripts23(S.mod,C,ST,R); let sel=S.sel23[S.mod]; if(!list.find(x=>x.id===sel)) sel=list[0].id;
+  if(canSave()){ $('#solveActs').innerHTML=B_('zipBtn','down','Все скрипты .zip'); $('#zipBtn').addEventListener('click',()=>downloadZip(list,false)) }
+  body.innerHTML='<div class="mlist" role="group" aria-label="Скрипт">'+list.map((x,i)=>'<button type="button" class="mc '+ROLE[x.machine]+'" data-s23="'+esc(x.id)+'" aria-pressed="'+(x.id===sel)+'"><span class="top2"><span class="ic">'+ICON[ROLE[x.machine]]+'</span><span class="nm">'+x.machine+'</span></span><span class="ip">'+esc(ipOf(x.machine))+'</span><span class="steps"><span class="chip">шаг '+(i+1)+'</span></span></button>').join('')+'</div>'+
+    '<details class="fold"><summary>Порядок запуска<small>'+list.length+' шагов</small>'+ICON.chev+'</summary><div class="fb"><ol class="order">'+list.map(x=>'<li><b>'+x.machine+'</b> · '+esc(x.title)+' <span>— '+esc(x.when)+'</span></li>').join('')+'</ol></div></details><section class="viewer" id="viewer"></section>';
+  body.querySelectorAll('[data-s23]').forEach(b=>b.addEventListener('click',()=>{ S.sel23[S.mod]=b.dataset.s23; save(); renderScripts23(body) }));
+  const i=list.findIndex(x=>x.id===sel), x=list[i], sb=sendBox(x);
+  $('#viewer').innerHTML='<div class="vh"><div><h2>'+esc(x.title)+'</h2><p>Шаг '+(i+1)+' из '+list.length+' · '+esc(x.when)+'</p></div></div>'+sb.html+termHtml('/root/'+x.sh+' · '+x.text.split('\n').length+' строк',x.text);
+  $('#vbCopy').addEventListener('click',()=>copyText(sb.cmd,$('#vbCmd')));
+  wireTerm('t',x.text,String(i+1).padStart(2,'0')+'_'+x.sh.replace('.sh','')+'.txt');
 }
-function downloadZip(isChk){
+function downloadZip(list,isChk){
   if(!window.JSZip){ toast('Архиватор не загрузился'); return }
   const z=new JSZip();
-  if(isChk) checkScripts(C,ST,R).forEach(x=>z.file(x.sh.replace('.sh','')+'.txt',x.text));
-  else { G.out.forEach((x,i)=>z.file(String(i+1).padStart(2,'0')+'_'+x.sh.replace('.sh','')+'.txt',x.text)); z.file('00_order.txt',orderText(G.out)); z.file('report.txt',reportText(C,ST,R,A)) }
+  if(isChk) list.forEach(x=>z.file(x.sh.replace('.sh','')+'.txt',x.text));
+  else { list.forEach((x,i)=>z.file(String(i+1).padStart(2,'0')+'_'+x.sh.replace('.sh','')+'.txt',x.text)); z.file('00_order.txt',orderText(list)); if(S.mod===1) z.file('report.txt',reportText(C,ST,R,A)) }
   z.generateAsync({type:'blob'}).then(bl=>saveFile(fname(isChk?'_check.zip':'_scripts.zip'),bl));
 }
-function renderReport(m){
-  const txt=reportText(C,ST,R,A);
-  m.innerHTML='<div class="bar"><p>Таблица адресов и описание настроек для отчёта по заданию.</p></div>'+termHtml('Отчёт',txt,'rp');
-  wireTerm('rp',txt,fname('_report.txt'));
+
+// ---------- toolbar: module, fill from code / demo / pasted text ----------
+function renderToolbar(){
+  const t=$('#toolbar');
+  t.innerHTML='<div class="seg modseg" role="group" aria-label="Модуль">'+[1,2,3].map(k=>'<button type="button" data-mod="'+k+'" aria-pressed="'+(S.mod===k)+'">'+MODS[k].name+'</button>').join('')+'</div>'+
+    '<div class="codef lv-X" title="Подставить параметры варианта с сайта"><input id="codeIn" placeholder="X-12" value="'+(C.num?esc(codeOf(C)):'')+'" spellcheck="false" autocomplete="off" aria-label="Код варианта"><button type="button" id="codeGo" aria-label="Подставить параметры варианта" style="width:auto;padding:0 10px;font-size:.8rem;font-weight:700">Подставить</button></div>'+
+    '<button type="button" class="btn ghost" id="demoBtn" title="Значения официальной демоверсии">Демоверсия</button>'+
+    '<button type="button" class="btn ghost" id="pasteBtn" aria-expanded="'+!!S.paste+'">'+(S.paste?'Скрыть текст':'Вставить текст задания')+'</button>'+
+    '<span class="grow"></span><button type="button" class="btn'+(S.stand?'" aria-pressed="true':'')+'" id="standBtn">'+ICON.gear+'<span class="lbl">Стенд</span></button>'+
+    (S.paste?'<div class="paste" style="width:100%;box-shadow:none;padding:0;border:0"><textarea id="taskIn" spellcheck="false" placeholder="Вставьте текст Модуля 1 — с этого сайта или официальный. Параметры подставятся в форму.">'+esc(S.text||'')+'</textarea><div class="pa"><button type="button" class="btn primary" id="parseBtn">Разобрать</button><button type="button" class="btn" id="sampleBtn">Пример</button><span class="hint">Разбор заполняет параметры Модуля 1. Модули 2 и 3 используют его адреса.</span></div></div>':'');
+  t.querySelectorAll('[data-mod]').forEach(b=>b.addEventListener('click',()=>{ S.mod=+b.dataset.mod; save(); render() }));
+  const ci=$('#codeIn'), go=()=>{ const p=parseCode(ci.value.replace(/^.*#/,'')); if(!p){ toast('Код выглядит так: X-12, E-3 или H-7'); ci.focus(); return }
+    C=withM23(makeVariant(p.lv,p.num,p.mask)); REP=null; save(); render(); toast('Подставлены параметры варианта '+codeOf(C)) };
+  $('#codeGo').addEventListener('click',go); ci.addEventListener('keydown',e=>{ if(e.key==='Enter') go() });
+  $('#demoBtn').addEventListener('click',()=>{ C=withM23(Object.assign({},DEF)); REP=null; save(); render(); toast('Значения демоверсии') });
+  $('#pasteBtn').addEventListener('click',()=>{ S.paste=!S.paste; save(); renderToolbar(); const ta=$('#taskIn'); if(ta) ta.focus() });
+  $('#standBtn').addEventListener('click',()=>{ S.stand=!S.stand; save(); render() });
+  if(S.paste){ const ta=$('#taskIn');
+    ta.addEventListener('input',()=>{ S.text=ta.value; save() });
+    $('#sampleBtn').addEventListener('click',()=>{ ta.value=SAMPLE; S.text=SAMPLE; save() });
+    $('#parseBtn').addEventListener('click',()=>{ const v=ta.value.trim(); if(!v){ toast('Сначала вставьте текст'); ta.focus(); return }
+      const p=parseTask(v); C=withM23(p.c); REP=p.rep; S.mod=1; S.paste=false; save(); render();
+      const w=REP.miss.filter(k=>!FREE.has(k)).length; toast(REP.src==='code'?'Подставлен вариант '+REP.code:w?'Проверьте '+w+' параметр(а), которых не было в тексте':'Все параметры найдены') });
+  }
 }
 
 // ---------- page ----------
-function recompute(){ if(!C){ R=A=G=null; return } R=compute(C); A=R.ok?addrs(C,R):null; G=R.ok?gen(C,ST,R):null }
-const TABS=[['solve','Решение'],['params','Параметры'],['report','Отчёт'],['stand','Стенд']];
-function renderTabs(){
-  const t=$('#tabs'); if(!t) return;
-  const w=REP?REP.miss.filter(k=>!FREE.has(k)).length:0, e=R&&R.E.length;
-  t.innerHTML=TABS.map(([k,n])=>'<button type="button" data-t="'+k+'" aria-pressed="'+(S.tab===k)+'">'+n+(k==='params'&&(w||e)?' <span class="pill warn" style="padding:0 7px">'+(e?'ошибка':w)+'</span>':'')+'</button>').join('');
-  t.querySelectorAll('[data-t]').forEach(b=>b.addEventListener('click',()=>{ S.tab=b.dataset.t; save(); renderTabs(); renderBody() }));
+function recompute(){ R=compute(C); A=R.ok?addrs(C,R):null; G=R.ok?gen(C,ST,R):null }
+function renderMain(){
+  const m=$('#main');
+  m.innerHTML=(S.stand?'<details class="mi" open id="standBox"><summary><b>Стенд: ОС, интерфейсы, имена ВМ</b>'+ICON.chev+'</summary><div class="fb">'+standHtml()+'</div></details>':'')+repHtml()+
+    '<details class="mi" open id="pbox"><summary><span class="num">'+S.mod+'</span><b>Параметры '+MODS[S.mod].name.replace('Модуль','Модуля')+'</b><span class="hint" style="margin-left:8px">правки сразу меняют команды ниже</span>'+ICON.chev+'</summary><div class="fb"><div id="pmsgs"></div>'+paramsHtml()+'</div></details>'+
+    '<section id="sol" class="panel" aria-label="Решение"></section>';
+  wireParams($('#pbox')); if(S.stand) wireStand($('#standBox'));
+  const h=$('#hideRep'); if(h) h.addEventListener('click',()=>{ REP=null; save(); renderMain() });
+  m.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>{ const el=$('#p_'+b.dataset.goto); if(el){ el.scrollIntoView({block:'center',behavior:'smooth'}); el.focus({preventScroll:true}); el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1500) } }));
+  updCalc(); renderSol();
 }
-function renderBody(){
-  const b=$('#tabBody');
-  if(S.tab==='params') renderParams(b); else if(S.tab==='stand') renderStand(b);
-  else if(S.tab==='report'){ if(G) renderReport(b); else { S.tab='solve'; renderSolve(b) } }
-  else renderSolve(b);
-}
-function render(){
-  recompute(); const m=$('#main');
-  if(!C){ m.innerHTML='<div class="empty"><b>Здесь появится решение</b>Вставьте текст задания выше и нажмите «Решить». Получите скрипты для каждой машины, команды по пунктам и текст для отчёта.</div>'; return }
-  m.innerHTML=repHtml()+'<div class="bar"><div class="seg" id="tabs" role="group" aria-label="Раздел"></div></div><div id="tabBody" class="panel"></div>';
-  m.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>{ const k=b.dataset.goto; S.tab='params'; save(); renderTabs(); renderBody();
-    const el=$('#p_'+k)||$('#p_'+k.replace(/N$/,'N')); if(el){ el.scrollIntoView({block:'center',behavior:'smooth'}); el.focus({preventScroll:true}); el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1500) } }));
-  renderTabs(); renderBody();
-}
-const ta=$('#taskIn'); ta.value=S.text||'';
-$('#parseBtn').addEventListener('click',()=>{ const v=ta.value.trim(); if(!v){ toast('Сначала вставьте текст задания'); ta.focus(); return }
-  const p=parseTask(v); C=p.c; REP=p.rep; S.text=ta.value; S.tab='solve'; S.sel='isp'; S.step=0; save(); render();
-  const w=REP.miss.filter(k=>!FREE.has(k)).length;
-  toast(REP.src==='code'?'Открыт вариант '+REP.code:w?'Готово. Проверьте '+w+' параметр(а), которых не было в тексте':'Готово: все параметры найдены');
-  $('#main').scrollIntoView({behavior:'smooth',block:'start'}) });
-$('#sampleBtn').addEventListener('click',()=>{ ta.value=SAMPLE; S.text=SAMPLE; save(); ta.focus(); toast('Вставлен пример. Нажмите «Решить»') });
-$('#clearBtn').addEventListener('click',()=>{ ta.value=''; S.text=''; C=null; REP=null; save(); render(); ta.focus() });
-ta.addEventListener('input',()=>{ S.text=ta.value; store.set(SKEY,Object.assign({},S,{c:C,rep:REP})) });
-onSaveReady(()=>{ if(DL&&C) renderBody() });
+function render(){ recompute(); renderToolbar(); renderMain() }
+C = S.c ? withM23(S.c) : withM23(Object.assign({},DEF));
+onSaveReady(()=>{ if(DL) renderSol() });
 render();
 
 })();

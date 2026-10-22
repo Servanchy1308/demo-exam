@@ -395,37 +395,49 @@ function trapsDD(mask,onChange){
   return {html,wire};
 }
 
-// ---------- exam timer: 1 hour, start / pause / reset, survives reload ----------
-function mountTimer(el,mins){
-  const K='degen.timer.v1', DUR=(mins||60)*60000;
-  let T=Object.assign({left:DUR,endAt:null,warned:false,done:false},store.get(K,{}));
-  let iv=null, armed=0, ac=null;
+// ---------- exam timer: hidden → 15 min reading → module time; survives reload ----------
+// phases: idle (task hidden), read, work, pause, done
+function mountExam(el,o){
+  const K='degen.exam.v1.m'+o.mod, RD=o.read*60000, WD=o.work*60000;
+  const fresh=()=>({phase:'idle',endAt:null,left:WD,warned:false});
+  let T=Object.assign(fresh(),store.get(K,{})), iv=null, armed=0, ac=null;
   const left=()=>T.endAt?Math.max(0,T.endAt-Date.now()):T.left;
   const fmtT=ms=>{ const s=Math.ceil(ms/1000), h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60; return (h?h+':'+String(m).padStart(2,'0'):String(m).padStart(2,'0'))+':'+String(x).padStart(2,'0') };
-  const beep=n=>{ try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); for(let i=0;i<n;i++){ const o=ac.createOscillator(), g=ac.createGain(), t0=ac.currentTime+i*.45;
-    o.frequency.value=880; g.gain.setValueAtTime(.0001,t0); g.gain.exponentialRampToValueAtTime(.25,t0+.02); g.gain.exponentialRampToValueAtTime(.0001,t0+.35); o.connect(g).connect(ac.destination); o.start(t0); o.stop(t0+.4) } }catch(e){} };
-  const baseTitle=document.title;
-  el.innerHTML='<div class="timer" id="tmBox" role="timer" aria-label="Таймер на выполнение модуля"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="9" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 6v3l2 1.5M6.5 1.8h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'+
-    '<b class="tm" id="tmT">'+fmtT(DUR)+'</b><button type="button" class="tb primary" id="tmGo">Старт</button><button type="button" class="tb" id="tmRs" title="Сбросить на '+(mins||60)+' мин">Сброс</button></div>';
-  const box=$('#tmBox'), tEl=$('#tmT'), go=$('#tmGo'), rs=$('#tmRs');
-  const save=()=>store.set(K,T);
-  function draw(){ const l=left(), run=!!T.endAt;
-    if(run&&l<=0){ T.left=0; T.endAt=null; T.done=true; save(); stop(); beep(3); toast('Время вышло: 1 час прошёл') }
-    if(run&&!T.warned&&l<=600000&&l>0){ T.warned=true; save(); beep(1); toast('Осталось 10 минут') }
-    tEl.textContent=T.done?'00:00':fmtT(l);
-    box.dataset.st=T.done?'over':(l<=600000&&l<DUR?'warn':'')+(T.endAt?' run':'');
-    go.textContent=T.done?'Заново':T.endAt?'Пауза':(l<DUR?'Дальше':'Старт');
-    rs.hidden=!T.done&&!T.endAt&&l>=DUR;
-    document.title=T.endAt?'⏱ '+fmtT(l)+' · '+baseTitle:(T.done?'Время вышло · '+baseTitle:baseTitle) }
+  const durTxt=ms=>{ const m=Math.round(ms/60000); return m%60?(m>=60?Math.floor(m/60)+' ч '+m%60+' мин':m+' мин'):(m/60)+' ч' };
+  const beep=n=>{ try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); for(let i=0;i<n;i++){ const os=ac.createOscillator(), g=ac.createGain(), t0=ac.currentTime+i*.45;
+    os.frequency.value=880; g.gain.setValueAtTime(.0001,t0); g.gain.exponentialRampToValueAtTime(.25,t0+.02); g.gain.exponentialRampToValueAtTime(.0001,t0+.35); os.connect(g).connect(ac.destination); os.start(t0); os.stop(t0+.4) } }catch(e){} };
+  const baseTitle=document.title.replace(/^(⏱ [^·]+· |Время вышло · )/,'');
+  el.innerHTML='<div class="timer" id="tmBox" role="timer" aria-label="Таймер экзамена"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="9" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 6v3l2 1.5M6.5 1.8h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'+
+    '<span class="tph" id="tmP"></span><b class="tm" id="tmT"></b><button type="button" class="tb primary" id="tmGo"></button><button type="button" class="tb" id="tmRs">Сброс</button></div>';
+  const box=el.querySelector('#tmBox'), pEl=el.querySelector('#tmP'), tEl=el.querySelector('#tmT'), go=el.querySelector('#tmGo'), rs=el.querySelector('#tmRs');
+  const save=()=>store.set(K,T); let last=null;
+  const emit=()=>{ if(last!==T.phase){ last=T.phase; o.onPhase&&o.onPhase(T.phase) } };
+  function toWork(){ T.phase='work'; T.left=WD; T.endAt=Date.now()+WD; T.warned=false; save(); beep(2); toast('Ознакомление окончено. На '+o.label+' — '+durTxt(WD)) }
+  function draw(){ let l=left();
+    if(T.phase==='read'&&l<=0){ toWork(); l=left() }
+    if(T.phase==='work'&&l<=0){ T.phase='done'; T.left=0; T.endAt=null; save(); stop(); beep(3); toast('Время на '+o.label+' вышло') }
+    if(T.phase==='work'&&!T.warned&&l<=600000&&WD>600000){ T.warned=true; save(); beep(1); toast('Осталось 10 минут') }
+    const ph=T.phase;
+    pEl.textContent={idle:'',read:'Ознакомление',work:'',pause:'Пауза',done:'Время вышло'}[ph];
+    tEl.textContent=ph==='idle'?durTxt(RD)+' + '+durTxt(WD):ph==='done'?'00:00':fmtT(l);
+    box.dataset.st=ph+(ph==='work'&&l<=600000?' warn':'')+(ph==='read'||ph==='work'?' run':'');
+    go.textContent={idle:'Начать',read:'Приступить',work:'Пауза',pause:'Дальше',done:'Заново'}[ph];
+    go.title=ph==='read'?'Закончить ознакомление и запустить '+durTxt(WD):'';
+    rs.hidden=ph==='idle';
+    document.title=(ph==='read'||ph==='work')?'⏱ '+fmtT(l)+' · '+baseTitle:(ph==='done'?'Время вышло · '+baseTitle:baseTitle);
+    emit() }
   function stop(){ clearInterval(iv); iv=null }
-  function start(){ stop(); iv=setInterval(draw,500) }
-  go.addEventListener('click',()=>{
-    if(T.done){ T={left:DUR,endAt:null,warned:false,done:false} }
-    if(T.endAt){ T.left=left(); T.endAt=null; stop() } else { T.endAt=Date.now()+T.left; start(); if(T.left===DUR) toast('Таймер запущен: '+(mins||60)+' минут') }
+  function tick(){ stop(); iv=setInterval(draw,500) }
+  go.addEventListener('click',()=>{ const ph=T.phase;
+    if(ph==='idle'||ph==='done'){ T=fresh(); T.phase='read'; T.endAt=Date.now()+RD; tick(); toast('Ознакомление: '+durTxt(RD)+', затем '+durTxt(WD)+' на выполнение') }
+    else if(ph==='read'){ toWork(); tick() }
+    else if(ph==='work'){ T.left=left(); T.endAt=null; T.phase='pause'; stop() }
+    else if(ph==='pause'){ T.endAt=Date.now()+T.left; T.phase='work'; tick() }
     save(); draw() });
   rs.addEventListener('click',()=>{
-    if(T.endAt&&Date.now()-armed>3000){ armed=Date.now(); toast('Нажмите «Сброс» ещё раз, чтобы обнулить таймер'); return }
-    stop(); T={left:DUR,endAt:null,warned:false,done:false}; save(); draw(); toast('Таймер сброшен') });
-  if(T.endAt) start(); draw();
+    if(T.phase!=='done'&&Date.now()-armed>3000){ armed=Date.now(); toast('Нажмите «Сброс» ещё раз: таймер обнулится, задание скроется'); return }
+    stop(); T=fresh(); save(); draw(); toast('Таймер сброшен') });
+  if(T.phase==='read'||T.phase==='work') tick(); draw();
+  return { start(){ if(T.phase==='idle'||T.phase==='done') go.click() }, phase:()=>T.phase, stop };
 }
 // ===== end shared =====
