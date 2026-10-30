@@ -597,47 +597,107 @@ pre{font-size:.78rem}
   .wk-tabs .seg button{padding:7px 12px}
   .tagline{display:none}
 }
+
+/* ===== вики-страницы: поиск, вкладки-ссылки, таблицы, портал, категории ===== */
+.brandlink{text-decoration:none;color:inherit;display:block}
+.brandlink:hover .wordmark{text-decoration:none}
+.wk-top{flex-wrap:nowrap}
+.wk-search{flex:1 1 300px;max-width:520px;position:relative;display:flex;gap:0}
+.wk-search input{border-radius:2px 0 0 2px;border-right:0;padding:8px 12px;font-size:.88rem}
+.wk-search .btn{border-radius:0 2px 2px 0;padding:0 12px}
+.wk-sug{position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--surface);border:1px solid var(--line-strong);z-index:40;max-height:60vh;overflow:auto;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.wk-sug .sg{display:flex;flex-direction:column;gap:1px;padding:7px 12px;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none;font-size:.86rem}
+.wk-sug a.sg:hover{background:var(--accent-soft)}
+.wk-sug .sg b{color:var(--accent)}
+.wk-sug .sg small{color:var(--faint);font-weight:400}
+.wk-sug .sg span{color:var(--muted);font-size:.78rem}
+.wk-sug .sg.none{color:var(--muted)}
+
+.wk-tabs{gap:0}
+.wk-tabs .tab{display:block;border:1px solid var(--line);border-bottom:1px solid var(--line-strong);background:var(--sunk);color:var(--accent);padding:7px 18px;border-radius:2px 2px 0 0;font-weight:600;font-size:.86rem;margin-right:-1px;text-decoration:none}
+.wk-tabs a.tab:hover{background:var(--raise);text-decoration:underline}
+.wk-tabs .tab.on{background:var(--surface);color:var(--ink);border-color:var(--line-strong);border-bottom-color:var(--surface)}
+
+.hatnote{margin:-6px 0 0;padding-left:1.6em;font-style:italic;font-size:.88rem;color:var(--ink)}
+.wk-h3{font-family:var(--sans);font-weight:700;font-size:1.05rem;margin:10px 0 0;line-height:1.35}
+sup.ref{font-size:.72em;line-height:0}
+sup.ref a{text-decoration:none}
+.notes{margin:0;padding-left:1.6em;font-size:.86rem;color:var(--ink)}
+.notes li{padding:2px 0}
+.mono{font-family:var(--mono)}
+.catlist,.talk{margin:6px 0;padding-left:1.4em}
+.talk li{margin:6px 0}
+.chklist{margin:6px 0;padding-left:1.4em;display:flex;flex-direction:column;gap:3px}
+code{background:var(--raise);border:1px solid var(--line);border-radius:2px;padding:0 5px;font-size:.84em}
+
+.wikitable{width:100%;border-collapse:collapse;font-size:.86rem;background:var(--surface)}
+.wikitable th,.wikitable td{border:1px solid var(--line-strong);padding:6px 10px;text-align:left;vertical-align:top}
+.wikitable th{background:var(--sunk);font-weight:700}
+.wikitable td.mono{font-size:.8rem}
+.wikitable tr:nth-child(even) td{background:color-mix(in srgb,var(--raise) 60%,var(--surface))}
+@media (max-width:640px){.wikitable{display:block;overflow-x:auto}}
+
+.catlinks{border:1px solid var(--line-strong);background:var(--raise);padding:6px 12px;font-size:.84rem;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}
+.catlinks span{color:var(--faint)}
+.navbox{width:100%;border-collapse:collapse;border:1px solid var(--line-strong);font-size:.82rem;background:var(--raise)}
+.navbox th,.navbox td{padding:5px 10px;border-top:1px solid var(--line);vertical-align:top;text-align:left}
+.navbox th{width:1%;white-space:nowrap;background:var(--sunk)}
+.navbox .nb-t{width:auto;text-align:center;background:var(--accent-soft);font-size:.9rem;border-top:0}
+.wk-foot{display:flex;flex-direction:column;gap:12px}
+.wk-foot p{margin:0}
+
+/* заглавная страница */
+.portal-banner{border:1px solid var(--line-strong);background:var(--accent-soft);padding:14px 18px}
+.portal-banner h2{margin:0 0 4px;font-family:var(--doc);font-weight:400;font-size:1.55rem}
+.portal-banner p{margin:0;max-width:76ch}
+.portal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.pbox{border:1px solid var(--line-strong);background:var(--raise);min-width:0}
+.pbox h3{margin:0;padding:6px 12px;background:var(--accent-soft);border-bottom:1px solid var(--line-strong);font-size:.95rem;font-weight:700;font-family:var(--sans)}
+.pbox h3 a{text-decoration:none}
+.pbox .pb{padding:10px 14px}
+.pbox ol,.pbox ul{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:2px;font-size:.88rem}
+.pbox p{margin:0 0 .6em;font-size:.88rem}
+.pbox .more{margin:.7em 0 0;font-weight:600}
+
+/* параметры внутри раздела — подраздел */
+#main>.mi>summary b{font-family:var(--sans);font-weight:700;font-size:1rem;line-height:1.35}
+#main>.mi>summary .num{font-family:var(--mono);font-size:.8rem;color:var(--faint)}
+#main>.mi>summary{border-bottom-color:var(--line)}
+#main>.mi[open]>summary{border-bottom-color:var(--line-strong)}
+#tbSlot .toolbar{margin-bottom:10px}
+@media (max-width:980px){.wk-top{flex-wrap:wrap}.wk-search{order:3;flex:1 1 100%;max-width:none}}
 </style>
 </head>
 <body>
 <div class="wk">
   <header class="wk-top">
-    <div class="brandbar"><svg class="logo" viewBox="0 0 44 44" aria-hidden="true"><rect x="1" y="1" width="42" height="42" rx="12" class="lg-bg"/><path d="M10 12h24v16h-6v4H16v-4h-6z" class="lg-port"/><rect x="12.3" y="14" width="1.8" height="5.5" rx=".6" fill="#f3a35c"/><rect x="15.1" y="14" width="1.8" height="5.5" rx=".6" fill="#e2690f"/><rect x="17.9" y="14" width="1.8" height="5.5" rx=".6" fill="#8fd19b"/><rect x="20.7" y="14" width="1.8" height="5.5" rx=".6" fill="#2f6fdc"/><rect x="23.5" y="14" width="1.8" height="5.5" rx=".6" fill="#9dbcf2"/><rect x="26.3" y="14" width="1.8" height="5.5" rx=".6" fill="#2b9a4e"/><rect x="29.1" y="14" width="1.8" height="5.5" rx=".6" fill="#cfa47c"/><rect x="31.9" y="14" width="1.8" height="5.5" rx=".6" fill="#7a4a26"/></svg><div class="brand"><div class="wordmark">ДЭ<span>·</span>Вики</div><div class="tagline">Справочник по демонстрационному экзамену</div></div></div>
-    <div class="topacts"><a class="btn ghost" href="teacher.html">← <span class="lbl">Генератор</span></a><div class="seg theme" id="themeSeg" role="group" aria-label="Тема оформления"></div></div>
+    <a class="brandlink" href="#home" aria-label="Заглавная страница"><div class="brandbar"><svg class="logo" viewBox="0 0 44 44" aria-hidden="true"><rect x="1" y="1" width="42" height="42" rx="12" class="lg-bg"/><path d="M10 12h24v16h-6v4H16v-4h-6z" class="lg-port"/><rect x="12.3" y="14" width="1.8" height="5.5" rx=".6" fill="#f3a35c"/><rect x="15.1" y="14" width="1.8" height="5.5" rx=".6" fill="#e2690f"/><rect x="17.9" y="14" width="1.8" height="5.5" rx=".6" fill="#8fd19b"/><rect x="20.7" y="14" width="1.8" height="5.5" rx=".6" fill="#2f6fdc"/><rect x="23.5" y="14" width="1.8" height="5.5" rx=".6" fill="#9dbcf2"/><rect x="26.3" y="14" width="1.8" height="5.5" rx=".6" fill="#2b9a4e"/><rect x="29.1" y="14" width="1.8" height="5.5" rx=".6" fill="#cfa47c"/><rect x="31.9" y="14" width="1.8" height="5.5" rx=".6" fill="#7a4a26"/></svg><div class="brand"><div class="wordmark">ДЭ<span>·</span>Вики</div><div class="tagline">Справочник по демонстрационному экзамену</div></div></div></a>
+    <form class="wk-search" id="wkSearch" role="search" autocomplete="off"><input id="wkQ" type="search" placeholder="Поиск по ДЭ·Вики" aria-label="Поиск по ДЭ·Вики"><button class="btn" type="submit" aria-label="Найти"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button><div class="wk-sug" id="wkSug" hidden></div></form>
+    <div class="topacts"><div class="seg theme" id="themeSeg" role="group" aria-label="Тема оформления"></div></div>
   </header>
   <div class="cable" aria-hidden="true"></div>
   <div class="wk-grid">
     <aside class="wk-side" aria-label="Навигация по вики">
-      <nav class="portlet" aria-label="Страницы">
-        <h3>Навигация</h3>
-        <ul>
-          <li><a href="index.html">Задание студента</a></li>
-          <li><a href="teacher.html">Генератор вариантов</a></li>
-          <li class="on"><a href="solve.html" aria-current="page">Решение по параметрам</a></li>
-        </ul>
-      </nav>
-      <nav class="portlet" id="tocBox" aria-label="Содержание" hidden>
-        <h3>Содержание</h3>
-        <ol class="toc" id="toc"></ol>
-      </nav>
-      <div class="portlet note">
-        <h3>О странице</h3>
-        <p>Параметры и настройки стенда хранятся только в этом браузере.</p>
-      </div>
+      <nav class="portlet" id="navBox" aria-label="Навигация"></nav>
+      <nav class="portlet" id="tocBox" aria-label="Содержание" hidden><h3>Содержание</h3><ol class="toc" id="toc"></ol></nav>
+      <nav class="portlet" id="catBox" aria-label="Категории"></nav>
+      <nav class="portlet" id="toolBox" aria-label="Инструменты"></nav>
+      <div class="portlet note"><h3>О странице</h3><p>Параметры и настройки хранятся только в этом браузере.</p></div>
     </aside>
     <div class="wk-art">
-      <div class="wk-tabs" id="wkTabs" role="tablist" aria-label="Модуль"></div>
+      <div class="wk-tabs" id="wkTabs"></div>
       <article class="wk-page">
-        <h1 id="wkTitle">Решение ДЭ</h1>
+        <h1 id="wkTitle">ДЭ·Вики</h1>
         <div class="wk-sub">Материал из ДЭ·Вики — справочника по демонстрационному экзамену</div>
-        <div class="wk-lead" id="wkLead"></div>
-        <section class="toolbar" id="toolbar" aria-label="Источник параметров"></section>
+        <p class="hatnote" id="wkHat" hidden></p>
+        <div class="wk-lead" id="wkLead" hidden></div>
         <main id="main" class="panel"></main>
-        <footer class="wk-foot">Команды рассчитаны в браузере по заданным параметрам и ничего не отправляют на сервер. Страница последний раз собрана из исходников репозитория <a href="https://github.com/Servanchy1308/demo-exam">demo-exam</a>.</footer>
+        <footer class="wk-foot" id="wkFoot"></footer>
       </article>
     </div>
   </div>
 </div>
+<div id="tbPark" hidden><section class="toolbar" id="toolbar" aria-label="Источник параметров"></section></div>
 <div id="printArea"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -2191,11 +2251,232 @@ function scripts23(mod,c,st,r){
       text:'#!/bin/bash\n# '+m+' · '+MODS[mod].name+'\n\n'+by[k].join('\n\n')+'\n\necho DONE\n'} });
   return wrap(out,st);
 }
+// ===== wiki layer: маршруты, страницы, категории, поиск, оглавление =====
+// Маршруты (location.hash): #home · #m1 · #m1/3 · #talk/m1 · #cat/Название
+const WCATS=[
+  ['Сетевая адресация и маршрутизация',/адрес|ISP|VLAN|коммутац|туннел|OSPF|NAT|DHCP|проброс|IPsec|межсетевой|экран/i],
+  ['Безопасность и доступ',/учётн|SSH|аутентиф|Samba|сертификац|HTTPS|IPsec|межсетевой|fail2ban|пользовател/i],
+  ['Службы имён и времени',/DNS|chrony|времен|часовой|Samba/i],
+  ['Хранение данных',/RAID|NFS/i],
+  ['Автоматизация и контейнеры',/Ansible|Docker|Веб-прилож|nginx|Инвентаризац/i],
+  ['Мониторинг и журналирование',/rsyslog|журнал|Prometheus|Grafana|мониторинг/i],
+  ['Рабочее место пользователя',/браузер|часовой|CUPS|принт/i]
+];
+const wCatsOf=t=>{ const r=WCATS.filter(([,re])=>re.test(t)).map(x=>x[0]); return r.length?r:['Прочее'] };
+let wRT={p:'home'}, wIDX=null, wSpyOn=false;
+const wH2=(id,n,t)=>'<h2 class="wk-h2" id="'+id+'"><span class="num">'+n+'</span>'+t+'</h2>';
+const wRef=n=>'<sup class="ref"><a href="#n'+n+'" data-to="n'+n+'">['+n+']</a></sup>';
+const wCatLink=c=>'<a href="#cat/'+encodeURIComponent(c)+'">'+esc(c)+'</a>';
+const wPlural=n=>(n%10===1&&n%100!==11)?'статья':([2,3,4].includes(n%10)&&![12,13,14].includes(n%100))?'статьи':'статей';
+
+function wParse(){
+  const p=decodeURIComponent((location.hash||'').replace(/^#\/?/,'')).split('/');
+  if(/^m[123]$/.test(p[0])) return p[1]?{p:'topic',mod:+p[0][1],n:+p[1]}:{p:'mod',mod:+p[0][1]};
+  if(p[0]==='talk'&&/^m[123]$/.test(p[1]||'')) return {p:'talk',mod:+p[1][1]};
+  if(p[0]==='cat'&&p[1]) return {p:'cat',cat:p.slice(1).join('/')};
+  return {p:'home'};
+}
+function wRoute(){ wRT=wParse(); if(wRT.mod&&S.mod!==wRT.mod){ S.mod=wRT.mod; save() } }
+
+// статьи модуля = пункты задания
+function wArts(mod){
+  if(!R||!R.ok) return [];
+  try{ return (mod===1?manualItems(C,ST,R):items23(mod,C,ST,R)).map((it,i)=>({mod,i,it,cats:wCatsOf(it.title),mach:[...new Set(it.blocks.map(b=>b[0].replace('#2','')))]})) }
+  catch(e){ return [] }
+}
+const wAll=()=>[1,2,3].flatMap(wArts);
+const wLink=(a,txt)=>'<a href="#m'+a.mod+'/'+(a.i+1)+'">'+esc(txt||a.it.title)+'</a>';
+
+// ---------- общие куски ----------
+function wPark(){ const t=$('#toolbar'), p=$('#tbPark'); if(t&&p&&t.parentNode!==p) p.appendChild(t) }
+function wStand(){
+  if(!R||!R.ok) return '<div class="msg err">Параметры заданы с ошибкой — исправьте их в разделе «Параметры».</div>';
+  const role={router:'Маршрутизатор',server:'Сервер',client:'Рабочая станция'};
+  return '<table class="wikitable"><thead><tr><th>Машина</th><th>Роль</th><th>ОС</th><th>Адрес</th></tr></thead><tbody>'+
+    MACH.map(mm=>'<tr><td><b>'+mm.name+'</b></td><td>'+role[mm.role]+'</td><td>'+(mm.os||(ST.rtrOs==='alt'?'Альт Сервер':'Astra Linux CE'))+'</td><td class="mono">'+esc(mainIp(mm.key))+'</td></tr>').join('')+'</tbody></table>';
+}
+function wArtTable(mod){
+  const a=wArts(mod); if(!a.length) return '<div class="msg err">Статьи не собираются: исправьте параметры.</div>';
+  return '<table class="wikitable"><thead><tr><th>№</th><th>Статья</th><th>Машины</th><th>Категории</th></tr></thead><tbody>'+
+    a.map(x=>'<tr><td>'+(x.i+1)+'</td><td>'+wLink(x)+'</td><td>'+esc(x.mach.join(', '))+'</td><td>'+x.cats.map(wCatLink).join(', ')+'</td></tr>').join('')+'</tbody></table>';
+}
+function wNavbox(){
+  const rows=[1,2,3].map(m=>{ const a=wArts(m); return a.length?'<tr><th><a href="#m'+m+'">Модуль '+m+'</a></th><td>'+a.map(x=>wLink(x)).join(' · ')+'</td></tr>':'' }).join('');
+  return rows?'<table class="navbox"><tbody><tr><th colspan="2" class="nb-t">Настройка сетевой инфраструктуры</th></tr>'+rows+'</tbody></table>':'';
+}
+function wCatLinks(cats){ return cats.length?'<div class="catlinks"><b>Категории:</b> '+cats.map(wCatLink).join(' <span>·</span> ')+'</div>':'' }
+const wNotes=()=>'<ol class="notes"><li id="n1">Адреса и команды рассчитываются в браузере по заданным параметрам и никуда не отправляются.</li>'+
+  '<li id="n2">Параметры можно подставить по коду варианта, из текста задания или вручную — статьи и сценарии пересчитаются сразу.</li>'+
+  '<li id="n3">Сценарии рассчитаны на повторный запуск; порядок запуска указан по шагам.</li></ol>';
+const wLinks=()=>'<ul><li><a href="index.html">Задания варианта</a> — страница студента</li><li><a href="teacher.html">Генератор вариантов</a> — страница преподавателя</li><li><a href="https://github.com/Servanchy1308/demo-exam">Исходный код проекта</a></li></ul>';
+
+// ---------- страницы ----------
+function renderMain(){
+  wPark();
+  ({home:pageHome,mod:pageModule,topic:pageTopic,talk:pageTalk,cat:pageCat}[wRT.p]||pageHome)();
+  wHead(); wToc();
+}
+function pageHome(){
+  const m=$('#main'), all=wAll();
+  if(!all.length){ m.innerHTML='<div class="msg err">Параметры заданы с ошибкой. Откройте любой модуль и исправьте их в разделе «Параметры».</div><p><a href="#m1">Перейти к модулю 1</a></p>'; return }
+  const f=all[Math.floor(Date.now()/864e5)%all.length];
+  const modBox=mod=>{ const a=wArts(mod);
+    return '<section class="pbox"><h3><a href="#m'+mod+'">Модуль '+mod+'</a> · '+esc(MODS[mod].title)+'</h3><div class="pb"><ol>'+a.map(x=>'<li>'+wLink(x)+'</li>').join('')+'</ol><p class="more"><a href="#m'+mod+'">Подробнее о модуле →</a></p></div></section>' };
+  const counts=WCATS.map(([c])=>[c,all.filter(a=>a.cats.includes(c)).length]);
+  m.innerHTML='<div class="portal-banner"><h2>Добро пожаловать в ДЭ·Вики</h2><p>Справочник по настройке сетевой инфраструктуры стенда из шести машин. Сейчас в нём <b>'+all.length+'</b> '+wPlural(all.length)+' в трёх модулях. Выберите модуль, категорию или воспользуйтесь поиском.</p></div>'+
+    '<div class="portal-grid">'+[1,2,3].map(modBox).join('')+
+    '<section class="pbox"><h3>Избранная статья</h3><div class="pb"><p><b>'+wLink(f)+'</b> <small>(модуль '+f.mod+')</small></p><p>'+esc(f.it.why)+'</p><p class="more"><a href="#" data-rnd>Случайная статья →</a></p></div></section>'+
+    '<section class="pbox"><h3>Категории</h3><div class="pb"><ul>'+counts.map(([c,n])=>'<li>'+wCatLink(c)+' <small>('+n+')</small></li>').join('')+'</ul></div></section>'+
+    '<section class="pbox"><h3>Полезные советы</h3><div class="pb"><ul><li>Имена интерфейсов проверяйте командой <code>ip -br a</code> и при необходимости меняйте в настройках стенда.</li><li>Сценарии запускаются по номерам шагов, повторный запуск безопасен.</li><li>Параметры и настройки хранятся только в этом браузере.</li></ul><p class="more"><a href="#talk/m'+S.mod+'">Обсуждение →</a></p></div></section></div>';
+}
+function pageCat(){
+  const all=wAll().filter(a=>a.cats.includes(wRT.cat)), m=$('#main');
+  if(!WCATS.some(c=>c[0]===wRT.cat)&&wRT.cat!=='Прочее'){ m.innerHTML='<div class="msg warn">Такой категории нет. <a href="#home">На заглавную страницу</a>.</div>'; return }
+  m.innerHTML='<p>Всего в категории <b>'+all.length+'</b> '+wPlural(all.length)+'.</p>'+[1,2,3].map(mod=>{ const a=all.filter(x=>x.mod===mod);
+    return a.length?'<h3 class="wk-h3">Модуль '+mod+'</h3><ul class="catlist">'+a.map(x=>'<li>'+wLink(x)+' <small>— '+esc(x.mach.join(', '))+'</small></li>').join('')+'</ul>':'' }).join('');
+}
+function pageTalk(){
+  const t=(n,h,p)=>wH2('t'+n,n,h)+p;
+  $('#main').innerHTML='<p class="hint">Здесь собраны замечания по работе со стендом — как на странице обсуждения в вики.</p>'+
+    t(1,'Перед началом','<ul class="talk"><li>Имена интерфейсов по умолчанию — <code>eth0</code>, <code>eth1</code>, <code>eth2</code> и <code>enp0s3</code>. Сверьтесь с <code>ip -br a</code> и поправьте их в настройках стенда.</li><li>Имена виртуальных машин в VirtualBox тоже задаются в настройках стенда.</li></ul>')+
+    t(2,'Порядок запуска','<ul class="talk"><li>Сценарии запускаются по номерам шагов; повторный запуск безопасен.</li><li>После базового шага машине нужна перезагрузка: можно перезагружать сразу или набрать <code>reboot</code> самостоятельно.</li></ul>')+
+    t(3,'Передача сценария в виртуальную машину','<ul class="talk"><li>Сохраните сценарий в <code>C:\\1.txt</code>, в виртуалке войдите под root с английской раскладкой и выполните <code>VBoxManage controlvm "…" keyboardputfile C:\\1.txt</code> из папки VirtualBox.</li></ul>')+
+    (S.mod!==1?t(4,'Адреса и учётные записи','<ul class="talk"><li>Адреса, домен и логины для модулей 2 и 3 берутся из параметров модуля 1.</li></ul>'):'');
+}
+function pageTopic(){
+  const a=wArts(wRT.mod)[wRT.n-1], m=$('#main');
+  if(!a){ m.innerHTML='<div class="msg warn"><b>Такой статьи нет.</b> Воспользуйтесь поиском или вернитесь на <a href="#m'+wRT.mod+'">страницу модуля</a>.</div>'; return }
+  const list=wArts(wRT.mod), prev=list[a.i-1], next=list[a.i+1], it=a.it;
+  const byM=[]; it.blocks.forEach(([mm,code],j)=>{ byM.push([mm.replace('#2',''),code,j]) });
+  m.innerHTML=wH2('sCfg',1,'Конфигурирование')+byM.map(([mm,code,j])=>'<h3 class="wk-h3">'+esc(mm)+'</h3><div class="blk"><div class="mh"><span></span><button type="button" class="lnk" data-tc="'+j+'">Копировать</button></div><pre id="tc'+j+'" tabindex="0">'+hl(code)+'</pre></div>').join('')+
+    wH2('sChk',2,'Проверка')+(it.check&&it.check.length?'<ul class="chklist">'+it.check.map(([c])=>'<li><code>'+esc(c)+'</code></li>').join('')+'</ul>':'<p>Отдельных проверок нет.</p>')+
+    wH2('sSee',3,'См. также')+'<ul>'+(prev?'<li>Предыдущая: '+wLink({mod:a.mod,i:a.i-1,it:prev.it})+'</li>':'')+(next?'<li>Следующая: '+wLink({mod:a.mod,i:a.i+1,it:next.it})+'</li>':'')+'<li><a href="#m'+a.mod+'">Модуль '+a.mod+': '+esc(MODS[a.mod].title)+'</a></li></ul>'+
+    wH2('sNote',4,'Примечания')+'<ol class="notes"><li id="n1">Значения подставлены из параметров: изменить их можно на <a href="#m'+a.mod+'">странице модуля</a>.</li></ol>';
+  m.querySelectorAll('[data-tc]').forEach(b=>b.addEventListener('click',()=>{ const j=+b.dataset.tc; copyText(it.blocks[j][1],$('#tc'+j)) }));
+}
+function pageModule(){
+  const m=$('#main'), ok=R&&R.ok;
+  m.innerHTML=wH2('sStand',1,'Стенд')+wStand()+
+    wH2('sArt',2,'Статьи раздела')+wArtTable(S.mod)+
+    wH2('sPar',3,'Параметры')+'<div id="tbSlot"></div>'+
+    (S.stand?'<details class="mi" open id="standBox"><summary><b>Стенд: ОС, интерфейсы, имена ВМ</b>'+ICON.chev+'</summary><div class="fb">'+standHtml()+'</div></details>':'')+repHtml()+
+    '<details class="mi" open id="pbox"><summary><span class="num">3.1</span><b>Параметры '+MODS[S.mod].name.replace('Модуль','модуля')+'</b><span class="hint" style="margin-left:8px">правки сразу меняют команды</span>'+ICON.chev+'</summary><div class="fb"><div id="pmsgs"></div>'+paramsHtml()+'</div></details>'+
+    wH2('sSol',4,'Сценарии автоматизации')+'<section id="sol" class="panel" aria-label="Сценарии"></section>'+
+    wH2('sSee',5,'См. также')+'<ul>'+[1,2,3].filter(x=>x!==S.mod).map(x=>'<li><a href="#m'+x+'">Модуль '+x+': '+esc(MODS[x].title)+'</a></li>').join('')+'<li><a href="#talk/m'+S.mod+'">Обсуждение</a></li></ul>'+
+    wH2('sNote',6,'Примечания')+wNotes()+
+    wH2('sLink',7,'Ссылки')+wLinks();
+  $('#tbSlot').appendChild($('#toolbar'));
+  wireParams($('#pbox')); if(S.stand) wireStand($('#standBox'));
+  const h=$('#hideRep'); if(h) h.addEventListener('click',()=>{ REP=null; save(); renderMain() });
+  m.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>{ const el=$('#p_'+b.dataset.goto); if(el){ el.scrollIntoView({block:'center',behavior:'smooth'}); el.focus({preventScroll:true}); el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1500) } }));
+  updCalc(); renderSol();
+}
+
+// ---------- заголовок, вступление, инфобокс, вкладки, подвал, сайдбар ----------
+function wHead(){
+  const T=$('#wkTitle'); if(!T) return;
+  wIDX=null;
+  const md=MODS[S.mod], code=C&&C.num?codeOf(C):null, variant=code?'вариант '+code:'демоверсия';
+  let title='Заглавная страница', hat='', lead='', info='', cats=[], showNav=false;
+  const row=(k,v)=>'<tr><th scope="row">'+esc(k)+'</th><td>'+v+'</td></tr>';
+  const sec=t=>'<tr class="ib-s"><th colspan="2">'+t+'</th></tr>';
+  if(wRT.p==='mod'){
+    title=md.title; showNav=true;
+    hat='«Модуль '+S.mod+'» — часть ДЭ 09.02.06. О других модулях см. '+[1,2,3].filter(x=>x!==S.mod).map(x=>'<a href="#m'+x+'">модуль '+x+'</a>').join(' и ')+'.';
+    lead='<p><b>'+esc(md.title)+'</b> — тема модуля '+S.mod+' демонстрационного экзамена 09.02.06: настройка стенда из шести машин — ISP, HQ-RTR, BR-RTR, HQ-SRV, BR-SRV и HQ-CLI.'+wRef(1)+' На выполнение отводится '+md.min+' мин.</p>'+
+      '<p>Каждая тема описана в отдельной статье (раздел «Статьи раздела»), а готовые сценарии по машинам собраны в разделе «Сценарии автоматизации». Значения подставлены для: <b>'+esc(variant)+'</b>.'+wRef(2)+'</p>';
+    let rows=sec('Общие сведения')+row('Модуль',esc(md.name)+' · '+md.min+' мин')+row('Вариант',esc(code||'демоверсия'))+row('ОС роутеров',ST.rtrOs==='alt'?'Альт Сервер':'Astra Linux CE');
+    if(R&&R.ok) rows+=sec('Адресация')+row('Домен',esc(C.dom))+row('ISP — HQ-RTR',esc(C.netIspHq))+row('ISP — BR-RTR',esc(C.netIspBr))+row('Туннель',esc((C.tun||'gre').toUpperCase()+' · '+C.netTun))+row('HQ-SRV',esc(A.hqSrv+'/'+R.lans.srv.p))+row('BR-SRV',esc(A.brSrv+'/'+R.lans.br.p));
+    info='<div class="ib-t">'+esc(md.name)+' · '+esc(code||'демо')+'</div><table>'+rows+'</table>';
+    cats=[...new Set(wArts(S.mod).flatMap(a=>a.cats))];
+  } else if(wRT.p==='topic'){
+    const a=wArts(wRT.mod)[wRT.n-1], tot=wArts(wRT.mod).length; showNav=true;
+    if(a){ title=a.it.title;
+      hat='Статья входит в модуль '+a.mod+' «'+esc(MODS[a.mod].title)+'». О модуле см. <a href="#m'+a.mod+'">здесь</a>.';
+      lead='<p>'+esc(a.it.why)+'</p>';
+      info='<div class="ib-t">'+esc(a.it.title)+'</div><table>'+row('Модуль',esc(MODS[a.mod].name))+row('Раздел',(a.i+1)+' из '+tot)+row('Машины',esc(a.mach.join(', ')))+row('Вариант',esc(code||'демоверсия'))+'</table>';
+      cats=a.cats;
+    } else title='Статья не найдена';
+  } else if(wRT.p==='talk'){ title='Обсуждение: '+md.title; hat='Страница обсуждения модуля '+S.mod+'. <a href="#m'+S.mod+'">К статье</a>.' }
+  else if(wRT.p==='cat'){ title='Категория: '+wRT.cat; cats=[] }
+  T.textContent=title; document.title=title+' — ДЭ·Вики';
+  $('#wkHat').innerHTML=hat; $('#wkHat').hidden=!hat;
+  const L=$('#wkLead'); L.innerHTML=lead?'<div>'+lead+'</div>'+(info?'<aside class="infobox" aria-label="Карточка">'+info+'</aside>':''):''; L.hidden=!lead;
+  // вкладки
+  const mt='m'+(wRT.mod||S.mod), tab=(h,t,on)=>on?'<span class="tab on">'+t+'</span>':'<a class="tab" href="#'+h+'">'+t+'</a>';
+  const art=wRT.p==='topic'?'m'+wRT.mod+'/'+wRT.n:(wRT.p==='talk'?mt:(wRT.p==='mod'?mt:'home'));
+  $('#wkTabs').innerHTML=(wRT.p==='cat'||wRT.p==='home')?'<span class="tab on">'+(wRT.p==='cat'?'Категория':'Статья')+'</span>':tab(art,'Статья',wRT.p!=='talk')+tab('talk/'+mt,'Обсуждение',wRT.p==='talk');
+  // подвал
+  const date=new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
+  $('#wkFoot').innerHTML=wCatLinks(cats)+(showNav?wNavbox():'')+'<p>Страница сформирована '+date+' по текущим параметрам. Команды рассчитаны в браузере и никуда не отправляются.</p>';
+  wNav();
+}
+function wNav(){
+  const on=(c,h,t)=>'<li'+(c?' class="on"':'')+'><a href="#'+h+'">'+t+'</a></li>';
+  const mc=m=>wRT.p!=='home'&&wRT.p!=='cat'&&S.mod===m;
+  $('#navBox').innerHTML='<h3>Навигация</h3><ul>'+on(wRT.p==='home','home','Заглавная страница')+[1,2,3].map(m=>on(mc(m),'m'+m,'Модуль '+m)).join('')+
+    '<li><a href="#" data-rnd>Случайная статья</a></li><li><a href="#talk/m'+S.mod+'">Обсуждение</a></li></ul>';
+  const all=wAll();
+  $('#catBox').innerHTML='<h3>Категории</h3><ul>'+WCATS.map(([c])=>{ const n=all.filter(a=>a.cats.includes(c)).length; return '<li'+(wRT.p==='cat'&&wRT.cat===c?' class="on"':'')+'><a href="#cat/'+encodeURIComponent(c)+'">'+esc(c)+(all.length?' <small>'+n+'</small>':'')+'</a></li>' }).join('')+'</ul>';
+  $('#toolBox').innerHTML='<h3>Инструменты</h3><ul><li><a href="#" data-copylink>Ссылка на эту страницу</a></li><li><a href="index.html">Задания варианта</a></li><li><a href="teacher.html">Генератор вариантов</a></li></ul>';
+}
+
+// ---------- оглавление ----------
+function wToc(){
+  const box=$('#tocBox'), ol=$('#toc'); if(!box||!ol) return;
+  const els=[...document.querySelectorAll('#main h2.wk-h2, #main h3.wk-h3, #solveBody details.mi')];
+  const secs=[]; let cur=null, k=0;
+  els.forEach((el,i)=>{
+    if(el.tagName==='H2'){ const nm=el.querySelector('.num'); el.id=el.id||('h'+i);
+      cur={id:el.id,num:nm?nm.textContent:'',title:el.textContent.replace(nm?nm.textContent:'','').trim(),kids:[]}; secs.push(cur); k=0 }
+    else if(cur){ k++; el.id=el.id||('t'+i); cur.kids.push({id:el.id,num:cur.num+'.'+k,title:el.tagName==='DETAILS'?(el.querySelector('b')?el.querySelector('b').textContent:''):el.textContent}) }
+  });
+  if(!secs.length){ box.hidden=true; return }
+  const li=x=>'<li data-t="'+x.id+'"><a href="#'+x.id+'" data-to="'+x.id+'"><span class="tn">'+esc(x.num)+'</span><span>'+esc(x.title)+'</span></a>'+(x.kids&&x.kids.length?'<ol>'+x.kids.map(li).join('')+'</ol>':'')+'</li>';
+  ol.innerHTML=secs.map(li).join(''); box.hidden=false;
+  wSpy();
+}
+function wMark(id){ document.querySelectorAll('#toc li').forEach(l=>l.classList.toggle('cur',l.dataset.t===id)) }
+function wSpy(){
+  if(wSpyOn) return; wSpyOn=true; let tick=false;
+  const run=()=>{ tick=false; let cur=null;
+    document.querySelectorAll('#toc [data-to]').forEach(a=>{ const el=document.getElementById(a.dataset.to); if(el&&el.getBoundingClientRect().top<140) cur=a.dataset.to });
+    wMark(cur) };
+  window.addEventListener('scroll',()=>{ if(!tick){ tick=true; requestAnimationFrame(run) } },{passive:true}); run();
+}
+
+// ---------- поиск и общие обработчики ----------
+function wBuildIdx(){
+  const out=[{t:'Заглавная страница',h:'home',s:''}];
+  [1,2,3].forEach(m=>{ out.push({t:'Модуль '+m+': '+MODS[m].title,h:'m'+m,s:''}); wArts(m).forEach(a=>out.push({t:a.it.title,h:'m'+m+'/'+(a.i+1),s:a.it.why,k:'Модуль '+m})) });
+  WCATS.forEach(([c])=>out.push({t:'Категория: '+c,h:'cat/'+encodeURIComponent(c),s:''}));
+  return out;
+}
+function wInit(){
+  const q=$('#wkQ'), sug=$('#wkSug');
+  const run=()=>{ const v=q.value.trim().toLowerCase(); if(!v){ sug.hidden=true; return [] }
+    if(!wIDX) wIDX=wBuildIdx();
+    const res=wIDX.map(x=>({x,s:(x.t.toLowerCase().includes(v)?2:0)+(x.s.toLowerCase().includes(v)?1:0)})).filter(r=>r.s).sort((a,b)=>b.s-a.s).slice(0,8).map(r=>r.x);
+    sug.innerHTML=res.length?res.map(x=>'<a class="sg" href="#'+x.h+'"><b>'+esc(x.t)+'</b>'+(x.k?' <small>'+esc(x.k)+'</small>':'')+(x.s?'<span>'+esc(x.s.length>90?x.s.slice(0,90)+'…':x.s)+'</span>':'')+'</a>').join(''):'<div class="sg none">Ничего не найдено</div>';
+    sug.hidden=false; return res };
+  q.addEventListener('input',run);
+  q.addEventListener('keydown',e=>{ if(e.key==='Escape'){ sug.hidden=true; q.blur() } });
+  $('#wkSearch').addEventListener('submit',e=>{ e.preventDefault(); const r=run(); if(r[0]){ location.hash='#'+r[0].h; sug.hidden=true; q.blur() } });
+  sug.addEventListener('click',()=>{ sug.hidden=true; q.value='' });
+  document.addEventListener('click',e=>{
+    const a=e.target.closest('[data-to]');
+    if(a){ e.preventDefault(); const el=document.getElementById(a.dataset.to); if(el){ if(el.tagName==='DETAILS') el.open=true; el.scrollIntoView({behavior:'smooth',block:'start'}); wMark(a.dataset.to) } return }
+    if(e.target.closest('[data-rnd]')){ e.preventDefault(); const all=wAll(); if(all.length){ const r=all[Math.floor(Math.random()*all.length)]; location.hash='#m'+r.mod+'/'+(r.i+1) } return }
+    if(e.target.closest('[data-copylink]')){ e.preventDefault(); copyText(location.href); return }
+    if(!e.target.closest('#wkSearch')) sug.hidden=true;
+  });
+  window.addEventListener('hashchange',()=>{ render(); window.scrollTo(0,0) });
+}
 // ===== solve page: parameters → commands for modules 1, 2 and 3 =====
 const SKEY='degen.solve.v2';
 const STAND_DEF={ifIspWan:'eth0',ifIspHq:'eth1',ifIspBr:'eth2',ifHqWan:'eth0',ifHqLan:'eth1',ifBrWan:'eth0',ifBrLan:'eth1',ifSrv:'enp0s3',ifCli:'enp0s3',
   vmIsp:'ISP',vmHqRtr:'HQ-RTR',vmBrRtr:'BR-RTR',vmHqSrv:'HQ-SRV',vmBrSrv:'BR-SRV',vmHqCli:'HQ-CLI',autoReboot:'no',rtrOs:'astra'};
-let S=Object.assign({mod:1,c:null,rep:null,text:'',paste:false,stand:false,mode:'manual',sel:'isp',step:0,view23:'items',sel23:{}},store.get(SKEY,{}));
+let S=Object.assign({mod:1,c:null,rep:null,text:'',paste:false,stand:false,mode:'auto',sel:'isp',step:0,view23:'scripts',sel23:{}},store.get(SKEY,{}));
 if(!MODS[S.mod]) S.mod=1; if(!S.sel23) S.sel23={};
 let ST=Object.assign({},STAND_DEF,store.get('degen.v3.stand',{}));
 let C=null, REP=S.rep, R=null, A=null, G=null;
@@ -2465,18 +2746,18 @@ const ipOf = m => ({'ISP':A.ispHq+' · '+A.ispBr,'HQ-RTR':A.hqWan,'BR-RTR':A.brW
 function sendBox(x){ const cmd='VBoxManage controlvm "'+x.vm+'" keyboardputfile C:\\1.txt';
   return {cmd,html:'<div class="send"><span>Сохраните скрипт в C:\\1.txt и выполните в cmd в папке VirtualBox:</span><code id="vbCmd">'+esc(cmd)+'</code><button type="button" class="lnk" id="vbCopy">Скопировать</button>'+
     '<details><summary>Как это работает</summary><ol><li>В виртуалке войдите под root и включите английскую раскладку.</li><li>Откройте C:\\Program Files\\Oracle\\VirtualBox, в адресной строке проводника наберите cmd.</li><li>Выполните команду выше. VirtualBox «напечатает» скрипт, он сохранится в /root/'+esc(x.sh)+' и сразу запустится.</li><li>Перезапустить вручную: bash /root/'+esc(x.sh)+'</li></ol></details></div>'} }
-function viewsFor(){ return S.mod===1?[['manual','Команды по пунктам'],['auto','Скрипты'],['check','Проверка'],['report','Отчёт']]:[['items','Команды по пунктам'],['scripts','Скрипты по машинам']] }
-const DESCR={manual:'Команды, разложенные по пунктам задания, с пояснениями. Копируйте блок и вставляйте на нужной машине.',
+function viewsFor(){ return S.mod===1?[['auto','Сценарии по машинам'],['manual','Все разделы подряд'],['check','Диагностика'],['report','Приложение: таблица адресов']]:[['scripts','Сценарии по машинам'],['items','Все разделы подряд']] }
+const DESCR={manual:'Все статьи раздела на одной странице. Копируйте блок и вставляйте на нужной машине.',
   auto:'Готовые скрипты для каждой машины. Запускайте по номерам шагов, повторный запуск безопасен.',
   check:'Скрипты ничего не меняют: проверяют машину и печатают [ OK ] или [FAIL] с номером пункта.',
   report:'Таблица адресов и описание настроек для отчёта.',
-  items:'Команды по пунктам задания. Адреса, домен и логины берутся из Модуля 1.',
+  items:'Все статьи раздела на одной странице. Адреса, домен и логины берутся из модуля 1.',
   scripts:'Все команды модуля, собранные в один скрипт на машину, в порядке запуска.'};
 function curView(){ const v=S.mod===1?S.mode:S.view23; return viewsFor().some(x=>x[0]===v)?v:viewsFor()[0][0] }
-function renderSol(){ renderSol0(); renderWiki(); renderToc() }
+function renderSol(){ renderSol0(); wHead(); wToc() }
 function renderSol0(){
   const m=$('#sol'); if(!m) return;
-  if(!R||!R.ok){ m.innerHTML=msgsHtml()+'<div class="empty"><b>По этим параметрам решение не собирается</b>Исправьте ошибки в параметрах'+(S.mod!==1?' Модуля 1':'')+'.</div>'; return }
+  if(!R||!R.ok){ m.innerHTML=msgsHtml()+'<div class="empty"><b>По этим параметрам раздел не собирается</b>Исправьте ошибки в параметрах'+(S.mod!==1?' Модуля 1':'')+'.</div>'; return }
   const v=curView();
   m.innerHTML='<div class="bar"><div class="l"><div class="seg" role="group" aria-label="Вид решения">'+viewsFor().map(([k,n])=>'<button type="button" data-v="'+k+'" aria-pressed="'+(v===k)+'">'+n+'</button>').join('')+'</div><p>'+DESCR[v]+'</p></div><div class="acts" id="solveActs"></div></div>'+(S.mod===1&&R.W.length?msgsHtml():'')+'<div id="solveBody" class="panel"></div>';
   m.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',()=>{ if(S.mod===1) S.mode=b.dataset.v; else S.view23=b.dataset.v; save(); renderSol() }));
@@ -2491,7 +2772,7 @@ function renderItems(body,items){
   const plain=items.map(it=>'=== '+it.n+'. '+it.title+' ===\n'+it.why+'\n\n'+it.blocks.map(([mm,code])=>'# '+mm.replace('#2','')+'\n'+code).join('\n\n')).join('\n\n\n');
   $('#solveActs').innerHTML=B_('cpAll','copy','Скопировать всё')+(canSave()?B_('dlMan','down','.txt'):'');
   $('#cpAll').addEventListener('click',()=>copyText(plain)); const d=$('#dlMan'); if(d) d.addEventListener('click',()=>saveFile(fname('_solution.txt'),plain));
-  body.innerHTML='<div class="manual">'+items.map((it,i)=>'<details class="mi"'+(i===0?' open':'')+'><summary><span class="num">'+it.n+'</span><b>'+esc(it.title)+'</b>'+ICON.chev+'</summary><div class="fb"><p>'+esc(it.why)+'</p>'+
+  body.innerHTML='<div class="manual">'+items.map((it,i)=>'<details class="mi"><summary><span class="num">'+it.n+'</span><b>'+esc(it.title)+'</b>'+ICON.chev+'</summary><div class="fb"><p>'+esc(it.why)+'</p>'+
     it.blocks.map(([mm,code],j)=>'<div class="blk"><div class="mh"><span>'+esc(mm.replace('#2',''))+'</span><button type="button" class="lnk" data-c="'+i+'_'+j+'">Копировать</button></div><pre id="mc'+i+'_'+j+'" tabindex="0">'+hl(code)+'</pre></div>').join('')+
     '<div class="chk">Проверка: '+it.check.map(([cmd])=>'<code>'+esc(cmd)+'</code>').join('')+'</div></div></details>').join('')+'</div>';
   body.querySelectorAll('[data-c]').forEach(b=>b.addEventListener('click',()=>{ const [i,j]=b.dataset.c.split('_').map(Number); copyText(items[i].blocks[j][1],$('#mc'+b.dataset.c)) }));
@@ -2539,14 +2820,12 @@ function downloadZip(list,isChk){
 // ---------- toolbar: module, fill from code / demo / pasted text ----------
 function renderToolbar(){
   const t=$('#toolbar');
-  $('#wkTabs').innerHTML='<div class="seg modseg" role="group" aria-label="Модуль">'+[1,2,3].map(k=>'<button type="button" role="tab" data-mod="'+k+'" aria-pressed="'+(S.mod===k)+'" aria-selected="'+(S.mod===k)+'">'+MODS[k].name+'</button>').join('')+'</div>';
   t.innerHTML=
     '<div class="codef lv-X" title="Подставить параметры варианта с сайта"><input id="codeIn" placeholder="X-12" value="'+(C.num?esc(codeOf(C)):'')+'" spellcheck="false" autocomplete="off" aria-label="Код варианта"><button type="button" id="codeGo" aria-label="Подставить параметры варианта" style="width:auto;padding:0 10px;font-size:.8rem;font-weight:700">Подставить</button></div>'+
     '<button type="button" class="btn ghost" id="demoBtn" title="Значения официальной демоверсии">Демоверсия</button>'+
     '<button type="button" class="btn ghost" id="pasteBtn" aria-expanded="'+!!S.paste+'">'+(S.paste?'Скрыть текст':'Вставить текст задания')+'</button>'+
     '<span class="grow"></span><button type="button" class="btn'+(S.stand?'" aria-pressed="true':'')+'" id="standBtn">'+ICON.gear+'<span class="lbl">Стенд</span></button>'+
     (S.paste?'<div class="paste" style="width:100%;box-shadow:none;padding:0;border:0"><textarea id="taskIn" spellcheck="false" placeholder="Вставьте текст Модуля 1 — с этого сайта или официальный. Параметры подставятся в форму.">'+esc(S.text||'')+'</textarea><div class="pa"><button type="button" class="btn primary" id="parseBtn">Разобрать</button><button type="button" class="btn" id="sampleBtn">Пример</button><span class="hint">Разбор заполняет параметры Модуля 1. Модули 2 и 3 используют его адреса.</span></div></div>':'');
-  document.querySelectorAll('#wkTabs [data-mod]').forEach(b=>b.addEventListener('click',()=>{ S.mod=+b.dataset.mod; save(); render() }));
   const ci=$('#codeIn'), go=()=>{ const p=parseCode(ci.value.replace(/^.*#/,'')); if(!p){ toast('Код выглядит так: X-12, E-3 или H-7'); ci.focus(); return }
     C=withM23(makeVariant(p.lv,p.num,p.mask)); REP=null; save(); render(); toast('Подставлены параметры варианта '+codeOf(C)) };
   $('#codeGo').addEventListener('click',go); ci.addEventListener('keydown',e=>{ if(e.key==='Enter') go() });
@@ -2557,78 +2836,17 @@ function renderToolbar(){
     ta.addEventListener('input',()=>{ S.text=ta.value; save() });
     $('#sampleBtn').addEventListener('click',()=>{ ta.value=SAMPLE; S.text=SAMPLE; save() });
     $('#parseBtn').addEventListener('click',()=>{ const v=ta.value.trim(); if(!v){ toast('Сначала вставьте текст'); ta.focus(); return }
-      const p=parseTask(v); C=withM23(p.c); REP=p.rep; S.mod=1; S.paste=false; save(); render();
+      const p=parseTask(v); C=withM23(p.c); REP=p.rep; S.mod=1; S.paste=false; save(); history.replaceState(null,'','#m1'); render();
       const w=REP.miss.filter(k=>!FREE.has(k)).length; toast(REP.src==='code'?'Подставлен вариант '+REP.code:w?'Проверьте '+w+' параметр(а), которых не было в тексте':'Все параметры найдены') });
   }
 }
 
-// ---------- вики-оформление: заголовок, вступление, инфобокс, оглавление ----------
-function renderWiki(){
-  const T=$('#wkTitle'), L=$('#wkLead'); if(!T||!L) return;
-  const md=MODS[S.mod], code=C&&C.num?codeOf(C):null;
-  T.textContent='Решение ДЭ 09.02.06: '+md.name.toLowerCase()+' — '+md.title.toLowerCase();
-  document.title=md.name+' · Решение ДЭ — ДЭ·Вики';
-  const rows=[];
-  const row=(k,v)=>rows.push('<tr><th scope="row">'+esc(k)+'</th><td>'+esc(v)+'</td></tr>');
-  rows.push('<tr class="ib-s"><th colspan="2">Общие сведения</th></tr>');
-  row('Модуль',md.name+' · '+md.min+' мин');
-  row('Вариант',code||'демоверсия');
-  row('ОС роутеров',ST.rtrOs==='alt'?'Альт Сервер':'Astra Linux CE');
-  if(R&&R.ok){
-    rows.push('<tr class="ib-s"><th colspan="2">Адресация</th></tr>');
-    row('Домен',C.dom);
-    row('ISP — HQ-RTR',C.netIspHq);
-    row('ISP — BR-RTR',C.netIspBr);
-    row('Туннель',(C.tun||'gre').toUpperCase()+' · '+C.netTun);
-    row('HQ-SRV',A.hqSrv+'/'+R.lans.srv.p);
-    row('BR-SRV',A.brSrv+'/'+R.lans.br.p);
-  }
-  const intro='<p><b>Решение ДЭ 09.02.06, '+esc(md.name.toLowerCase())+'</b> — набор команд и готовых скриптов для настройки стенда из шести машин: ISP, HQ-RTR, BR-RTR, HQ-SRV, BR-SRV и HQ-CLI. Тема модуля: «'+esc(md.title)+'».</p>'+
-    '<p>Значения подставлены для '+(code?'<b>варианта '+esc(code)+'</b>':'<b>демоверсии</b>')+'. Измените их в разделе «Параметры» или подставьте код варианта выше — команды в разделе «Решение» пересчитаются сразу.</p>'+
-    (S.mod!==1?'<p class="hint">Адреса и домен берутся из параметров модуля 1.</p>':'');
-  L.innerHTML='<div>'+intro+'</div><aside class="infobox" aria-label="Карточка варианта"><div class="ib-t">'+esc(md.name)+' · '+esc(code||'демо')+'</div><table>'+rows.join('')+'</table></aside>';
-}
-function renderToc(){
-  const box=$('#tocBox'), ol=$('#toc'); if(!box||!ol) return;
-  const items=[...document.querySelectorAll('#solveBody details.mi')];
-  items.forEach((d,i)=>{ d.id='it'+(i+1) });
-  const sec=[['pbox','1','Параметры'],['solH','2','Решение']];
-  let h=sec.map(([id,n,t])=>'<li data-t="'+id+'"><a href="#'+id+'" data-to="'+id+'"><span class="tn">'+n+'</span><span>'+t+'</span></a>'+
-    (id==='solH'&&items.length?'<ol>'+items.map((d,i)=>'<li data-t="it'+(i+1)+'"><a href="#it'+(i+1)+'" data-to="it'+(i+1)+'"><span class="tn">'+esc(d.querySelector('.num')?d.querySelector('.num').textContent:String(i+1))+'</span><span>'+esc(d.querySelector('b')?d.querySelector('b').textContent:'')+'</span></a></li>').join('')+'</ol>':'')+'</li>').join('');
-  ol.innerHTML=h; box.hidden=false;
-  ol.querySelectorAll('[data-to]').forEach(a=>a.addEventListener('click',e=>{ e.preventDefault();
-    const el=document.getElementById(a.dataset.to); if(!el) return; if(el.tagName==='DETAILS') el.open=true;
-    el.scrollIntoView({behavior:'smooth',block:'start'}); markToc(a.dataset.to) }));
-  spyToc();
-}
-function markToc(id){ document.querySelectorAll('#toc li').forEach(li=>li.classList.toggle('cur',li.dataset.t===id)) }
-let spyOn=false;
-function spyToc(){
-  if(spyOn) return; spyOn=true;
-  let tick=false;
-  const run=()=>{ tick=false;
-    const ids=[...document.querySelectorAll('#toc [data-to]')].map(a=>a.dataset.to);
-    let cur=null; ids.forEach(id=>{ const el=document.getElementById(id); if(el&&el.getBoundingClientRect().top<140) cur=id });
-    markToc(cur) };
-  window.addEventListener('scroll',()=>{ if(!tick){ tick=true; requestAnimationFrame(run) } },{passive:true});
-  run();
-}
-
 // ---------- page ----------
 function recompute(){ R=compute(C); A=R.ok?addrs(C,R):null; G=R.ok?gen(C,ST,R):null }
-function renderMain(){
-  const m=$('#main');
-  m.innerHTML=(S.stand?'<details class="mi" open id="standBox"><summary><b>Стенд: ОС, интерфейсы, имена ВМ</b>'+ICON.chev+'</summary><div class="fb">'+standHtml()+'</div></details>':'')+repHtml()+
-    '<details class="mi" open id="pbox"><summary><span class="num">1</span><b>Параметры '+MODS[S.mod].name.replace('Модуль','Модуля')+'</b><span class="hint" style="margin-left:8px">правки сразу меняют команды ниже</span>'+ICON.chev+'</summary><div class="fb"><div id="pmsgs"></div>'+paramsHtml()+'</div></details>'+
-    '<h2 class="wk-h2" id="solH"><span class="num">2</span>Решение</h2><section id="sol" class="panel" aria-label="Решение"></section>';
-  wireParams($('#pbox')); if(S.stand) wireStand($('#standBox'));
-  const h=$('#hideRep'); if(h) h.addEventListener('click',()=>{ REP=null; save(); renderMain() });
-  m.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>{ const el=$('#p_'+b.dataset.goto); if(el){ el.scrollIntoView({block:'center',behavior:'smooth'}); el.focus({preventScroll:true}); el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1500) } }));
-  updCalc(); renderSol();
-}
-function render(){ recompute(); renderToolbar(); renderMain() }
+function render(){ wRoute(); recompute(); renderToolbar(); renderMain() }
 C = S.c ? withM23(S.c) : withM23(Object.assign({},DEF));
 onSaveReady(()=>{ if(DL) renderSol() });
+wInit();
 render();
 
 })();

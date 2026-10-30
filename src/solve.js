@@ -2,7 +2,7 @@
 const SKEY='degen.solve.v2';
 const STAND_DEF={ifIspWan:'eth0',ifIspHq:'eth1',ifIspBr:'eth2',ifHqWan:'eth0',ifHqLan:'eth1',ifBrWan:'eth0',ifBrLan:'eth1',ifSrv:'enp0s3',ifCli:'enp0s3',
   vmIsp:'ISP',vmHqRtr:'HQ-RTR',vmBrRtr:'BR-RTR',vmHqSrv:'HQ-SRV',vmBrSrv:'BR-SRV',vmHqCli:'HQ-CLI',autoReboot:'no',rtrOs:'astra'};
-let S=Object.assign({mod:1,c:null,rep:null,text:'',paste:false,stand:false,mode:'manual',sel:'isp',step:0,view23:'items',sel23:{}},store.get(SKEY,{}));
+let S=Object.assign({mod:1,c:null,rep:null,text:'',paste:false,stand:false,mode:'auto',sel:'isp',step:0,view23:'scripts',sel23:{}},store.get(SKEY,{}));
 if(!MODS[S.mod]) S.mod=1; if(!S.sel23) S.sel23={};
 let ST=Object.assign({},STAND_DEF,store.get('degen.v3.stand',{}));
 let C=null, REP=S.rep, R=null, A=null, G=null;
@@ -272,18 +272,18 @@ const ipOf = m => ({'ISP':A.ispHq+' · '+A.ispBr,'HQ-RTR':A.hqWan,'BR-RTR':A.brW
 function sendBox(x){ const cmd='VBoxManage controlvm "'+x.vm+'" keyboardputfile C:\\1.txt';
   return {cmd,html:'<div class="send"><span>Сохраните скрипт в C:\\1.txt и выполните в cmd в папке VirtualBox:</span><code id="vbCmd">'+esc(cmd)+'</code><button type="button" class="lnk" id="vbCopy">Скопировать</button>'+
     '<details><summary>Как это работает</summary><ol><li>В виртуалке войдите под root и включите английскую раскладку.</li><li>Откройте C:\\Program Files\\Oracle\\VirtualBox, в адресной строке проводника наберите cmd.</li><li>Выполните команду выше. VirtualBox «напечатает» скрипт, он сохранится в /root/'+esc(x.sh)+' и сразу запустится.</li><li>Перезапустить вручную: bash /root/'+esc(x.sh)+'</li></ol></details></div>'} }
-function viewsFor(){ return S.mod===1?[['manual','Команды по пунктам'],['auto','Скрипты'],['check','Проверка'],['report','Отчёт']]:[['items','Команды по пунктам'],['scripts','Скрипты по машинам']] }
-const DESCR={manual:'Команды, разложенные по пунктам задания, с пояснениями. Копируйте блок и вставляйте на нужной машине.',
+function viewsFor(){ return S.mod===1?[['auto','Сценарии по машинам'],['manual','Все разделы подряд'],['check','Диагностика'],['report','Приложение: таблица адресов']]:[['scripts','Сценарии по машинам'],['items','Все разделы подряд']] }
+const DESCR={manual:'Все статьи раздела на одной странице. Копируйте блок и вставляйте на нужной машине.',
   auto:'Готовые скрипты для каждой машины. Запускайте по номерам шагов, повторный запуск безопасен.',
   check:'Скрипты ничего не меняют: проверяют машину и печатают [ OK ] или [FAIL] с номером пункта.',
   report:'Таблица адресов и описание настроек для отчёта.',
-  items:'Команды по пунктам задания. Адреса, домен и логины берутся из Модуля 1.',
+  items:'Все статьи раздела на одной странице. Адреса, домен и логины берутся из модуля 1.',
   scripts:'Все команды модуля, собранные в один скрипт на машину, в порядке запуска.'};
 function curView(){ const v=S.mod===1?S.mode:S.view23; return viewsFor().some(x=>x[0]===v)?v:viewsFor()[0][0] }
-function renderSol(){ renderSol0(); renderWiki(); renderToc() }
+function renderSol(){ renderSol0(); wHead(); wToc() }
 function renderSol0(){
   const m=$('#sol'); if(!m) return;
-  if(!R||!R.ok){ m.innerHTML=msgsHtml()+'<div class="empty"><b>По этим параметрам решение не собирается</b>Исправьте ошибки в параметрах'+(S.mod!==1?' Модуля 1':'')+'.</div>'; return }
+  if(!R||!R.ok){ m.innerHTML=msgsHtml()+'<div class="empty"><b>По этим параметрам раздел не собирается</b>Исправьте ошибки в параметрах'+(S.mod!==1?' Модуля 1':'')+'.</div>'; return }
   const v=curView();
   m.innerHTML='<div class="bar"><div class="l"><div class="seg" role="group" aria-label="Вид решения">'+viewsFor().map(([k,n])=>'<button type="button" data-v="'+k+'" aria-pressed="'+(v===k)+'">'+n+'</button>').join('')+'</div><p>'+DESCR[v]+'</p></div><div class="acts" id="solveActs"></div></div>'+(S.mod===1&&R.W.length?msgsHtml():'')+'<div id="solveBody" class="panel"></div>';
   m.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',()=>{ if(S.mod===1) S.mode=b.dataset.v; else S.view23=b.dataset.v; save(); renderSol() }));
@@ -298,7 +298,7 @@ function renderItems(body,items){
   const plain=items.map(it=>'=== '+it.n+'. '+it.title+' ===\n'+it.why+'\n\n'+it.blocks.map(([mm,code])=>'# '+mm.replace('#2','')+'\n'+code).join('\n\n')).join('\n\n\n');
   $('#solveActs').innerHTML=B_('cpAll','copy','Скопировать всё')+(canSave()?B_('dlMan','down','.txt'):'');
   $('#cpAll').addEventListener('click',()=>copyText(plain)); const d=$('#dlMan'); if(d) d.addEventListener('click',()=>saveFile(fname('_solution.txt'),plain));
-  body.innerHTML='<div class="manual">'+items.map((it,i)=>'<details class="mi"'+(i===0?' open':'')+'><summary><span class="num">'+it.n+'</span><b>'+esc(it.title)+'</b>'+ICON.chev+'</summary><div class="fb"><p>'+esc(it.why)+'</p>'+
+  body.innerHTML='<div class="manual">'+items.map((it,i)=>'<details class="mi"><summary><span class="num">'+it.n+'</span><b>'+esc(it.title)+'</b>'+ICON.chev+'</summary><div class="fb"><p>'+esc(it.why)+'</p>'+
     it.blocks.map(([mm,code],j)=>'<div class="blk"><div class="mh"><span>'+esc(mm.replace('#2',''))+'</span><button type="button" class="lnk" data-c="'+i+'_'+j+'">Копировать</button></div><pre id="mc'+i+'_'+j+'" tabindex="0">'+hl(code)+'</pre></div>').join('')+
     '<div class="chk">Проверка: '+it.check.map(([cmd])=>'<code>'+esc(cmd)+'</code>').join('')+'</div></div></details>').join('')+'</div>';
   body.querySelectorAll('[data-c]').forEach(b=>b.addEventListener('click',()=>{ const [i,j]=b.dataset.c.split('_').map(Number); copyText(items[i].blocks[j][1],$('#mc'+b.dataset.c)) }));
@@ -346,14 +346,12 @@ function downloadZip(list,isChk){
 // ---------- toolbar: module, fill from code / demo / pasted text ----------
 function renderToolbar(){
   const t=$('#toolbar');
-  $('#wkTabs').innerHTML='<div class="seg modseg" role="group" aria-label="Модуль">'+[1,2,3].map(k=>'<button type="button" role="tab" data-mod="'+k+'" aria-pressed="'+(S.mod===k)+'" aria-selected="'+(S.mod===k)+'">'+MODS[k].name+'</button>').join('')+'</div>';
   t.innerHTML=
     '<div class="codef lv-X" title="Подставить параметры варианта с сайта"><input id="codeIn" placeholder="X-12" value="'+(C.num?esc(codeOf(C)):'')+'" spellcheck="false" autocomplete="off" aria-label="Код варианта"><button type="button" id="codeGo" aria-label="Подставить параметры варианта" style="width:auto;padding:0 10px;font-size:.8rem;font-weight:700">Подставить</button></div>'+
     '<button type="button" class="btn ghost" id="demoBtn" title="Значения официальной демоверсии">Демоверсия</button>'+
     '<button type="button" class="btn ghost" id="pasteBtn" aria-expanded="'+!!S.paste+'">'+(S.paste?'Скрыть текст':'Вставить текст задания')+'</button>'+
     '<span class="grow"></span><button type="button" class="btn'+(S.stand?'" aria-pressed="true':'')+'" id="standBtn">'+ICON.gear+'<span class="lbl">Стенд</span></button>'+
     (S.paste?'<div class="paste" style="width:100%;box-shadow:none;padding:0;border:0"><textarea id="taskIn" spellcheck="false" placeholder="Вставьте текст Модуля 1 — с этого сайта или официальный. Параметры подставятся в форму.">'+esc(S.text||'')+'</textarea><div class="pa"><button type="button" class="btn primary" id="parseBtn">Разобрать</button><button type="button" class="btn" id="sampleBtn">Пример</button><span class="hint">Разбор заполняет параметры Модуля 1. Модули 2 и 3 используют его адреса.</span></div></div>':'');
-  document.querySelectorAll('#wkTabs [data-mod]').forEach(b=>b.addEventListener('click',()=>{ S.mod=+b.dataset.mod; save(); render() }));
   const ci=$('#codeIn'), go=()=>{ const p=parseCode(ci.value.replace(/^.*#/,'')); if(!p){ toast('Код выглядит так: X-12, E-3 или H-7'); ci.focus(); return }
     C=withM23(makeVariant(p.lv,p.num,p.mask)); REP=null; save(); render(); toast('Подставлены параметры варианта '+codeOf(C)) };
   $('#codeGo').addEventListener('click',go); ci.addEventListener('keydown',e=>{ if(e.key==='Enter') go() });
@@ -364,76 +362,15 @@ function renderToolbar(){
     ta.addEventListener('input',()=>{ S.text=ta.value; save() });
     $('#sampleBtn').addEventListener('click',()=>{ ta.value=SAMPLE; S.text=SAMPLE; save() });
     $('#parseBtn').addEventListener('click',()=>{ const v=ta.value.trim(); if(!v){ toast('Сначала вставьте текст'); ta.focus(); return }
-      const p=parseTask(v); C=withM23(p.c); REP=p.rep; S.mod=1; S.paste=false; save(); render();
+      const p=parseTask(v); C=withM23(p.c); REP=p.rep; S.mod=1; S.paste=false; save(); history.replaceState(null,'','#m1'); render();
       const w=REP.miss.filter(k=>!FREE.has(k)).length; toast(REP.src==='code'?'Подставлен вариант '+REP.code:w?'Проверьте '+w+' параметр(а), которых не было в тексте':'Все параметры найдены') });
   }
 }
 
-// ---------- вики-оформление: заголовок, вступление, инфобокс, оглавление ----------
-function renderWiki(){
-  const T=$('#wkTitle'), L=$('#wkLead'); if(!T||!L) return;
-  const md=MODS[S.mod], code=C&&C.num?codeOf(C):null;
-  T.textContent='Решение ДЭ 09.02.06: '+md.name.toLowerCase()+' — '+md.title.toLowerCase();
-  document.title=md.name+' · Решение ДЭ — ДЭ·Вики';
-  const rows=[];
-  const row=(k,v)=>rows.push('<tr><th scope="row">'+esc(k)+'</th><td>'+esc(v)+'</td></tr>');
-  rows.push('<tr class="ib-s"><th colspan="2">Общие сведения</th></tr>');
-  row('Модуль',md.name+' · '+md.min+' мин');
-  row('Вариант',code||'демоверсия');
-  row('ОС роутеров',ST.rtrOs==='alt'?'Альт Сервер':'Astra Linux CE');
-  if(R&&R.ok){
-    rows.push('<tr class="ib-s"><th colspan="2">Адресация</th></tr>');
-    row('Домен',C.dom);
-    row('ISP — HQ-RTR',C.netIspHq);
-    row('ISP — BR-RTR',C.netIspBr);
-    row('Туннель',(C.tun||'gre').toUpperCase()+' · '+C.netTun);
-    row('HQ-SRV',A.hqSrv+'/'+R.lans.srv.p);
-    row('BR-SRV',A.brSrv+'/'+R.lans.br.p);
-  }
-  const intro='<p><b>Решение ДЭ 09.02.06, '+esc(md.name.toLowerCase())+'</b> — набор команд и готовых скриптов для настройки стенда из шести машин: ISP, HQ-RTR, BR-RTR, HQ-SRV, BR-SRV и HQ-CLI. Тема модуля: «'+esc(md.title)+'».</p>'+
-    '<p>Значения подставлены для '+(code?'<b>варианта '+esc(code)+'</b>':'<b>демоверсии</b>')+'. Измените их в разделе «Параметры» или подставьте код варианта выше — команды в разделе «Решение» пересчитаются сразу.</p>'+
-    (S.mod!==1?'<p class="hint">Адреса и домен берутся из параметров модуля 1.</p>':'');
-  L.innerHTML='<div>'+intro+'</div><aside class="infobox" aria-label="Карточка варианта"><div class="ib-t">'+esc(md.name)+' · '+esc(code||'демо')+'</div><table>'+rows.join('')+'</table></aside>';
-}
-function renderToc(){
-  const box=$('#tocBox'), ol=$('#toc'); if(!box||!ol) return;
-  const items=[...document.querySelectorAll('#solveBody details.mi')];
-  items.forEach((d,i)=>{ d.id='it'+(i+1) });
-  const sec=[['pbox','1','Параметры'],['solH','2','Решение']];
-  let h=sec.map(([id,n,t])=>'<li data-t="'+id+'"><a href="#'+id+'" data-to="'+id+'"><span class="tn">'+n+'</span><span>'+t+'</span></a>'+
-    (id==='solH'&&items.length?'<ol>'+items.map((d,i)=>'<li data-t="it'+(i+1)+'"><a href="#it'+(i+1)+'" data-to="it'+(i+1)+'"><span class="tn">'+esc(d.querySelector('.num')?d.querySelector('.num').textContent:String(i+1))+'</span><span>'+esc(d.querySelector('b')?d.querySelector('b').textContent:'')+'</span></a></li>').join('')+'</ol>':'')+'</li>').join('');
-  ol.innerHTML=h; box.hidden=false;
-  ol.querySelectorAll('[data-to]').forEach(a=>a.addEventListener('click',e=>{ e.preventDefault();
-    const el=document.getElementById(a.dataset.to); if(!el) return; if(el.tagName==='DETAILS') el.open=true;
-    el.scrollIntoView({behavior:'smooth',block:'start'}); markToc(a.dataset.to) }));
-  spyToc();
-}
-function markToc(id){ document.querySelectorAll('#toc li').forEach(li=>li.classList.toggle('cur',li.dataset.t===id)) }
-let spyOn=false;
-function spyToc(){
-  if(spyOn) return; spyOn=true;
-  let tick=false;
-  const run=()=>{ tick=false;
-    const ids=[...document.querySelectorAll('#toc [data-to]')].map(a=>a.dataset.to);
-    let cur=null; ids.forEach(id=>{ const el=document.getElementById(id); if(el&&el.getBoundingClientRect().top<140) cur=id });
-    markToc(cur) };
-  window.addEventListener('scroll',()=>{ if(!tick){ tick=true; requestAnimationFrame(run) } },{passive:true});
-  run();
-}
-
 // ---------- page ----------
 function recompute(){ R=compute(C); A=R.ok?addrs(C,R):null; G=R.ok?gen(C,ST,R):null }
-function renderMain(){
-  const m=$('#main');
-  m.innerHTML=(S.stand?'<details class="mi" open id="standBox"><summary><b>Стенд: ОС, интерфейсы, имена ВМ</b>'+ICON.chev+'</summary><div class="fb">'+standHtml()+'</div></details>':'')+repHtml()+
-    '<details class="mi" open id="pbox"><summary><span class="num">1</span><b>Параметры '+MODS[S.mod].name.replace('Модуль','Модуля')+'</b><span class="hint" style="margin-left:8px">правки сразу меняют команды ниже</span>'+ICON.chev+'</summary><div class="fb"><div id="pmsgs"></div>'+paramsHtml()+'</div></details>'+
-    '<h2 class="wk-h2" id="solH"><span class="num">2</span>Решение</h2><section id="sol" class="panel" aria-label="Решение"></section>';
-  wireParams($('#pbox')); if(S.stand) wireStand($('#standBox'));
-  const h=$('#hideRep'); if(h) h.addEventListener('click',()=>{ REP=null; save(); renderMain() });
-  m.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>{ const el=$('#p_'+b.dataset.goto); if(el){ el.scrollIntoView({block:'center',behavior:'smooth'}); el.focus({preventScroll:true}); el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1500) } }));
-  updCalc(); renderSol();
-}
-function render(){ recompute(); renderToolbar(); renderMain() }
+function render(){ wRoute(); recompute(); renderToolbar(); renderMain() }
 C = S.c ? withM23(S.c) : withM23(Object.assign({},DEF));
 onSaveReady(()=>{ if(DL) renderSol() });
+wInit();
 render();
