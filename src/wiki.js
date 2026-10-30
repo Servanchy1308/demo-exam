@@ -10,6 +10,9 @@ const WCATS=[
   ['Рабочее место пользователя',/браузер|часовой|CUPS|принт/i]
 ];
 const wCatsOf=t=>{ const r=WCATS.filter(([,re])=>re.test(t)).map(x=>x[0]); return r.length?r:['Прочее'] };
+const wU=()=>{ try{ return sessionStorage.getItem('wk.u')==='1' }catch(e){ return false } };
+const wRed=t=>'<a class="new" href="#x/'+encodeURIComponent(t)+'" title="Такой статьи пока нет">'+esc(t)+'</a>';
+const RED=['Настройка Cisco IOS','Пакетный фильтр nftables','Протокол BGP','Система LDAP','Виртуализация KVM','Резервное копирование','Протокол SNMP','Балансировка нагрузки','Прокси-сервер Squid','Протокол VRRP','Сетевая подсистема ядра','Файловая система Btrfs'];
 let wRT={p:'home'}, wIDX=null, wSpyOn=false;
 const wH2=(id,n,t)=>'<h2 class="wk-h2" id="'+id+'"><span class="num">'+n+'</span>'+t+'</h2>';
 const wRef=n=>'<sup class="ref"><a href="#n'+n+'" data-to="n'+n+'">['+n+']</a></sup>';
@@ -20,6 +23,7 @@ function wParse(){
   const p=decodeURIComponent((location.hash||'').replace(/^#\/?/,'')).split('/');
   if(/^m[123]$/.test(p[0])) return p[1]?{p:'topic',mod:+p[0][1],n:+p[1]}:{p:'mod',mod:+p[0][1]};
   if(p[0]==='sol'&&/^m[123]$/.test(p[1]||'')) return p[2]?{p:'sol',mod:+p[1][1],n:+p[2]}:{p:'solmod',mod:+p[1][1]};
+  if(p[0]==='x'&&p[1]) return {p:'stub',t:p.slice(1).join('/')};
   if(p[0]==='talk'&&/^m[123]$/.test(p[1]||'')) return {p:'talk',mod:+p[1][1]};
   if(p[0]==='cat'&&p[1]) return {p:'cat',cat:p.slice(1).join('/')};
   return {p:'home'};
@@ -45,23 +49,23 @@ function wStand(){
 }
 function wArtTable(mod){
   const a=wArts(mod); if(!a.length) return '<div class="msg err">Статьи не собираются: исправьте параметры.</div>';
-  return '<table class="wikitable"><thead><tr><th>№</th><th>Статья</th><th>Машины</th><th>Категории</th><th>Решение</th></tr></thead><tbody>'+
-    a.map(x=>'<tr><td>'+(x.i+1)+'</td><td>'+wLink(x)+'</td><td>'+esc(x.mach.join(', '))+'</td><td>'+x.cats.map(wCatLink).join(', ')+'</td><td><a class="btn" href="'+solHref(x)+'">Решение</a></td></tr>').join('')+'</tbody></table>';
+  return '<table class="wikitable"><thead><tr><th>№</th><th>Статья</th><th>Машины</th><th>Категории</th>'+(wU()?'<th>Решение</th>':'')+'</tr></thead><tbody>'+
+    a.map(x=>'<tr><td>'+(x.i+1)+'</td><td>'+wLink(x)+'</td><td>'+esc(x.mach.join(', '))+'</td><td>'+x.cats.map(wCatLink).join(', ')+'</td>'+(wU()?'<td><a class="btn" href="'+solHref(x)+'">Решение</a></td>':'')+'</tr>').join('')+'</tbody></table>';
 }
 function wNavbox(){
-  const rows=[1,2,3].map(m=>{ const a=wArts(m); return a.length?'<tr><th><a href="#m'+m+'">Модуль '+m+'</a><br><a class="nb-sol" href="#sol/m'+m+'">решения</a></th><td>'+a.map(x=>wLink(x)).join(' · ')+'</td></tr>':'' }).join('');
-  return rows?'<table class="navbox"><tbody><tr><th colspan="2" class="nb-t">Настройка сетевой инфраструктуры</th></tr>'+rows+'</tbody></table>':'';
+  const rows=[1,2,3].map(m=>{ const a=wArts(m); return a.length?'<tr><th><a href="#m'+m+'">Модуль '+m+'</a>'+(wU()?'<br><a class="nb-sol" href="#sol/m'+m+'">решения</a>':'')+'</th><td>'+a.map(x=>wLink(x)).join(' · ')+'</td></tr>':'' }).join('');
+  return rows?'<table class="navbox"><tbody><tr><th colspan="2" class="nb-t">Настройка сетевой инфраструктуры</th></tr>'+rows+'<tr><th>Смежные темы</th><td>'+RED.slice(0,6).map(wRed).join(' · ')+'</td></tr></tbody></table>':'';
 }
 function wCatLinks(cats){ return cats.length?'<div class="catlinks"><b>Категории:</b> '+cats.map(wCatLink).join(' <span>·</span> ')+'</div>':'' }
 const wNotes=()=>'<ol class="notes"><li id="n1">Адреса и команды рассчитываются в браузере по заданным параметрам и никуда не отправляются.</li>'+
   '<li id="n2">Параметры можно подставить по коду варианта, из текста задания или вручную — статьи и сценарии пересчитаются сразу.</li>'+
   '<li id="n3">Сценарии рассчитаны на повторный запуск; порядок запуска указан по шагам.</li></ol>';
-const wLinks=()=>'<ul><li><a href="index.html">Задания варианта</a> — страница студента</li><li><a href="teacher.html">Генератор вариантов</a> — страница преподавателя</li><li><a href="https://github.com/Servanchy1308/demo-exam">Исходный код проекта</a></li></ul>';
+const wLinks=()=>'<ul>'+RED.slice(0,5).map(t=>'<li>'+wRed(t)+'</li>').join('')+'</ul>';
 
 // ---------- страницы ----------
 function renderMain(){
   wPark();
-  ({home:pageHome,mod:pageModule,topic:pageTopic,talk:pageTalk,cat:pageCat,sol:pageSol,solmod:pageSolMod}[wRT.p]||pageHome)();
+  ({home:pageHome,mod:pageModule,topic:pageTopic,talk:pageTalk,cat:pageCat,stub:pageStub,sol:pageSol,solmod:pageSolMod}[wRT.p]||pageHome)();
   wHead(); wToc();
 }
 function pageHome(){
@@ -69,11 +73,12 @@ function pageHome(){
   if(!all.length){ m.innerHTML='<div class="msg err">Параметры заданы с ошибкой. Откройте любой модуль и исправьте их в разделе «Параметры».</div><p><a href="#m1">Перейти к модулю 1</a></p>'; return }
   const f=all[Math.floor(Date.now()/864e5)%all.length];
   const modBox=mod=>{ const a=wArts(mod);
-    return '<section class="pbox"><h3><a href="#m'+mod+'">Модуль '+mod+'</a> · '+esc(MODS[mod].title)+'</h3><div class="pb"><ol>'+a.map(x=>'<li>'+wLink(x)+'</li>').join('')+'</ol><p class="more"><a href="#m'+mod+'">Подробнее о модуле →</a> · <a href="#sol/m'+mod+'"><b>Решения</b></a></p></div></section>' };
+    return '<section class="pbox"><h3><a href="#m'+mod+'">Модуль '+mod+'</a> · '+esc(MODS[mod].title)+'</h3><div class="pb"><ol>'+a.map(x=>'<li>'+wLink(x)+'</li>').join('')+'</ol><p class="more"><a href="#m'+mod+'">Подробнее о модуле →</a>'+(wU()?' · <a href="#sol/m'+mod+'"><b>Решения</b></a>':'')+'</p></div></section>' };
   const counts=WCATS.map(([c])=>[c,all.filter(a=>a.cats.includes(c)).length]);
-  m.innerHTML='<div class="portal-banner"><h2>Добро пожаловать в ДЭ·Вики</h2><p>Справочник по настройке сетевой инфраструктуры стенда из шести машин. Сейчас в нём <b>'+all.length+'</b> '+wPlural(all.length)+' в трёх модулях. Выберите модуль, категорию или воспользуйтесь поиском.</p></div>'+
+  m.innerHTML='<div class="portal-banner"><h2>Добро пожаловать в ДЭ·Вики</h2><p>Свободная энциклопедия по настройке сетевой инфраструктуры стенда из шести машин. Сейчас в нём <b>'+all.length+'</b> '+wPlural(all.length)+' в трёх модулях. Выберите модуль, категорию или воспользуйтесь поиском.</p></div>'+
     '<div class="portal-grid">'+[1,2,3].map(modBox).join('')+
     '<section class="pbox"><h3>Избранная статья</h3><div class="pb"><p><b>'+wLink(f)+'</b> <small>(модуль '+f.mod+')</small></p><p>'+esc(f.it.why)+'</p><p class="more"><a href="#" data-rnd>Случайная статья →</a></p></div></section>'+
+    '<section class="pbox"><h3>Требуются статьи</h3><div class="pb"><ul>'+RED.slice(0,7).map(t=>'<li>'+wRed(t)+'</li>').join('')+'</ul></div></section>'+
     '<section class="pbox"><h3>Категории</h3><div class="pb"><ul>'+counts.map(([c,n])=>'<li>'+wCatLink(c)+' <small>('+n+')</small></li>').join('')+'</ul></div></section>'+
     '<section class="pbox"><h3>Полезные советы</h3><div class="pb"><ul><li>Имена интерфейсов проверяйте командой <code>ip -br a</code> и при необходимости меняйте в настройках стенда.</li><li>Сценарии запускаются по номерам шагов, повторный запуск безопасен.</li><li>Параметры и настройки хранятся только в этом браузере.</li></ul><p class="more"><a href="#talk/m'+S.mod+'">Обсуждение →</a></p></div></section></div>';
 }
@@ -128,9 +133,12 @@ function pageSolMod(){
     list.map(a=>{ const [d,t]=solCount(a); return '<tr><td>'+(a.i+1)+'</td><td>'+wLink(a)+'</td><td>'+esc(a.mach.join(', '))+'</td><td>'+(d===t?'<span class="okb">✔ готово</span>':d+' / '+t)+'</td><td><a class="btn'+(d?'':' primary')+'" href="'+solHref(a)+'">Решение</a></td></tr>' }).join('')+'</tbody></table>'+
     wH2('sSee',2,'См. также')+'<ul><li><a href="#m'+wRT.mod+'">Модуль '+wRT.mod+': '+esc(MODS[wRT.mod].title)+'</a> — параметры и сценарии по машинам</li></ul>';
 }
+function pageStub(){
+  $('#main').innerHTML='<div class="msg warn"><b>В вики пока нет статьи с таким названием.</b> Вы можете проверить название в поиске или вернуться на <a href="#home">заглавную страницу</a>.</div><p>Статья «'+esc(wRT.t)+'» ещё не создана. Если вы знаете эту тему, ею можно дополнить вики.</p>'+wCatLinks([]);
+}
 function pageTalk(){
   const t=(n,h,p)=>wH2('t'+n,n,h)+p;
-  $('#main').innerHTML='<p class="hint">Здесь собраны замечания по работе со стендом — как на странице обсуждения в вики.</p>'+
+  $('#main').innerHTML='<p class="hint">Здесь собраны замечания участников.</p>'+
     t(1,'Перед началом','<ul class="talk"><li>Имена интерфейсов по умолчанию — <code>eth0</code>, <code>eth1</code>, <code>eth2</code> и <code>enp0s3</code>. Сверьтесь с <code>ip -br a</code> и поправьте их в настройках стенда.</li><li>Имена виртуальных машин в VirtualBox тоже задаются в настройках стенда.</li></ul>')+
     t(2,'Порядок запуска','<ul class="talk"><li>Сценарии запускаются по номерам шагов; повторный запуск безопасен.</li><li>После базового шага машине нужна перезагрузка: можно перезагружать сразу или набрать <code>reboot</code> самостоятельно.</li></ul>')+
     t(3,'Передача сценария в виртуальную машину','<ul class="talk"><li>Сохраните сценарий в <code>C:\\1.txt</code>, в виртуалке войдите под root с английской раскладкой и выполните <code>VBoxManage controlvm "…" keyboardputfile C:\\1.txt</code> из папки VirtualBox.</li></ul>')+
@@ -140,23 +148,23 @@ function pageTopic(){
   const a=wArts(wRT.mod)[wRT.n-1], m=$('#main');
   if(!a){ m.innerHTML='<div class="msg warn"><b>Такой статьи нет.</b> Воспользуйтесь поиском или вернитесь на <a href="#m'+wRT.mod+'">страницу модуля</a>.</div>'; return }
   const list=wArts(wRT.mod), prev=list[a.i-1], next=list[a.i+1], it=a.it;
-  m.innerHTML=solCta(a)+wH2('sCfg',1,'Что настраивается')+
-    '<table class="wikitable"><thead><tr><th>Шаг</th><th>Машина</th><th>Команд</th><th></th></tr></thead><tbody>'+it.blocks.map(([mm,code],j)=>'<tr><td>'+(j+1)+'</td><td><b>'+esc(mm.replace('#2',''))+'</b></td><td>'+code.split('\n').filter(l=>l.trim()&&!/^\s*#/.test(l)).length+'</td><td><a href="'+solHref(a)+'" data-solstep="'+j+'">к шагу →</a></td></tr>').join('')+'</tbody></table>'+
+  m.innerHTML=(wU()?solCta(a):'')+wH2('sCfg',1,'Что настраивается')+
+    '<table class="wikitable"><thead><tr><th>Шаг</th><th>Машина</th><th>Команд</th><th></th></tr></thead><tbody>'+it.blocks.map(([mm,code],j)=>'<tr><td>'+(j+1)+'</td><td><b>'+esc(mm.replace('#2',''))+'</b></td><td>'+code.split('\n').filter(l=>l.trim()&&!/^\s*#/.test(l)).length+'</td><td>'+(wU()?'<a href="'+solHref(a)+'">к шагу →</a>':'')+'</td></tr>').join('')+'</tbody></table>'+
     wH2('sChk',2,'Проверка')+(it.check&&it.check.length?'<ul class="chklist">'+it.check.map(([c])=>'<li><code>'+esc(c)+'</code></li>').join('')+'</ul>':'<p>Отдельных проверок нет.</p>')+
-    wH2('sSee',3,'См. также')+'<ul><li><b><a href="'+solHref(a)+'">Решение этой статьи</a></b></li>'+(prev?'<li>Предыдущая: '+wLink({mod:a.mod,i:a.i-1,it:prev.it})+'</li>':'')+(next?'<li>Следующая: '+wLink({mod:a.mod,i:a.i+1,it:next.it})+'</li>':'')+'<li><a href="#m'+a.mod+'">Модуль '+a.mod+': '+esc(MODS[a.mod].title)+'</a></li></ul>'+
-    wH2('sNote',4,'Примечания')+'<ol class="notes"><li id="n1">Значения подставлены из параметров: изменить их можно на <a href="#m'+a.mod+'">странице модуля</a>. Сами команды вынесены на страницу решения.</li></ol>';
+    wH2('sSee',3,'См. также')+'<ul>'+(wU()?'<li><b><a href="'+solHref(a)+'">Решение этой статьи</a></b></li>':'<li>'+wRed(RED[(a.i+a.mod)%RED.length])+'</li>')+(prev?'<li>Предыдущая: '+wLink({mod:a.mod,i:a.i-1,it:prev.it})+'</li>':'')+(next?'<li>Следующая: '+wLink({mod:a.mod,i:a.i+1,it:next.it})+'</li>':'')+'<li><a href="#m'+a.mod+'">Модуль '+a.mod+': '+esc(MODS[a.mod].title)+'</a></li></ul>'+
+    wH2('sNote',4,'Примечания')+'<ol class="notes"><li id="n1">Значения подставлены из параметров: изменить их можно на <a href="#m'+a.mod+'">странице модуля</a>.</li></ol>';
 }
 function pageModule(){
   const m=$('#main'), ok=R&&R.ok;
   m.innerHTML=wH2('sStand',1,'Стенд')+wStand()+
-    '<div class="sol-cta"><div class="sc-t"><b>Решения модуля '+S.mod+'</b><span>Отдельная страница с командами по шагам для каждой темы</span></div><a class="btn primary big" href="#sol/m'+S.mod+'">'+SOLICON+' Перейти к решениям</a></div>'+wH2('sArt',2,'Статьи раздела')+wArtTable(S.mod)+
+    (wU()?'<div class="sol-cta"><div class="sc-t"><b>Решения модуля '+S.mod+'</b><span>Отдельная страница с командами по шагам для каждой темы</span></div><a class="btn primary big" href="#sol/m'+S.mod+'">'+SOLICON+' Перейти к решениям</a></div>':'')+wH2('sArt',2,'Статьи раздела')+wArtTable(S.mod)+
     wH2('sPar',3,'Параметры')+'<div id="tbSlot"></div>'+
     (S.stand?'<details class="mi" open id="standBox"><summary><b>Стенд: ОС, интерфейсы, имена ВМ</b>'+ICON.chev+'</summary><div class="fb">'+standHtml()+'</div></details>':'')+repHtml()+
     '<details class="mi" open id="pbox"><summary><span class="num">3.1</span><b>Параметры '+MODS[S.mod].name.replace('Модуль','модуля')+'</b><span class="hint" style="margin-left:8px">правки сразу меняют команды</span>'+ICON.chev+'</summary><div class="fb"><div id="pmsgs"></div>'+paramsHtml()+'</div></details>'+
     wH2('sSol',4,'Сценарии автоматизации')+'<section id="sol" class="panel" aria-label="Сценарии"></section>'+
     wH2('sSee',5,'См. также')+'<ul>'+[1,2,3].filter(x=>x!==S.mod).map(x=>'<li><a href="#m'+x+'">Модуль '+x+': '+esc(MODS[x].title)+'</a></li>').join('')+'<li><a href="#talk/m'+S.mod+'">Обсуждение</a></li></ul>'+
     wH2('sNote',6,'Примечания')+wNotes()+
-    wH2('sLink',7,'Ссылки')+wLinks();
+    wH2('sLink',7,'Смотрите также')+wLinks();
   $('#tbSlot').appendChild($('#toolbar'));
   wireParams($('#pbox')); if(S.stand) wireStand($('#standBox'));
   const h=$('#hideRep'); if(h) h.addEventListener('click',()=>{ REP=null; save(); renderMain() });
@@ -202,6 +210,7 @@ function wHead(){
     hat='Все решения модуля '+wRT.mod+'. Теория и параметры — на <a href="#m'+wRT.mod+'">странице модуля</a>.';
     lead='<p>Для каждой темы модуля <b>'+esc(MODS[wRT.mod].title)+'</b> подготовлено отдельное решение: команды по машинам, порядок выполнения и проверка. Значения подставлены для: <b>'+esc(variant)+'</b>.</p>';
     cats=[...new Set(wArts(wRT.mod).flatMap(a=>a.cats))];
+  } else if(wRT.p==='stub'){ title=wRT.t; hat='Статья «'+esc(wRT.t)+'» пока не создана.';
   } else if(wRT.p==='talk'){ title='Обсуждение: '+md.title; hat='Страница обсуждения модуля '+S.mod+'. <a href="#m'+S.mod+'">К статье</a>.' }
   else if(wRT.p==='cat'){ title='Категория: '+wRT.cat; cats=[] }
   T.textContent=title; document.title=title+' — ДЭ·Вики';
@@ -211,7 +220,7 @@ function wHead(){
   const mt='m'+(wRT.mod||S.mod), tab=(h,t,on)=>on?'<span class="tab on">'+t+'</span>':'<a class="tab" href="#'+h+'">'+t+'</a>';
   const sp=wRT.p==='sol'||wRT.p==='solmod', art=(wRT.p==='topic'||wRT.p==='sol')?'m'+wRT.mod+'/'+wRT.n:(wRT.p==='solmod'||wRT.p==='talk'||wRT.p==='mod'?mt:'home');
   const sol=wRT.p==='topic'||wRT.p==='sol'?'sol/m'+wRT.mod+'/'+wRT.n:'sol/'+mt, solOn=wRT.p==='sol'||wRT.p==='solmod';
-  $('#wkTabs').innerHTML=(wRT.p==='cat'||wRT.p==='home')?'<span class="tab on">'+(wRT.p==='cat'?'Категория':'Статья')+'</span>':tab(art,'Статья',wRT.p!=='talk'&&!sp)+'<a class="tab sol'+(solOn?' on':'')+'" href="#'+sol+'">'+SOLICON+' Решение</a>'+tab('talk/'+mt,'Обсуждение',wRT.p==='talk');
+  $('#wkTabs').innerHTML=(wRT.p==='cat'||wRT.p==='home')?'<span class="tab on">'+(wRT.p==='cat'?'Категория':'Статья')+'</span>':tab(art,'Статья',wRT.p!=='talk'&&!sp)+(wU()||solOn?'<a class="tab sol'+(solOn?' on':'')+'" href="#'+sol+'">'+SOLICON+' Решение</a>':'')+tab('talk/'+mt,'Обсуждение',wRT.p==='talk');
   // подвал
   const date=new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
   $('#wkFoot').innerHTML=wCatLinks(cats)+(showNav?wNavbox():'')+'<p>Страница сформирована '+date+' по текущим параметрам. Команды рассчитаны в браузере и никуда не отправляются.</p>';
@@ -221,10 +230,10 @@ function wNav(){
   const on=(c,h,t)=>'<li'+(c?' class="on"':'')+'><a href="#'+h+'">'+t+'</a></li>';
   const mc=m=>wRT.p!=='home'&&wRT.p!=='cat'&&S.mod===m;
   $('#navBox').innerHTML='<h3>Навигация</h3><ul>'+on(wRT.p==='home','home','Заглавная страница')+[1,2,3].map(m=>on(mc(m),'m'+m,'Модуль '+m)).join('')+
-    '<li class="sol-li'+(wRT.p==='sol'||wRT.p==='solmod'?' on':'')+'"><a href="#sol/m'+S.mod+'">'+SOLICON+' Решения</a></li><li><a href="#" data-rnd>Случайная статья</a></li><li><a href="#talk/m'+S.mod+'">Обсуждение</a></li></ul>';
+    (wU()?'<li class="sol-li'+(wRT.p==='sol'||wRT.p==='solmod'?' on':'')+'"><a href="#sol/m'+S.mod+'">'+SOLICON+' Решения</a></li>':'')+'<li><a href="#" data-rnd>Случайная статья</a></li><li><a href="#talk/m'+S.mod+'">Обсуждение</a></li></ul>';
   const all=wAll();
   $('#catBox').innerHTML='<h3>Категории</h3><ul>'+WCATS.map(([c])=>{ const n=all.filter(a=>a.cats.includes(c)).length; return '<li'+(wRT.p==='cat'&&wRT.cat===c?' class="on"':'')+'><a href="#cat/'+encodeURIComponent(c)+'">'+esc(c)+(all.length?' <small>'+n+'</small>':'')+'</a></li>' }).join('')+'</ul>';
-  $('#toolBox').innerHTML='<h3>Инструменты</h3><ul><li><a href="#" data-copylink>Ссылка на эту страницу</a></li><li><a href="index.html">Задания варианта</a></li><li><a href="teacher.html">Генератор вариантов</a></li></ul>';
+  $('#toolBox').innerHTML='<h3>Инструменты</h3><ul><li><a href="#" data-copylink>Ссылка на эту страницу</a></li></ul>';
 }
 
 // ---------- оглавление ----------
@@ -255,11 +264,15 @@ function wSpy(){
 function wBuildIdx(){
   const out=[{t:'Заглавная страница',h:'home',s:''}];
   [1,2,3].forEach(m=>{ out.push({t:'Модуль '+m+': '+MODS[m].title,h:'m'+m,s:''}); wArts(m).forEach(a=>out.push({t:a.it.title,h:'m'+m+'/'+(a.i+1),s:a.it.why,k:'Модуль '+m})) });
-  [1,2,3].forEach(m=>{ out.push({t:'Решения модуля '+m,h:'sol/m'+m,s:'Все решения модуля',k:'Решение'}); wArts(m).forEach(a=>out.push({t:'Решение: '+a.it.title,h:'sol/m'+m+'/'+(a.i+1),s:a.it.why,k:'Решение · модуль '+m})) });
+  if(wU()) [1,2,3].forEach(m=>{ out.push({t:'Решения модуля '+m,h:'sol/m'+m,s:'Все решения модуля',k:'Решение'}); wArts(m).forEach(a=>out.push({t:'Решение: '+a.it.title,h:'sol/m'+m+'/'+(a.i+1),s:a.it.why,k:'Решение · модуль '+m})) });
+  RED.forEach(t=>out.push({t:t,h:'x/'+encodeURIComponent(t),s:'',k:'Статья не создана'}));
   WCATS.forEach(([c])=>out.push({t:'Категория: '+c,h:'cat/'+encodeURIComponent(c),s:''}));
   return out;
 }
+function wToggle(on){ try{ sessionStorage.setItem('wk.u',on?'1':'0') }catch(e){} wIDX=null; render() }
 function wInit(){
+  let clicks=[]; document.addEventListener('click',e=>{ const w=e.target.closest('.wordmark span'); if(!w) return; const t=Date.now(); clicks=clicks.filter(x=>t-x<1500); clicks.push(t); if(clicks.length>=3){ clicks=[]; wToggle(!wU()) } });
+  $('#wkSearch').addEventListener('submit',e=>{ if($('#wkQ').value.trim().toLowerCase()==='служебная:решения'){ e.preventDefault(); e.stopImmediatePropagation(); wToggle(true); $('#wkQ').value=''; $('#wkSug').hidden=true; location.hash='#sol/m'+S.mod } },true);
   const q=$('#wkQ'), sug=$('#wkSug');
   const run=()=>{ const v=q.value.trim().toLowerCase(); if(!v){ sug.hidden=true; return [] }
     if(!wIDX) wIDX=wBuildIdx();

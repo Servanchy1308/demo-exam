@@ -254,3 +254,6 @@ code{background:var(--raise);border:1px solid var(--line);border-radius:2px;padd
 .sol-nav{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .sol-nav .btn{text-decoration:none;max-width:100%}
 @media (max-width:560px){.sol-cta .btn.big{width:100%;justify-content:center}.st-h{flex-wrap:wrap}}
+
+.wk a.new{color:#d33}.wk a.new:visited{color:#a55858}
+.wordmark span{cursor:default}
