@@ -1,11 +1,40 @@
-<div class="wrap">
-  <header class="top">
-    <div class="brandbar"><svg class="logo" viewBox="0 0 44 44" aria-hidden="true"><rect x="1" y="1" width="42" height="42" rx="12" class="lg-bg"/><path d="M10 12h24v16h-6v4H16v-4h-6z" class="lg-port"/><rect x="12.3" y="14" width="1.8" height="5.5" rx=".6" fill="#f3a35c"/><rect x="15.1" y="14" width="1.8" height="5.5" rx=".6" fill="#e2690f"/><rect x="17.9" y="14" width="1.8" height="5.5" rx=".6" fill="#8fd19b"/><rect x="20.7" y="14" width="1.8" height="5.5" rx=".6" fill="#2f6fdc"/><rect x="23.5" y="14" width="1.8" height="5.5" rx=".6" fill="#9dbcf2"/><rect x="26.3" y="14" width="1.8" height="5.5" rx=".6" fill="#2b9a4e"/><rect x="29.1" y="14" width="1.8" height="5.5" rx=".6" fill="#cfa47c"/><rect x="31.9" y="14" width="1.8" height="5.5" rx=".6" fill="#7a4a26"/></svg><div class="brand"><div class="wordmark">ДЭ<span>·</span>Лаб</div><h1>Решение ДЭ по параметрам</h1></div></div>
+<div class="wk">
+  <header class="wk-top">
+    <div class="brandbar"><svg class="logo" viewBox="0 0 44 44" aria-hidden="true"><rect x="1" y="1" width="42" height="42" rx="12" class="lg-bg"/><path d="M10 12h24v16h-6v4H16v-4h-6z" class="lg-port"/><rect x="12.3" y="14" width="1.8" height="5.5" rx=".6" fill="#f3a35c"/><rect x="15.1" y="14" width="1.8" height="5.5" rx=".6" fill="#e2690f"/><rect x="17.9" y="14" width="1.8" height="5.5" rx=".6" fill="#8fd19b"/><rect x="20.7" y="14" width="1.8" height="5.5" rx=".6" fill="#2f6fdc"/><rect x="23.5" y="14" width="1.8" height="5.5" rx=".6" fill="#9dbcf2"/><rect x="26.3" y="14" width="1.8" height="5.5" rx=".6" fill="#2b9a4e"/><rect x="29.1" y="14" width="1.8" height="5.5" rx=".6" fill="#cfa47c"/><rect x="31.9" y="14" width="1.8" height="5.5" rx=".6" fill="#7a4a26"/></svg><div class="brand"><div class="wordmark">ДЭ<span>·</span>Вики</div><div class="tagline">Справочник по демонстрационному экзамену</div></div></div>
     <div class="topacts"><a class="btn ghost" href="teacher.html">← <span class="lbl">Генератор</span></a><div class="seg theme" id="themeSeg" role="group" aria-label="Тема оформления"></div></div>
   </header>
   <div class="cable" aria-hidden="true"></div>
-  <section class="toolbar" id="toolbar" aria-label="Модуль и источник параметров"></section>
-  <main id="main" class="panel"></main>
+  <div class="wk-grid">
+    <aside class="wk-side" aria-label="Навигация по вики">
+      <nav class="portlet" aria-label="Страницы">
+        <h3>Навигация</h3>
+        <ul>
+          <li><a href="index.html">Задание студента</a></li>
+          <li><a href="teacher.html">Генератор вариантов</a></li>
+          <li class="on"><a href="solve.html" aria-current="page">Решение по параметрам</a></li>
+        </ul>
+      </nav>
+      <nav class="portlet" id="tocBox" aria-label="Содержание" hidden>
+        <h3>Содержание</h3>
+        <ol class="toc" id="toc"></ol>
+      </nav>
+      <div class="portlet note">
+        <h3>О странице</h3>
+        <p>Параметры и настройки стенда хранятся только в этом браузере.</p>
+      </div>
+    </aside>
+    <div class="wk-art">
+      <div class="wk-tabs" id="wkTabs" role="tablist" aria-label="Модуль"></div>
+      <article class="wk-page">
+        <h1 id="wkTitle">Решение ДЭ</h1>
+        <div class="wk-sub">Материал из ДЭ·Вики — справочника по демонстрационному экзамену</div>
+        <div class="wk-lead" id="wkLead"></div>
+        <section class="toolbar" id="toolbar" aria-label="Источник параметров"></section>
+        <main id="main" class="panel"></main>
+        <footer class="wk-foot">Команды рассчитаны в браузере по заданным параметрам и ничего не отправляют на сервер. Страница последний раз собрана из исходников репозитория <a href="https://github.com/Servanchy1308/demo-exam">demo-exam</a>.</footer>
+      </article>
+    </div>
+  </div>
 </div>
 <div id="printArea"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

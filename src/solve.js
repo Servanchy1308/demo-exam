@@ -280,7 +280,8 @@ const DESCR={manual:'Команды, разложенные по пунктам 
   items:'Команды по пунктам задания. Адреса, домен и логины берутся из Модуля 1.',
   scripts:'Все команды модуля, собранные в один скрипт на машину, в порядке запуска.'};
 function curView(){ const v=S.mod===1?S.mode:S.view23; return viewsFor().some(x=>x[0]===v)?v:viewsFor()[0][0] }
-function renderSol(){
+function renderSol(){ renderSol0(); renderWiki(); renderToc() }
+function renderSol0(){
   const m=$('#sol'); if(!m) return;
   if(!R||!R.ok){ m.innerHTML=msgsHtml()+'<div class="empty"><b>По этим параметрам решение не собирается</b>Исправьте ошибки в параметрах'+(S.mod!==1?' Модуля 1':'')+'.</div>'; return }
   const v=curView();
@@ -345,13 +346,14 @@ function downloadZip(list,isChk){
 // ---------- toolbar: module, fill from code / demo / pasted text ----------
 function renderToolbar(){
   const t=$('#toolbar');
-  t.innerHTML='<div class="seg modseg" role="group" aria-label="Модуль">'+[1,2,3].map(k=>'<button type="button" data-mod="'+k+'" aria-pressed="'+(S.mod===k)+'">'+MODS[k].name+'</button>').join('')+'</div>'+
+  $('#wkTabs').innerHTML='<div class="seg modseg" role="group" aria-label="Модуль">'+[1,2,3].map(k=>'<button type="button" role="tab" data-mod="'+k+'" aria-pressed="'+(S.mod===k)+'" aria-selected="'+(S.mod===k)+'">'+MODS[k].name+'</button>').join('')+'</div>';
+  t.innerHTML=
     '<div class="codef lv-X" title="Подставить параметры варианта с сайта"><input id="codeIn" placeholder="X-12" value="'+(C.num?esc(codeOf(C)):'')+'" spellcheck="false" autocomplete="off" aria-label="Код варианта"><button type="button" id="codeGo" aria-label="Подставить параметры варианта" style="width:auto;padding:0 10px;font-size:.8rem;font-weight:700">Подставить</button></div>'+
     '<button type="button" class="btn ghost" id="demoBtn" title="Значения официальной демоверсии">Демоверсия</button>'+
     '<button type="button" class="btn ghost" id="pasteBtn" aria-expanded="'+!!S.paste+'">'+(S.paste?'Скрыть текст':'Вставить текст задания')+'</button>'+
     '<span class="grow"></span><button type="button" class="btn'+(S.stand?'" aria-pressed="true':'')+'" id="standBtn">'+ICON.gear+'<span class="lbl">Стенд</span></button>'+
     (S.paste?'<div class="paste" style="width:100%;box-shadow:none;padding:0;border:0"><textarea id="taskIn" spellcheck="false" placeholder="Вставьте текст Модуля 1 — с этого сайта или официальный. Параметры подставятся в форму.">'+esc(S.text||'')+'</textarea><div class="pa"><button type="button" class="btn primary" id="parseBtn">Разобрать</button><button type="button" class="btn" id="sampleBtn">Пример</button><span class="hint">Разбор заполняет параметры Модуля 1. Модули 2 и 3 используют его адреса.</span></div></div>':'');
-  t.querySelectorAll('[data-mod]').forEach(b=>b.addEventListener('click',()=>{ S.mod=+b.dataset.mod; save(); render() }));
+  document.querySelectorAll('#wkTabs [data-mod]').forEach(b=>b.addEventListener('click',()=>{ S.mod=+b.dataset.mod; save(); render() }));
   const ci=$('#codeIn'), go=()=>{ const p=parseCode(ci.value.replace(/^.*#/,'')); if(!p){ toast('Код выглядит так: X-12, E-3 или H-7'); ci.focus(); return }
     C=withM23(makeVariant(p.lv,p.num,p.mask)); REP=null; save(); render(); toast('Подставлены параметры варианта '+codeOf(C)) };
   $('#codeGo').addEventListener('click',go); ci.addEventListener('keydown',e=>{ if(e.key==='Enter') go() });
@@ -367,13 +369,65 @@ function renderToolbar(){
   }
 }
 
+// ---------- вики-оформление: заголовок, вступление, инфобокс, оглавление ----------
+function renderWiki(){
+  const T=$('#wkTitle'), L=$('#wkLead'); if(!T||!L) return;
+  const md=MODS[S.mod], code=C&&C.num?codeOf(C):null;
+  T.textContent='Решение ДЭ 09.02.06: '+md.name.toLowerCase()+' — '+md.title.toLowerCase();
+  document.title=md.name+' · Решение ДЭ — ДЭ·Вики';
+  const rows=[];
+  const row=(k,v)=>rows.push('<tr><th scope="row">'+esc(k)+'</th><td>'+esc(v)+'</td></tr>');
+  rows.push('<tr class="ib-s"><th colspan="2">Общие сведения</th></tr>');
+  row('Модуль',md.name+' · '+md.min+' мин');
+  row('Вариант',code||'демоверсия');
+  row('ОС роутеров',ST.rtrOs==='alt'?'Альт Сервер':'Astra Linux CE');
+  if(R&&R.ok){
+    rows.push('<tr class="ib-s"><th colspan="2">Адресация</th></tr>');
+    row('Домен',C.dom);
+    row('ISP — HQ-RTR',C.netIspHq);
+    row('ISP — BR-RTR',C.netIspBr);
+    row('Туннель',(C.tun||'gre').toUpperCase()+' · '+C.netTun);
+    row('HQ-SRV',A.hqSrv+'/'+R.lans.srv.p);
+    row('BR-SRV',A.brSrv+'/'+R.lans.br.p);
+  }
+  const intro='<p><b>Решение ДЭ 09.02.06, '+esc(md.name.toLowerCase())+'</b> — набор команд и готовых скриптов для настройки стенда из шести машин: ISP, HQ-RTR, BR-RTR, HQ-SRV, BR-SRV и HQ-CLI. Тема модуля: «'+esc(md.title)+'».</p>'+
+    '<p>Значения подставлены для '+(code?'<b>варианта '+esc(code)+'</b>':'<b>демоверсии</b>')+'. Измените их в разделе «Параметры» или подставьте код варианта выше — команды в разделе «Решение» пересчитаются сразу.</p>'+
+    (S.mod!==1?'<p class="hint">Адреса и домен берутся из параметров модуля 1.</p>':'');
+  L.innerHTML='<div>'+intro+'</div><aside class="infobox" aria-label="Карточка варианта"><div class="ib-t">'+esc(md.name)+' · '+esc(code||'демо')+'</div><table>'+rows.join('')+'</table></aside>';
+}
+function renderToc(){
+  const box=$('#tocBox'), ol=$('#toc'); if(!box||!ol) return;
+  const items=[...document.querySelectorAll('#solveBody details.mi')];
+  items.forEach((d,i)=>{ d.id='it'+(i+1) });
+  const sec=[['pbox','1','Параметры'],['solH','2','Решение']];
+  let h=sec.map(([id,n,t])=>'<li data-t="'+id+'"><a href="#'+id+'" data-to="'+id+'"><span class="tn">'+n+'</span><span>'+t+'</span></a>'+
+    (id==='solH'&&items.length?'<ol>'+items.map((d,i)=>'<li data-t="it'+(i+1)+'"><a href="#it'+(i+1)+'" data-to="it'+(i+1)+'"><span class="tn">'+esc(d.querySelector('.num')?d.querySelector('.num').textContent:String(i+1))+'</span><span>'+esc(d.querySelector('b')?d.querySelector('b').textContent:'')+'</span></a></li>').join('')+'</ol>':'')+'</li>').join('');
+  ol.innerHTML=h; box.hidden=false;
+  ol.querySelectorAll('[data-to]').forEach(a=>a.addEventListener('click',e=>{ e.preventDefault();
+    const el=document.getElementById(a.dataset.to); if(!el) return; if(el.tagName==='DETAILS') el.open=true;
+    el.scrollIntoView({behavior:'smooth',block:'start'}); markToc(a.dataset.to) }));
+  spyToc();
+}
+function markToc(id){ document.querySelectorAll('#toc li').forEach(li=>li.classList.toggle('cur',li.dataset.t===id)) }
+let spyOn=false;
+function spyToc(){
+  if(spyOn) return; spyOn=true;
+  let tick=false;
+  const run=()=>{ tick=false;
+    const ids=[...document.querySelectorAll('#toc [data-to]')].map(a=>a.dataset.to);
+    let cur=null; ids.forEach(id=>{ const el=document.getElementById(id); if(el&&el.getBoundingClientRect().top<140) cur=id });
+    markToc(cur) };
+  window.addEventListener('scroll',()=>{ if(!tick){ tick=true; requestAnimationFrame(run) } },{passive:true});
+  run();
+}
+
 // ---------- page ----------
 function recompute(){ R=compute(C); A=R.ok?addrs(C,R):null; G=R.ok?gen(C,ST,R):null }
 function renderMain(){
   const m=$('#main');
   m.innerHTML=(S.stand?'<details class="mi" open id="standBox"><summary><b>Стенд: ОС, интерфейсы, имена ВМ</b>'+ICON.chev+'</summary><div class="fb">'+standHtml()+'</div></details>':'')+repHtml()+
-    '<details class="mi" open id="pbox"><summary><span class="num">'+S.mod+'</span><b>Параметры '+MODS[S.mod].name.replace('Модуль','Модуля')+'</b><span class="hint" style="margin-left:8px">правки сразу меняют команды ниже</span>'+ICON.chev+'</summary><div class="fb"><div id="pmsgs"></div>'+paramsHtml()+'</div></details>'+
-    '<section id="sol" class="panel" aria-label="Решение"></section>';
+    '<details class="mi" open id="pbox"><summary><span class="num">1</span><b>Параметры '+MODS[S.mod].name.replace('Модуль','Модуля')+'</b><span class="hint" style="margin-left:8px">правки сразу меняют команды ниже</span>'+ICON.chev+'</summary><div class="fb"><div id="pmsgs"></div>'+paramsHtml()+'</div></details>'+
+    '<h2 class="wk-h2" id="solH"><span class="num">2</span>Решение</h2><section id="sol" class="panel" aria-label="Решение"></section>';
   wireParams($('#pbox')); if(S.stand) wireStand($('#standBox'));
   const h=$('#hideRep'); if(h) h.addEventListener('click',()=>{ REP=null; save(); renderMain() });
   m.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>{ const el=$('#p_'+b.dataset.goto); if(el){ el.scrollIntoView({block:'center',behavior:'smooth'}); el.focus({preventScroll:true}); el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1500) } }));
