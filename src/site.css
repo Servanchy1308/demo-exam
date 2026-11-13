@@ -1,0 +1,111 @@
+/* ===== Общая тема «документация дистрибутива»: подключается ко всем трём страницам после style.css =====
+   Тёмная шапка, светлое полотно, синие ссылки, оранжевый фирменный акцент, радиус 6px, блоки кода как в справочниках. */
+:root,.tk{
+  --bg:#f3f5f7; --surface:#ffffff; --raise:#f6f8fa; --sunk:#eaeef2; --ink:#1c2128; --muted:#57606a; --faint:#818b98; --line:#d8dee4; --line-strong:#b9c2cc;
+  --accent:#1660c4; --accent-soft:#e6f0fd; --accent-ink:#ffffff;
+  --term:#f6f8fa; --term-ink:#1c2128; --term-dim:#6a737d; --term-line:#d0d7de; --term-str:#9a4f00;
+  --paper:#ffffff; --paper-ink:#1c2128; --paper-line:#cfd5db;
+  --warn:#7a4b00; --warn-bg:#fff4d6; --err:#b42318; --err-bg:#fdecea; --ok:#11734f; --ok-bg:#e2f5ec;
+  --tip:#0b6e63; --tip-bg:#e0f4f1;
+}
+:root{
+  --hdr:#1f2630; --hdr-2:#2b3441; --hdr-ink:#f2f5f8; --hdr-muted:#a9b4c1; --hdr-line:#3b4656; --brand:#e2690f;
+  --shadow:0 1px 2px rgba(27,31,36,.06); --pop:0 8px 24px rgba(27,31,36,.18); --r:6px;
+  --display:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]),:root:not([data-theme="light"]) .tk{
+  --bg:#0d1117; --surface:#151b23; --raise:#1b222c; --sunk:#10151c; --ink:#e6edf3; --muted:#9aa7b4; --faint:#6e7b89; --line:#2a323d; --line-strong:#3d4856;
+  --accent:#6ea8fe; --accent-soft:#182a45; --accent-ink:#08172e;
+  --term:#0d1117; --term-ink:#dde5ec; --term-dim:#7d8894; --term-line:#2a323d; --term-str:#e8c07d;
+  --paper:#161c24; --paper-ink:#e2e8ee; --paper-line:#2f3945;
+  --warn:#f3b65c; --warn-bg:#2b2211; --err:#ff8b80; --err-bg:#2e1614; --ok:#4fd39a; --ok-bg:#11291f;
+  --tip:#5ed3c4; --tip-bg:#0f2a27}
+  :root:not([data-theme="light"]){--hdr:#0a0e13; --hdr-2:#161c24; --hdr-line:#2a323d; --pop:0 12px 32px rgba(0,0,0,.55)}}
+:root[data-theme="dark"],:root[data-theme="dark"] .tk{
+  --bg:#0d1117; --surface:#151b23; --raise:#1b222c; --sunk:#10151c; --ink:#e6edf3; --muted:#9aa7b4; --faint:#6e7b89; --line:#2a323d; --line-strong:#3d4856;
+  --accent:#6ea8fe; --accent-soft:#182a45; --accent-ink:#08172e;
+  --term:#0d1117; --term-ink:#dde5ec; --term-dim:#7d8894; --term-line:#2a323d; --term-str:#e8c07d;
+  --paper:#161c24; --paper-ink:#e2e8ee; --paper-line:#2f3945;
+  --warn:#f3b65c; --warn-bg:#2b2211; --err:#ff8b80; --err-bg:#2e1614; --ok:#4fd39a; --ok-bg:#11291f;
+  --tip:#5ed3c4; --tip-bg:#0f2a27}
+:root[data-theme="dark"]{--hdr:#0a0e13; --hdr-2:#161c24; --hdr-line:#2a323d; --pop:0 12px 32px rgba(0,0,0,.55)}
+.tk{color:var(--ink)}
+
+/* размер текста (настройка «Аа») */
+:root[data-fs="s"]{font-size:14px} :root[data-fs="l"]{font-size:18px}
+html{background:var(--bg);overflow-x:clip}
+body{font-size:.94rem;line-height:1.6;min-height:100vh}
+::selection{background:color-mix(in srgb,var(--accent) 28%,transparent)}
+a{color:var(--accent)}
+
+/* ---------- шапка: тёмная полоса на всю ширину ---------- */
+.top{
+  --surface:var(--hdr-2); --raise:#364252; --sunk:#151a21; --ink:var(--hdr-ink); --muted:var(--hdr-muted); --faint:#8492a2; --line:var(--hdr-line); --line-strong:#536074;
+  --accent:#8dbbff; --accent-soft:#2a3b55; --accent-ink:#08172e;
+  --warn:#f3b65c; --warn-bg:#3a2d12; --err:#ff8b80; --err-bg:#42201c;
+  background:var(--hdr); color:var(--ink)}
+.wrap{gap:16px}
+body:has(>.wrap){padding-top:0}
+.wrap>.top{margin-inline:calc(50% - 50vw);padding:10px max(16px,calc(50vw - 50%))}
+.wrap>.cable{margin:-16px calc(50% - 50vw) 4px;border-radius:0;height:3px}
+.cable{opacity:1}
+.logo{width:38px;height:38px;filter:none}
+.logo .lg-bg{fill:var(--brand)}
+.logo .lg-port{fill:#1f2630}
+.brand .wordmark{font-family:var(--sans);font-weight:700;font-size:1.3rem;letter-spacing:0}
+.brand .wordmark span{color:var(--brand)}
+.brand h1{font-size:.76rem;font-weight:500}
+.top .btn.ghost{color:var(--ink)}
+.top .seg,.wk-top .seg{background:var(--sunk)}
+.top .seg button[aria-pressed="true"],.wk-top .seg button[aria-pressed="true"]{background:var(--raise);box-shadow:none}
+.timer{border-radius:var(--r)}
+
+/* ---------- кнопки, поля, переключатели ---------- */
+.btn,.seg,.seg button,input,select,textarea,.tb,.rowbtn,.chip,.codef,.plate,.badge,.ddp,.ddi,.toast{border-radius:var(--r)}
+.seg button{border-radius:4px}
+.btn{background:var(--surface);border-color:var(--line-strong);color:var(--ink);font-weight:600;box-shadow:var(--shadow)}
+.btn:hover{border-color:var(--accent);color:var(--accent);background:var(--surface)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{color:var(--accent-ink);background:var(--accent)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--accent);box-shadow:none}
+.btn.ghost:hover{background:var(--raise);border-color:var(--line)}
+.btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+a.btn{color:var(--ink)}
+input,select,textarea{background:var(--surface);border-color:var(--line-strong)}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:2px solid color-mix(in srgb,var(--accent) 35%,transparent);outline-offset:0}
+.paste textarea,.lan .sentence input,.lan .sentence select{background:var(--surface)}
+.seg{background:var(--sunk)}
+.pill{border-radius:999px}
+
+/* ---------- карточки, панели, примечания ---------- */
+.card,.toolbar,.paste,.viewer,.entry,.locked,.guide,.mi,details.fold,.lan,.empty,.linkbox,.send,.who,.mc,.term,.blk pre,.readbanner,.guide li{border-radius:var(--r)}
+.card,.toolbar,.paste,.entry{box-shadow:var(--shadow)}
+.toolbar{background:var(--surface)}
+.card h3{font-size:1.02rem;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.msg{border:1px solid var(--line);border-left:4px solid var(--accent);background:var(--accent-soft);color:var(--ink);border-radius:var(--r);padding:10px 14px;font-size:.88rem}
+.msg.warn{border-left-color:#d9a400;background:var(--warn-bg);color:var(--ink)}
+.msg.err{border-left-color:#d1382c;background:var(--err-bg);color:var(--ink)}
+.msg.tip{border-left-color:var(--tip);background:var(--tip-bg)}
+.nav button{border-width:1px;border-radius:var(--r)}
+.nav .ni{border-radius:var(--r)}
+.entry,.guide{background:var(--surface)}
+.entry{border-left:4px solid var(--brand)}
+.hello b,.locked h2,.badge b,.entry .cur b,.score .big,.codef input,.entry .bigin{font-family:var(--sans)}
+.sheet{border-radius:var(--r)}
+.sheet,.sheet h2,.sheet h3{font-family:var(--sans)}
+.sheet h2{font-size:1.5rem;font-weight:700}
+.sheet h3{font-size:1.12rem;padding-bottom:4px;border-bottom:1px solid var(--paper-line)}
+.locked .lk{border-radius:var(--r)}
+
+/* ---------- код ---------- */
+code{background:var(--raise);border:1px solid var(--line);border-radius:4px;padding:0 5px;font-size:.86em}
+.term{background:var(--term);border:1px solid var(--term-line)}
+.tbar{background:var(--sunk);border-bottom:1px solid var(--term-line)}
+.tb{color:var(--ink);background:var(--surface);border-color:var(--line-strong)}
+.tb:hover{border-color:var(--accent);color:var(--accent)}
+.blk pre{border:1px solid var(--term-line)}
+pre{font-size:.8rem}
+pre .cm{font-style:italic}
+:root[data-wrap="1"] pre{white-space:pre-wrap;word-break:break-word}
+.toast{background:var(--hdr);color:var(--hdr-ink);border:1px solid var(--hdr-line);box-shadow:var(--pop);font-weight:600}
